@@ -1,0 +1,671 @@
+{
+  "scenarios": [
+    {
+      "name": "changed contract rejects old binding",
+      "result": "409 \u00b7 ContractChanged. Explicit renewal required."
+    },
+    {
+      "name": "explicit renewal accepts current fingerprint",
+      "result": "200 \u00b7 Accepted contract. Request can proceed."
+    },
+    {
+      "name": "request quota",
+      "result": "429 \u00b7 Request allowance reached. Admission blocked."
+    },
+    {
+      "name": "token quota",
+      "result": "429 \u00b7 Token allowance reached. Admission blocked."
+    },
+    {
+      "name": "enforce redaction",
+      "result": "REDACTED \u00b7 Contact [EMAIL] about this request."
+    },
+    {
+      "name": "observe guardrail",
+      "result": "OBSERVED \u00b7 Email detected; original input retained in this simulation."
+    },
+    {
+      "name": "team filter and decision trace",
+      "result": "04 / 08\nSee what happened, and why.\n\nAdministrators see cumulative and team-level usage, routing attempts, guardrail decisions, tokens and configured-price cost estimates.\n\nADMINISTRATOR / 24H SNAPSHOT\nTeam\nAll teams\nSupport\nEngineering\nResearch\nRequests\n1,621\nReported tokens\n64.8K\nEst. cost\n$0.36\nREQUEST EXPLORER\n200\nsupport-chat\nEngineering \u00b7 local route \u00b7 88 ms\n40 tokens\nScoped access accepted\nQuota reserved before inference\nLocal model selected\nProvider usage recorded\n\nOne attempt \u00b7 input 16 / output 24 tokens \u00b7 estimated cost $0.000224\n\nIllustrative data. Costs use configured prices and are estimates; missing provider usage remains unknown.\n\nSee the actual console\nImplementation guide"
+    },
+    {
+      "name": "local model preference",
+      "result": "200 \u00b7 West admitted against the shared quota. Local west model selected."
+    },
+    {
+      "name": "allowed pre-stream fallback",
+      "result": "200 \u00b7 West admitted against the shared quota. Pre-stream local failure; allowed fallback selected East."
+    },
+    {
+      "name": "disconnected site fails closed",
+      "result": "503 \u00b7 Authority unreachable. No new admission or offline quota grant."
+    },
+    {
+      "name": "shared quota across both sites",
+      "result": "429 \u00b7 Shared quota reached across both gateway sites."
+    },
+    {
+      "name": "fleet author cannot approve",
+      "result": "403 \u00b7 The proposal author cannot approve their own change."
+    },
+    {
+      "name": "reviewed policy receipts",
+      "result": "Applied \u00b7 Europe receipt received \u00b7 US receipt received \u00b7 No policy drift."
+    },
+    {
+      "name": "stale evidence blocks publication",
+      "result": "Blocked \u00b7 Dataset changed. Re-evaluate before publication."
+    },
+    {
+      "name": "fresh evidence eligible",
+      "result": "Eligible \u00b7 Illustrative canary gates passed. Publishing changes the accepted contract."
+    },
+    {
+      "name": "identity SAML",
+      "result": "08 / 08\nBring your identity. Scope the access.\n\nConfigure OIDC, SAML and SCIM, workload identities and project/team grants. Keep application credentials separate from administrator sessions.\n\nWORKSPACE IDENTITY\nIntegration\nOIDC\nSAML\nSCIM\nWorkload JWT\nSigned assertions and configured signed logout.\nProjects\nTeams\nScoped keys\nILLUSTRATIVE ROLE VISIBILITY\nSigned-in role\nViewer\nAdministrator\nOwn allowed services\nScoped request visibility\nAll-team usage and management\nIdentity and policy configuration\n\nThis is a role walkthrough, not live sign-in. Actual vendor tenants need deployment acceptance; identity attributes do not automatically grant administrator access.\n\nSee the actual console\nImplementation guide"
+    },
+    {
+      "name": "identity SCIM",
+      "result": "08 / 08\nBring your identity. Scope the access.\n\nConfigure OIDC, SAML and SCIM, workload identities and project/team grants. Keep application credentials separate from administrator sessions.\n\nWORKSPACE IDENTITY\nIntegration\nOIDC\nSAML\nSCIM\nWorkload JWT\nConnector-scoped provisioning, groups and deactivation.\nProjects\nTeams\nScoped keys\nILLUSTRATIVE ROLE VISIBILITY\nSigned-in role\nViewer\nAdministrator\nOwn allowed services\nScoped request visibility\nAll-team usage and management\nIdentity and policy configuration\n\nThis is a role walkthrough, not live sign-in. Actual vendor tenants need deployment acceptance; identity attributes do not automatically grant administrator access.\n\nSee the actual console\nImplementation guide"
+    },
+    {
+      "name": "identity Workload JWT",
+      "result": "08 / 08\nBring your identity. Scope the access.\n\nConfigure OIDC, SAML and SCIM, workload identities and project/team grants. Keep application credentials separate from administrator sessions.\n\nWORKSPACE IDENTITY\nIntegration\nOIDC\nSAML\nSCIM\nWorkload JWT\nFederated workload JWTs exchange for short-lived scoped access.\nProjects\nTeams\nScoped keys\nILLUSTRATIVE ROLE VISIBILITY\nSigned-in role\nViewer\nAdministrator\nOwn allowed services\nScoped request visibility\nAll-team usage and management\nIdentity and policy configuration\n\nThis is a role walkthrough, not live sign-in. Actual vendor tenants need deployment acceptance; identity attributes do not automatically grant administrator access.\n\nSee the actual console\nImplementation guide"
+    },
+    {
+      "name": "administrator visibility",
+      "result": "08 / 08\nBring your identity. Scope the access.\n\nConfigure OIDC, SAML and SCIM, workload identities and project/team grants. Keep application credentials separate from administrator sessions.\n\nWORKSPACE IDENTITY\nIntegration\nOIDC\nSAML\nSCIM\nWorkload JWT\nFederated workload JWTs exchange for short-lived scoped access.\nProjects\nTeams\nScoped keys\nILLUSTRATIVE ROLE VISIBILITY\nSigned-in role\nViewer\nAdministrator\nOwn allowed services\nScoped request visibility\nAll-team usage and management\nIdentity and policy configuration\n\nThis is a role walkthrough, not live sign-in. Actual vendor tenants need deployment acceptance; identity attributes do not automatically grant administrator access.\n\nSee the actual console\nImplementation guide"
+    }
+  ],
+  "viewports": [
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 320,
+        "height": 568
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 768,
+        "height": 1024
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 768,
+      "width": 768
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1024,
+        "height": 768
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 1024,
+      "width": 1024
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 1280,
+      "width": 1280
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Connect & bind",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Custom gateways",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Guardrail chains",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Usage & decisions",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Active/active sites",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Fleet governance",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Quality & workflows",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    },
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "scene": "Identity & access",
+      "badControls": [],
+      "pageWidth": 1440,
+      "width": 1440
+    }
+  ],
+  "mobileMenu": {
+    "opened": true,
+    "closed": true,
+    "focus": "Open navigation"
+  },
+  "breakpoints": [
+    {
+      "requested": 720,
+      "height": 900,
+      "pageWidth": 720,
+      "width": 720
+    },
+    {
+      "requested": 721,
+      "height": 900,
+      "pageWidth": 721,
+      "width": 721
+    },
+    {
+      "requested": 900,
+      "height": 900,
+      "pageWidth": 900,
+      "width": 900
+    },
+    {
+      "requested": 901,
+      "height": 900,
+      "pageWidth": 901,
+      "width": 901
+    }
+  ],
+  "keyboard": [
+    {
+      "focus": "JavaScript / TS",
+      "group": "installation End",
+      "selected": "true"
+    },
+    {
+      "focus": "Active/active sites",
+      "group": "architecture ArrowRight",
+      "selected": "true"
+    },
+    {
+      "focus": "Identity & access",
+      "group": "tour End",
+      "selected": "true"
+    }
+  ],
+  "clipboard": {
+    "install": "npm install @eturkok/pliqra@0.1.1",
+    "client": "import {Pliqra} from '@eturkok/pliqra';\n\nconst client = new Pliqra('http://localhost:8088', process.env.PLIQRA_API_KEY);\nconst service = await client.connect('support', {\n  requirements: ['chat', 'streaming']\n});\nfor await (const packet of service.stream([{role: 'user', content: 'Hello'}])) {\n  process.stdout.write(packet.choices?.[0]?.delta?.content || '');\n}"
+  },
+  "checked_at": "2026-11-07T21:31:13.517899+00:00",
+  "site": "https://pliqra.etlabio.com",
+  "published_source_commit": "ba49d28ee8b80defe75c2aa4f78c9a18a4190d72",
+  "site_version": "appgprj_6aef8da879a08191ae239671218ed40c~appgver_cc893a144f5881918c254b33422b9e06",
+  "domain_status": "active",
+  "tls_status": "active",
+  "scope": "Browser walkthrough simulation and presentation QA; no external model or identity-provider acceptance is implied.",
+  "validation": {
+    "scenario_viewport_combinations": 48,
+    "document_horizontal_overflow": false,
+    "clipped_demo_controls": false,
+    "production_build": "passed",
+    "typescript": "passed",
+    "console_screenshot_loaded": {
+      "src": "/screenshots/workspace-identity.png",
+      "natural_width": 1280
+    }
+  },
+  "https_checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "tls_verify_result": 0,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 67186,
+      "final_url": "https://pliqra.etlabio.com/",
+      "hero_present": true,
+      "canonical_present": true
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "tls_verify_result": 0,
+      "content_type": "text/plain",
+      "bytes": 72,
+      "final_url": "https://pliqra.etlabio.com/robots.txt",
+      "canonical_domain_present": true
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "tls_verify_result": 0,
+      "content_type": "application/xml",
+      "bytes": 218,
+      "final_url": "https://pliqra.etlabio.com/sitemap.xml",
+      "canonical_domain_present": true
+    },
+    {
+      "path": "/og.png",
+      "status": 200,
+      "tls_verify_result": 0,
+      "content_type": "image/png",
+      "bytes": 71342,
+      "final_url": "https://pliqra.etlabio.com/og.png"
+    }
+  ],
+  "normal_local_dns_https": "HTTP 200 with default certificate validation after negative DNS cache expired"
+}

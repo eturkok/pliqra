@@ -6,6 +6,7 @@
 <p align="center"><strong>Plug in models. Publish your rules. Keep the contract.</strong><br>Turn a model endpoint into an AI service with an explicit connection contract.</p>
 <p align="center">
   <a href="https://github.com/eturkok/pliqra/actions/workflows/test.yml"><img src="https://github.com/eturkok/pliqra/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  · <a href="https://pliqra.etlabio.com">Website & interactive demo</a>
   · <a href="#quick-start">Quick start</a>
   · <a href="#multi-dc">Multi-DC</a>
   · <a href="docs/CONSOLE.md">Console tour</a>
@@ -64,6 +65,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 | Guide | Contents |
 |---|---|
+| [Product website](docs/WEBSITE.md) | Public presentation, interactive demo, source and publication maintenance |
 | [Releases & prebuilt images](docs/DISTRIBUTION.md) | Versioned Docker images, checksums, SBOM/provenance, publication pipeline and upgrades |
 | [Gateways & guardrails](docs/GATEWAYS.md) | Policy builder, quota scopes, check providers, guarded streaming, APIs and request flow |
 | [Console tour](docs/CONSOLE.md) | Model onboarding, contracts, request inspection, team reporting and gateway screenshots |
