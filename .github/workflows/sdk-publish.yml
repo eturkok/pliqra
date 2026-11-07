@@ -46,6 +46,9 @@ jobs:
       - name: Verify any already-published Python artifacts byte for byte
         id: registry
         run: python scripts/check_sdk_registry.py pypi dist/publish --github-output "$GITHUB_OUTPUT"
+      - name: Read the tested Python SDK version
+        id: sdk
+        run: python scripts/sdk_metadata.py release-source --github-output "$GITHUB_OUTPUT"
       - name: Publish a new Python version through OIDC
         if: steps.registry.outputs.already_published == 'false'
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
@@ -54,6 +57,14 @@ jobs:
           attestations: true
       - name: Require the exact tested Python files to be publicly downloadable
         run: python scripts/check_sdk_registry.py pypi dist/publish --require-existing --wait-seconds 120
+      - name: Clean-install the version from the canonical public PyPI index
+        env:
+          SDK_VERSION: ${{ steps.sdk.outputs.python_version }}
+        run: |
+          python -m venv "$RUNNER_TEMP/pliqra-python-consumer"
+          "$RUNNER_TEMP/pliqra-python-consumer/bin/python" -m pip --isolated install --index-url https://pypi.org/simple --no-deps "pliqra-client==$SDK_VERSION"
+          "$RUNNER_TEMP/pliqra-python-consumer/bin/python" -I -c 'import importlib.metadata,os,sys,pliqra_client,pliqra_conformance; assert importlib.metadata.version("pliqra-client")==os.environ["SDK_VERSION"]; assert "fastapi" not in sys.modules'
+          "$RUNNER_TEMP/pliqra-python-consumer/bin/pliqra-client" --help
   npm:
     if: inputs.registry == 'npm' || inputs.registry == 'both'
     runs-on: ubuntu-latest
@@ -99,3 +110,12 @@ jobs:
         run: npm publish dist/publish/npm/*.tgz --access public --tag "$SDK_TAG" --provenance --ignore-scripts
       - name: Require the exact tested npm file to be publicly downloadable
         run: python scripts/check_sdk_registry.py npm dist/publish --require-existing --wait-seconds 120
+      - name: Clean-install the version from the canonical public npm registry
+        env:
+          SDK_VERSION: ${{ steps.sdk.outputs.sdk_version }}
+        run: |
+          mkdir "$RUNNER_TEMP/pliqra-npm-consumer"
+          cd "$RUNNER_TEMP/pliqra-npm-consumer"
+          printf '%s\n' '{"private":true,"type":"module"}' > package.json
+          npm install --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org "@eturkok/pliqra@$SDK_VERSION"
+          node --input-type=module -e 'import {Pliqra,ContractChanged} from "@eturkok/pliqra"; import {readFileSync} from "node:fs"; if(!Pliqra||!ContractChanged||JSON.parse(readFileSync("node_modules/@eturkok/pliqra/package.json")).version!==process.env.SDK_VERSION)throw Error("SDK registry install mismatch");'
