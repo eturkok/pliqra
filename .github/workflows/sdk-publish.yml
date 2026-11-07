@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Published gateway tag containing tested SDK assets'
+        description: 'Published gateway tag containing the original tested SDK assets'
         required: true
         type: string
         default: v2.1.0-rc.3
@@ -14,21 +14,27 @@ on:
         options: [pypi, npm, both]
 permissions:
   contents: read
-concurrency:
-  group: sdk-publish-${{ inputs.release_tag }}-${{ inputs.registry }}
-  cancel-in-progress: false
 jobs:
   pypi:
     if: inputs.registry == 'pypi' || inputs.registry == 'both'
     runs-on: ubuntu-latest
-    environment: pypi
+    concurrency:
+      group: sdk-publish-pypi
+      cancel-in-progress: false
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pliqra-client/
     permissions:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out publisher tooling from this workflow revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out the immutable release source separately
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.release_tag }}
+          path: release-source
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.13'
@@ -36,22 +42,38 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release_tag }}
-        run: python scripts/fetch_sdk_release.py "$RELEASE_TAG"
-      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
+        run: python scripts/fetch_sdk_release.py "$RELEASE_TAG" --source release-source
+      - name: Verify any already-published Python artifacts byte for byte
+        id: registry
+        run: python scripts/check_sdk_registry.py pypi dist/publish --github-output "$GITHUB_OUTPUT"
+      - name: Publish a new Python version through OIDC
+        if: steps.registry.outputs.already_published == 'false'
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
         with:
           packages-dir: dist/publish/python/
           attestations: true
+      - name: Require the exact tested Python files to be publicly downloadable
+        run: python scripts/check_sdk_registry.py pypi dist/publish --require-existing --wait-seconds 120
   npm:
     if: inputs.registry == 'npm' || inputs.registry == 'both'
     runs-on: ubuntu-latest
-    environment: npm
+    concurrency:
+      group: sdk-publish-npm
+      cancel-in-progress: false
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@eturkok/pliqra
     permissions:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out publisher tooling from this workflow revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Check out the immutable release source separately
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.release_tag }}
+          path: release-source
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.13'
@@ -63,6 +85,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release_tag }}
-        run: python scripts/fetch_sdk_release.py "$RELEASE_TAG"
-      - name: Publish through the configured npm trusted publisher
+        run: python scripts/fetch_sdk_release.py "$RELEASE_TAG" --source release-source
+      - name: Verify any already-published npm artifact byte for byte
+        id: registry
+        run: python scripts/check_sdk_registry.py npm dist/publish --github-output "$GITHUB_OUTPUT"
+      - name: Publish a new npm version through OIDC
+        if: steps.registry.outputs.already_published == 'false'
         run: npm publish dist/publish/npm/*.tgz --access public --tag next --provenance --ignore-scripts
+      - name: Require the exact tested npm file to be publicly downloadable
+        run: python scripts/check_sdk_registry.py npm dist/publish --require-existing --wait-seconds 120

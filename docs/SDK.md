@@ -68,4 +68,12 @@ Canonical SDK source lives in `sdk/`. `packaging/` contains metadata, not a seco
 
 The manually dispatched [SDK publishing workflow](../.github/workflows/sdk-publish.yml) fetches a published release, verifies its source revision and hashes, then publishes the same assets. Configure a PyPI trusted publisher for `pliqra-client`, GitHub owner `eturkok`, repository `pliqra`, workflow `sdk-publish.yml`, environment `pypi`. The npm publisher for `@eturkok/pliqra` uses that workflow and environment `npm`; its initial package publication requires the owner's authenticated bootstrap. npm prereleases use the `next` tag. Trusted publishing uses short-lived job identity; no permanent registry token belongs in the repository. Never overwrite a published version.
 
-The initial npm artifact was bootstrapped with the owner’s authenticated CLI. Its configured GitHub publisher is now validated; an authenticated duplicate-version attempt confirmed immutable-version rejection. Re-dispatching publication for an existing version fails deliberately. [Publication evidence](ACCEPTANCE.md#published-distribution-acceptance).
+The initial npm artifact was bootstrapped with the owner’s authenticated CLI. Its configured GitHub publisher is now validated; an authenticated duplicate-version attempt confirmed immutable-version rejection. Re-dispatching publication verifies public registry files byte for byte. Matching files complete successfully without another upload; different or incomplete published content fails. Registry access errors are never treated as an absent version. [Publication evidence](ACCEPTANCE.md#published-distribution-acceptance).
+
+Publisher tooling is checked out separately from the immutable SDK release source, allowing delivery fixes to verify earlier release assets. Select the release that originally introduced the SDK version (currently `v2.1.0-rc.3`); do not submit rebuilt files under an existing package version. New versions are checked for public availability after upload. The GitHub environment links directly to the published package.
+
+Dispatch the current publisher workflow from `main` while selecting the original SDK asset release:
+
+```sh
+gh workflow run sdk-publish.yml --ref main -f release_tag=v2.1.0-rc.3 -f registry=both
+```

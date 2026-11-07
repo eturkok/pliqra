@@ -10,7 +10,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def fetch(tag, output):
+def fetch(tag, output, source=ROOT):
     if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?', tag):
         raise ValueError('Use a published gateway release tag')
     release = json.loads(subprocess.check_output(['gh', 'release', 'view', tag, '--repo', 'eturkok/pliqra', '--json', 'tagName,isDraft'], text=True))
@@ -19,8 +19,8 @@ def fetch(tag, output):
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run(['gh', 'release', 'download', tag, '--repo', 'eturkok/pliqra', '--pattern', 'SDK-MANIFEST.json', '--dir', str(output)], check=True)
     manifest = json.loads((output / 'SDK-MANIFEST.json').read_text())
-    revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    if manifest['revision'] != revision or manifest['sdk_version'] != (ROOT / 'sdk/VERSION').read_text().strip():
+    revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=source, text=True).strip()
+    if manifest['revision'] != revision or manifest['sdk_version'] != (source / 'sdk/VERSION').read_text().strip():
         raise ValueError('SDK manifest differs from the checked-out release source')
     expected = {f"pliqra_client-{manifest['python_version']}-py3-none-any.whl", f"pliqra_client-{manifest['python_version']}.tar.gz", f"eturkok-pliqra-{manifest['sdk_version']}.tgz"}
     if {item['file'] for item in manifest['artifacts']} != expected:
@@ -43,5 +43,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tag')
     parser.add_argument('--output', type=Path, default=Path('dist/publish'))
+    parser.add_argument('--source', type=Path, default=ROOT, help='Separate checkout of the immutable release source')
     args = parser.parse_args()
-    print(json.dumps(fetch(args.tag, args.output)))
+    print(json.dumps(fetch(args.tag, args.output, args.source)))

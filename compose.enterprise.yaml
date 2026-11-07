@@ -1,7 +1,7 @@
 name: pliqra-enterprise
 
 x-gateway: &gateway
-  image: pliqra:2.1.0-rc.3
+  image: pliqra:2.1.0-rc.4
   build: .
   environment:
     PLIQRA_DATABASE_URL: postgresql://pliqra:${PLIQRA_DB_PASSWORD:?Set PLIQRA_DB_PASSWORD}@postgres:5432/pliqra

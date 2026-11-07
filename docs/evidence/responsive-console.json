@@ -1,0 +1,1675 @@
+{
+  "date": "2026-11-07",
+  "candidate": "2.1.0-rc.4",
+  "synthetic": true,
+  "method": "Real UI interactions and DOM geometry in the in-app browser at controlled viewport sizes",
+  "physical_device_testing": false,
+  "cross_browser_certification": false,
+  "page_checks": [
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "pageWidth": 1280,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 1280
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 844,
+      "horizontalOverflow": false,
+      "pageWidth": 390,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 390
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 1024,
+      "horizontalOverflow": false,
+      "pageWidth": 768,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 768
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "pageWidth": 844,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 844
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 1,
+      "view": "Overview",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Connections",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 1,
+      "view": "AI services",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Gateways",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 1,
+      "view": "Requests",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 5,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 5,
+      "view": "Usage & cost",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Playground",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Model lab",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Workflows",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Guardrails",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 3,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 3,
+      "view": "Projects & keys",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 1,
+      "view": "Evaluations",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Operations",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 1,
+      "view": "Identity & access",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Workspace & identity",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 2,
+      "view": "Fleet management",
+      "width": 1440
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 900,
+      "horizontalOverflow": false,
+      "pageWidth": 1440,
+      "tableCount": 0,
+      "view": "Settings & API",
+      "width": 1440
+    }
+  ],
+  "sub_tab_checks": [
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workflows / Batches",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workflows / Prompt library",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workflows / Quality & releases",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Workspace & identity / Data centers",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workspace & identity / Organizations",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workspace & identity / Workload identity",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workspace & identity / Secret sources",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Workspace & identity / Analytics export",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Workspace & identity / Directory profiles",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 2,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 2,
+      "view": "Fleet management / Instances",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 1,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 1,
+      "view": "Fleet management / Policy proposals",
+      "width": 320
+    },
+    {
+      "clippedControls": [],
+      "enhancedTables": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "pageWidth": 320,
+      "tableCount": 0,
+      "view": "Fleet management / Trusted controllers",
+      "width": 320
+    }
+  ],
+  "modal_checks": [
+    {
+      "bodyHeight": 701,
+      "bodyScrollHeight": 1284,
+      "bodyScrollTop": 266,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 884,
+        "left": 340,
+        "right": 1100,
+        "top": 16
+      },
+      "footerBottom": 883,
+      "headerTop": 17,
+      "height": 900,
+      "horizontalOverflow": false,
+      "label": "Gateway policy with quotas and guardrail",
+      "width": 1440
+    },
+    {
+      "bodyHeight": 521,
+      "bodyScrollHeight": 1284,
+      "bodyScrollTop": 266,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 704,
+        "left": 260,
+        "right": 1020,
+        "top": 16
+      },
+      "footerBottom": 703,
+      "headerTop": 17,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Gateway policy with quotas and guardrail",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 224,
+      "bodyScrollHeight": 1284,
+      "bodyScrollTop": 266,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 374,
+        "left": 42,
+        "right": 802,
+        "top": 16
+      },
+      "footerBottom": 373,
+      "headerTop": 17,
+      "height": 390,
+      "horizontalOverflow": false,
+      "label": "Gateway policy with quotas and guardrail",
+      "width": 844
+    },
+    {
+      "bodyHeight": 603,
+      "bodyScrollHeight": 2388,
+      "bodyScrollTop": 266,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 836,
+        "left": 8,
+        "right": 382,
+        "top": 8
+      },
+      "footerBottom": 835,
+      "headerTop": 9,
+      "height": 844,
+      "horizontalOverflow": false,
+      "label": "Gateway policy with quotas and guardrail",
+      "width": 390
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 2440,
+      "bodyScrollTop": 266,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Gateway policy with quotas and guardrail",
+      "width": 320
+    },
+    {
+      "bodyHeight": 297,
+      "bodyScrollHeight": 486,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "OIDC provider",
+      "width": 320
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 661,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "SAML provider",
+      "width": 320
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 388,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Model endpoint",
+      "width": 320
+    },
+    {
+      "bodyHeight": 317,
+      "bodyScrollHeight": 317,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 559.8984375,
+        "left": 8,
+        "right": 312,
+        "top": 8.1015625
+      },
+      "footerBottom": 558.8984375,
+      "headerTop": 9.1015625,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Fleet connection",
+      "width": 320
+    },
+    {
+      "bodyHeight": 317,
+      "bodyScrollHeight": 1246,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Shared fleet policy",
+      "width": 320
+    },
+    {
+      "bodyHeight": 431,
+      "bodyScrollHeight": 431,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 659.1875,
+        "left": 260,
+        "right": 1020,
+        "top": 60.8046875
+      },
+      "footerBottom": 658.1875,
+      "headerTop": 61.8046875,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "OIDC provider",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 521,
+      "bodyScrollHeight": 576,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 704,
+        "left": 260,
+        "right": 1020,
+        "top": 16
+      },
+      "footerBottom": 703,
+      "headerTop": 17,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "SAML provider",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 368,
+      "bodyScrollHeight": 368,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 627.4921875,
+        "left": 260,
+        "right": 1020,
+        "top": 92.5
+      },
+      "footerBottom": 626.4921875,
+      "headerTop": 93.5,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Model endpoint",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 313,
+      "bodyScrollHeight": 313,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 599.9921875,
+        "left": 260,
+        "right": 1020,
+        "top": 120
+      },
+      "footerBottom": 598.9921875,
+      "headerTop": 121,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Fleet connection",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 521,
+      "bodyScrollHeight": 844,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 704,
+        "left": 260,
+        "right": 1020,
+        "top": 16
+      },
+      "footerBottom": 703,
+      "headerTop": 17,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Shared fleet policy",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 412,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Create embeddings",
+      "width": 320
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 632,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Generate speech",
+      "width": 320
+    },
+    {
+      "bodyHeight": 281,
+      "bodyScrollHeight": 281,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 530.8984375,
+        "left": 8,
+        "right": 312,
+        "top": 37.1015625
+      },
+      "footerBottom": 529.8984375,
+      "headerTop": 38.1015625,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Transcribe audio",
+      "width": 320
+    },
+    {
+      "bodyHeight": 339,
+      "bodyScrollHeight": 371,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 560,
+        "left": 8,
+        "right": 312,
+        "top": 8
+      },
+      "footerBottom": 559,
+      "headerTop": 9,
+      "height": 568,
+      "horizontalOverflow": false,
+      "label": "Try a compatible API",
+      "width": 320
+    },
+    {
+      "bodyHeight": 385,
+      "bodyScrollHeight": 385,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 635.9921875,
+        "left": 260,
+        "right": 1020,
+        "top": 84
+      },
+      "footerBottom": 634.9921875,
+      "headerTop": 85,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Create embeddings",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 521,
+      "bodyScrollHeight": 612,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 704,
+        "left": 260,
+        "right": 1020,
+        "top": 16
+      },
+      "footerBottom": 703,
+      "headerTop": 17,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Generate speech",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 279,
+      "bodyScrollHeight": 279,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 582.9921875,
+        "left": 260,
+        "right": 1020,
+        "top": 137
+      },
+      "footerBottom": 581.9921875,
+      "headerTop": 138,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Transcribe audio",
+      "width": 1280
+    },
+    {
+      "bodyHeight": 345,
+      "bodyScrollHeight": 345,
+      "bodyScrollTop": 0,
+      "clippedInputs": [],
+      "dialog": {
+        "bottom": 615.9921875,
+        "left": 260,
+        "right": 1020,
+        "top": 104
+      },
+      "footerBottom": 614.9921875,
+      "headerTop": 105,
+      "height": 720,
+      "horizontalOverflow": false,
+      "label": "Try a compatible API",
+      "width": 1280
+    }
+  ],
+  "drawer_checks": [
+    {
+      "backgroundInert": true,
+      "bodyHeight": 627,
+      "headerTop": 0,
+      "height": 720,
+      "horizontalOverflow": false,
+      "left": 710,
+      "right": 1280,
+      "width": 1280
+    },
+    {
+      "backgroundInert": true,
+      "bodyHeight": 318,
+      "headerTop": 0,
+      "height": 390,
+      "horizontalOverflow": false,
+      "left": 274,
+      "right": 844,
+      "width": 844
+    },
+    {
+      "backgroundInert": true,
+      "bodyHeight": 494,
+      "headerTop": 0,
+      "height": 568,
+      "horizontalOverflow": false,
+      "left": 0,
+      "right": 320,
+      "width": 320
+    }
+  ],
+  "login_checks": [
+    {
+      "clippedInputs": [],
+      "height": 568,
+      "pageWidth": 320,
+      "width": 320
+    },
+    {
+      "clippedInputs": [],
+      "height": 844,
+      "pageWidth": 390,
+      "width": 390
+    },
+    {
+      "clippedInputs": [],
+      "height": 1024,
+      "pageWidth": 768,
+      "width": 768
+    }
+  ],
+  "breakpoint_checks": [
+    {
+      "backgroundInert": false,
+      "menuDisplay": "flex",
+      "pageWidth": 1024,
+      "sidebarVisibility": "hidden",
+      "width": 1024
+    },
+    {
+      "backgroundInert": false,
+      "menuDisplay": "none",
+      "pageWidth": 1025,
+      "sidebarVisibility": "visible",
+      "width": 1025
+    }
+  ],
+  "interaction_checks": {
+    "menu": {
+      "backgroundInert": true,
+      "focusInMenu": true,
+      "headerTop": 14,
+      "height": 390,
+      "profileBottom": 380,
+      "width": 844
+    },
+    "keyboard_focus_wrap_verified": true,
+    "escape_restores_menu_button_verified": true,
+    "drawer_escape_and_focus_return_verified": true,
+    "filter": {
+      "memberRows": 1,
+      "pageWidth": 320,
+      "route": "#fleet",
+      "selected": "Synthetic regional customer workspace",
+      "width": 320
+    },
+    "visible_form_error": {
+      "footerBottom": 703,
+      "height": 720,
+      "message": "A gateway with this address already exists",
+      "visibleInBody": true
+    },
+    "skip_link": {
+      "focusedId": "view",
+      "route": "#fleet"
+    },
+    "login_deep_link_verified": true
+  },
+  "passed": true,
+  "source_files_sha256": {
+    "pliqra/static/app.js": "f08f573936497a74960f3245722a18e00d73590edb4906671f4eb7be4ec0d5aa",
+    "pliqra/static/layout.js": "034792c81330dddf7682ab961a3293c6a380dad20713b94809597f02b8b17422",
+    "pliqra/static/responsive.css": "bab2e2f3a55ff3fb9f174a9c7acb53327eda42ffa1d78510ef0d9873b81178f9",
+    "pliqra/static/fleet.js": "dda5917cb4ae155a00df1b4c27667822ecad256fcb6616bb3199a0244b998298",
+    "pliqra/static/index.html": "ecda1723417423055289a35653a08a836540917d1453a1f4c9b67ac0e9264b28"
+  }
+}

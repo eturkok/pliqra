@@ -86,3 +86,9 @@ The screenshot is from the disposable local two-site acceptance environment. See
 ![Immutable policy review and delivery](screenshots/fleet-policy-review.jpg)
 
 These screenshots come from the isolated synthetic customer lab. [Fleet authority and API details](FLEET.md) · [Repeatable acceptance](ACCEPTANCE.md)
+
+## Responsive console
+
+The console adapts from compact phone screens to wide desktops. The sidebar header/account stay visible while its navigation scrolls; narrow-screen tables become labelled cards. Filters and editors stack naturally, and long dialogs keep their close/action areas reachable. [Viewport evidence and regression checklist](RESPONSIVE_UI.md).
+
+[Phone dashboard](screenshots/responsive-fleet-mobile.png) · [Phone gateway editor](screenshots/responsive-gateway-mobile.png)

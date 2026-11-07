@@ -1,8 +1,14 @@
 # Pliqra 2.1 — validation and scope
 
-The published distribution is **[2.1.0-rc.3](releases/v2.1.0-rc.3.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline.
+The published distribution is **[2.1.0-rc.4](releases/v2.1.0-rc.4.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline.
 
 The RC3 additions were validated on 7 November 2026; [synthetic acceptance](ACCEPTANCE.md) records streaming, SDK, fleet, load and recovery evidence. The multi-DC baseline below was validated on 6 November 2026. The [2.0 validation record](RELEASE_2_0.md) and [1.2 record](RELEASE_1_2.md) remain available as history. The deployment contract, including infrastructure responsibilities, is in [MULTI_DC.md](MULTI_DC.md).
+
+## RC4 console validation
+
+The console uses a dedicated scroll area between the sidebar header and profile, an accessible tablet/phone menu, labelled mobile table cards, adaptive filters, and bounded dialog/drawer bodies with reachable actions. The in-app browser exercised 102 page/viewport combinations, 12 narrow-screen sub-tabs, 23 form/viewport combinations, three login sizes and three request-drawer sizes. No page-wide horizontal overflow or clipped form inputs remained in those checks. Keyboard containment/return, filter application, visible form errors and login deep links were also checked. [Detailed UI evidence](RESPONSIVE_UI.md).
+
+SDK publisher retries now verify immutable public artifacts and skip redundant uploads. Thirteen regression cases cover matching/different bytes, changed local files, missing versions, denied/unavailable registries and unexpected destinations. The publisher uses a separate checkout for the selected original SDK release.
 
 ## RC3 additions
 
