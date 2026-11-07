@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from scripts.release_metadata import metadata
 from scripts.sdk_metadata import metadata as sdk_metadata
+from scripts.sdk_metadata import release as sdk_release
+from scripts.fetch_sdk_release import validate_tag
 from scripts.customer_acceptance import validate_stable
 import copy
 import json
@@ -74,6 +76,22 @@ def test_sdk_channels_follow_canonical_versions_and_reject_mismatch(tmp_path):
     (root / 'sdk/VERSION').write_text('0.2.0')
     with pytest.raises(ValueError, match='language versions differ'):
         sdk_metadata(root)
+
+
+def test_independent_sdk_release_requires_matching_version_and_notes(tmp_path):
+    root = release_tree(tmp_path, '2.1.0')
+    with pytest.raises(ValueError, match='canonical SDK version'):
+        sdk_release('sdk-v0.2.0', root)
+    with pytest.raises(ValueError, match='Missing SDK release notes'):
+        sdk_release('sdk-v0.1.0', root)
+    (root / 'docs/releases/sdk-v0.1.0.md').write_text('SDK release')
+    assert sdk_release('sdk-v0.1.0', root)['prerelease'] == 'false'
+
+
+@pytest.mark.parametrize('tag', ['main', 'sdk-v0.1', 'v2.1.0\nnext=true', 'sdk-v0.1.0/../../main'])
+def test_sdk_fetch_rejects_non_release_refs(tag):
+    with pytest.raises(ValueError, match='published gateway or SDK release tag'):
+        validate_tag(tag)
 
 
 def stable_report():

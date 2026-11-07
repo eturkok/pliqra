@@ -3,7 +3,7 @@
 Dependency-free ESM package for Node 22+ and modern browsers. TypeScript declarations are included. SDK versions have a separate lifecycle from gateway releases.
 
 ```sh
-npm install @eturkok/pliqra@next
+npm install @eturkok/pliqra
 ```
 
 ```js

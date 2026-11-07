@@ -17,14 +17,14 @@
 | Console | Responsive browser console checked at 320–1440 px, including keyboard navigation and bounded dialogs. Real-device and cross-engine certification are not claimed. |
 | Inference | The [documented Chat/native/embedding/audio subsets](MODEL_INTERFACES.md), admission, guardrails and accounting. Complete-output guardrails deliberately buffer output. |
 | Identity / guardrails | Documented OIDC/SAML/SCIM behavior, real Keycloak evidence and signed fixtures. Actual Entra/Okta/NeMo/Vault deployments need their environment-specific acceptance. |
-| Operations | Fresh install, RC4-to-2.1 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on RC4 in separate storage. |
+| Operations | Fresh install, published-image SQLite RC4-to-2.1 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on RC4 in separate storage. |
 
 The predeclared synthetic release envelope is **eight clients, 30 seconds of bounded load and 30 minutes at a target five calls/second**, with zero unsuccessful load/soak calls, at least 8,000 soak calls, p95 ≤2,000 ms and sampled west-gateway RSS growth ≤64 MiB. These are regression thresholds for a deterministic 5 ms fixture on a CI runner. They are **not** model token-throughput guarantees, customer sizing advice or days of endurance evidence. Full results identify the actual source/image, runner, duration and observations.
 
 ## Compatibility and upgrades
 
 - Gateway releases use `MAJOR.MINOR.PATCH`. A 2.1.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
-- Gateway **2.1.0**, SDK **0.1.0**, database schema **6** and inference implementation contract **5** are independently versioned. The connection protocol remains **`pliqra/0.1-draft`**. A stable implementation does not declare the draft an adopted industry standard. Future incompatible protocol drafts require explicit negotiation/versioning.
+- Gateway **2.1.0**, bundled SDK **0.1.0** (current standalone documentation patch **0.1.1**), database schema **6** and inference implementation contract **5** are independently versioned. The connection protocol remains **`pliqra/0.1-draft`**. A stable implementation does not declare the draft an adopted industry standard. Future incompatible protocol drafts require explicit negotiation/versioning.
 - Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. RC4-to-2.1 uses the same schema/inference revision and tests an unchanged binding across the upgrade.
 - Stop all shared-state replicas, back up and upgrade together. Preserve one writable authority; no offline quota grants are supported. Do not use independent writable DC databases as a substitute for database HA.
 - Returning to an older image uses its **pre-upgrade backup** in separately prepared storage. Never assume an older image can downgrade a newer database. The release acceptance exercises that recovery path.

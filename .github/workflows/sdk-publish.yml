@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Published gateway tag containing the original tested SDK assets'
+        description: 'Published gateway or SDK tag containing the original tested SDK assets'
         required: true
         type: string
-        default: v2.1.0
+        default: sdk-v0.1.1
       registry:
         description: 'Destination registry'
         required: true

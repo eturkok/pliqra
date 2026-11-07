@@ -1,4 +1,4 @@
-"""Fetch SDKs from a published gateway release and bind them to its source commit."""
+"""Fetch tested SDKs from a published gateway or independent SDK release."""
 import argparse
 import hashlib
 import json
@@ -10,9 +10,13 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def validate_tag(tag):
+    if not re.fullmatch(r'(?:sdk-)?v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?', tag):
+        raise ValueError('Use a published gateway or SDK release tag')
+
+
 def fetch(tag, output, source=ROOT):
-    if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?', tag):
-        raise ValueError('Use a published gateway release tag')
+    validate_tag(tag)
     release = json.loads(subprocess.check_output(['gh', 'release', 'view', tag, '--repo', 'eturkok/pliqra', '--json', 'tagName,isDraft'], text=True))
     if release['isDraft'] or release['tagName'] != tag:
         raise ValueError('Release must be published')
@@ -22,6 +26,8 @@ def fetch(tag, output, source=ROOT):
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=source, text=True).strip()
     if manifest['revision'] != revision or manifest['sdk_version'] != (source / 'sdk/VERSION').read_text().strip():
         raise ValueError('SDK manifest differs from the checked-out release source')
+    if tag.startswith('sdk-v') and tag[5:] != manifest['sdk_version']:
+        raise ValueError('SDK release tag differs from its manifest version')
     expected = {f"pliqra_client-{manifest['python_version']}-py3-none-any.whl", f"pliqra_client-{manifest['python_version']}.tar.gz", f"eturkok-pliqra-{manifest['sdk_version']}.tgz"}
     if {item['file'] for item in manifest['artifacts']} != expected:
         raise ValueError('SDK artifact set is incomplete or unexpected')

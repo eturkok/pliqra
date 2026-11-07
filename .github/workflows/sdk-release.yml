@@ -1,0 +1,48 @@
+name: Release SDKs
+on:
+  push:
+    tags: ['sdk-v[0-9]*']
+permissions:
+  contents: read
+concurrency:
+  group: sdk-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.sdk.outputs.sdk_version }}
+      notes: ${{ steps.sdk.outputs.notes }}
+      prerelease: ${{ steps.sdk.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - id: sdk
+        env:
+          SDK_RELEASE: ${{ github.ref_name }}
+        run: python scripts/sdk_metadata.py . --release-tag "$SDK_RELEASE" --github-output "$GITHUB_OUTPUT"
+  tests:
+    needs: metadata
+    uses: ./.github/workflows/test.yml
+  publish:
+    needs: [metadata, tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SDK_RELEASE: ${{ github.ref_name }}
+      SDK_VERSION: ${{ needs.metadata.outputs.version }}
+      SDK_NOTES: ${{ needs.metadata.outputs.notes }}
+      PRERELEASE: ${{ needs.metadata.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Attach the exact tested SDK packages without rebuilding them
+        run: |
+          gh run download "$GITHUB_RUN_ID" --name sdk-packages --dir dist/sdk
+          (cd dist/sdk && sha256sum SDK-MANIFEST.json *.whl *.tar.gz *.tgz > SHA256SUMS)
+          if [ "$PRERELEASE" = true ]; then
+            gh release create "$SDK_RELEASE" --verify-tag --title "Pliqra SDK $SDK_VERSION" --prerelease --latest=false --notes-file "$SDK_NOTES" dist/sdk/SDK-MANIFEST.json dist/sdk/SHA256SUMS dist/sdk/*.whl dist/sdk/*.tar.gz dist/sdk/*.tgz
+          else
+            gh release create "$SDK_RELEASE" --verify-tag --title "Pliqra SDK $SDK_VERSION" --latest=false --notes-file "$SDK_NOTES" dist/sdk/SDK-MANIFEST.json dist/sdk/SHA256SUMS dist/sdk/*.whl dist/sdk/*.tar.gz dist/sdk/*.tgz
+          fi
