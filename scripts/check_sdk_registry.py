@@ -7,7 +7,9 @@ import re
 import time
 from urllib.error import HTTPError
 from urllib.parse import quote, urlsplit
+from urllib.parse import unquote, parse_qs
 from urllib.request import build_opener, HTTPRedirectHandler
+from html.parser import HTMLParser
 
 MAX_BYTES=16*1024*1024
 
@@ -61,6 +63,29 @@ def verify(registry, directory, reader=read):
     return {'registry':registry,'version':version,'already_published':True,'verified_artifacts':sorted(selected)}
 
 
+def python_index_ready(directory, reader=read):
+    """The version JSON and installer index can propagate at different times."""
+    manifest=json.loads((directory/'SDK-MANIFEST.json').read_text())
+    version=manifest['python_version']
+    expected={f'pliqra_client-{version}-py3-none-any.whl',f'pliqra_client-{version}.tar.gz'}
+    hashes={item['file']:item['sha256'] for item in manifest['artifacts'] if item['file'] in expected}
+    if hashes.keys()!=expected:raise ValueError('Incomplete Python artifact set for installer index')
+    found=set()
+    class Links(HTMLParser):
+        def handle_starttag(self,tag,attrs):
+            if tag!='a':return
+            url=dict(attrs).get('href','');parts=urlsplit(url)
+            name=unquote(parts.path.rsplit('/',1)[-1])
+            if name not in expected:return
+            if parts.scheme!='https' or parts.hostname!='files.pythonhosted.org' or parts.username or parts.password:
+                raise ValueError('Unexpected Python installer index destination')
+            if parse_qs(parts.fragment).get('sha256')!=[hashes[name]]:
+                raise ValueError('Python installer index differs from the tested release')
+            found.add(name)
+    parser=Links();parser.feed(reader('https://pypi.org/simple/pliqra-client/').decode('utf-8'));parser.close()
+    return found==expected
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('registry',choices=['pypi','npm'])
@@ -68,13 +93,17 @@ if __name__=='__main__':
     parser.add_argument('--github-output',type=Path)
     parser.add_argument('--require-existing',action='store_true')
     parser.add_argument('--wait-seconds',type=int,default=0)
+    parser.add_argument('--require-install-index',action='store_true',help='Also require matching PyPI installer index links before a canonical pip install')
     args=parser.parse_args()
-    if not 0<=args.wait_seconds<=120:parser.error('Registry visibility wait must be within 0–120 seconds')
+    if not 0<=args.wait_seconds<=300:parser.error('Registry visibility wait must be within 0–300 seconds')
+    if args.require_install_index and (args.registry!='pypi' or not args.require_existing):parser.error('Installer index verification requires pypi and --require-existing')
     deadline=time.monotonic()+args.wait_seconds
     while True:
         result=verify(args.registry,args.directory)
-        if result['already_published'] or not args.require_existing:break
-        if time.monotonic()>=deadline:raise SystemExit('Published SDK version is not publicly available')
+        if result['already_published'] and args.require_install_index:result['install_index_ready']=python_index_ready(args.directory)
+        ready=result['already_published'] and (not args.require_install_index or result.get('install_index_ready'))
+        if ready or not args.require_existing:break
+        if time.monotonic()>=deadline:raise SystemExit('Published SDK files or installer index are not publicly available')
         time.sleep(min(3,max(0,deadline-time.monotonic())))
     if args.github_output:
         with args.github_output.open('a') as output:output.write('already_published='+str(result['already_published']).lower()+'\n')

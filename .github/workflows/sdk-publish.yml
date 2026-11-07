@@ -57,6 +57,8 @@ jobs:
           attestations: true
       - name: Require the exact tested Python files to be publicly downloadable
         run: python scripts/check_sdk_registry.py pypi dist/publish --require-existing --wait-seconds 120
+      - name: Require the public installer index to reference the same immutable Python files
+        run: python scripts/check_sdk_registry.py pypi dist/publish --require-existing --require-install-index --wait-seconds 300
       - name: Clean-install the version from the canonical public PyPI index
         env:
           SDK_VERSION: ${{ steps.sdk.outputs.python_version }}
