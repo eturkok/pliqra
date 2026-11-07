@@ -1,0 +1,29 @@
+{
+  "release": {
+    "tag": "v2.1.0-rc.4",
+    "version": "2.1.0-rc.4",
+    "revision": "00f2683cbf65a5b4ea5d8ae3207972e76e9ce1da",
+    "image": "ghcr.io/eturkok/pliqra",
+    "digest": "sha256:92e6efa44007b1be5dde58d425ab80b650539d3f63be08bd898a0e64a1b53de6",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "prerelease": true,
+    "schema": 6,
+    "inference_contract": 5,
+    "protocol": "pliqra/0.1-draft"
+  },
+  "release_workflow": "https://github.com/eturkok/pliqra/actions/runs/42402889957",
+  "release_workflow_conclusion": "success",
+  "image_native_architecture_smoke": {
+    "smoke (ubuntu-24.04, linux/amd64)": "success",
+    "smoke (ubuntu-24.04-arm, linux/arm64)": "success"
+  },
+  "sdk_retry_workflow": "https://github.com/eturkok/pliqra/actions/runs/42402749716",
+  "sdk_retry_conclusion": "success",
+  "public_artifacts_verified_before_skipping_redundant_uploads": true,
+  "local_preview_servers_stopped": true,
+  "local_docker_stopped": true,
+  "synthetic_fixture_private_state_removed": true
+}

@@ -1,0 +1,27 @@
+{
+  "sdk_version": "0.1.0-rc.1",
+  "source_release": "v2.1.0-rc.3",
+  "sdk_source_revision": "5c7ff226faa6f5ad466c2b6b457480cb9e76cb03",
+  "publisher_revision": "00f2683cbf65a5b4ea5d8ae3207972e76e9ce1da",
+  "workflow_url": "https://github.com/eturkok/pliqra/actions/runs/42402749716",
+  "status": "success",
+  "jobs": [
+    {
+      "registry": "npm",
+      "conclusion": "success",
+      "existing_files_verified": true,
+      "redundant_upload_skipped": true,
+      "public_download_verified": true
+    },
+    {
+      "registry": "pypi",
+      "conclusion": "success",
+      "existing_files_verified": true,
+      "redundant_upload_skipped": true,
+      "public_download_verified": true
+    }
+  ],
+  "npm_deployment_ui": "Active, Deployed (completed)",
+  "npm_environment_url": "https://github.com/eturkok/pliqra/deployments/npm",
+  "mismatched_files_and_registry_errors_rejected_by_regression_tests": true
+}

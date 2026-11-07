@@ -45,3 +45,7 @@ All **102** main-page checks passed page-width and clipped-control checks. Addit
 When changing shared console components, inspect a populated workspace at the six sizes above. Verify a long menu, a long-name table row, both filter states, an expanded quota/guardrail form, server-side validation, a request drawer and authentication. Check that the document stays within its viewport width, that every input fits its container, and that dialog/drawer actions remain reachable after scrolling. Use keyboard navigation as well as pointer interaction. Preserve table headers and cell labels when adding new tables.
 
 `pliqra/static/responsive.css` owns the shared responsive layer. `layout.js` applies table semantics and manages navigation/focus. Content and authorization remain in their existing UI/API modules.
+
+## Published delivery
+
+[RC4 and the ready-to-run AMD64/ARM64 image](https://github.com/eturkok/pliqra/releases/tag/v2.1.0-rc.4) passed the tag-triggered release checks. The corrected [SDK workflow](https://github.com/eturkok/pliqra/actions/runs/42402749716) successfully verified both published registries, and the npm environment shows an active successful deployment. [Delivery metadata](evidence/rc4-delivery.json). Local preview servers and private synthetic state were removed after validation; Docker remained stopped.

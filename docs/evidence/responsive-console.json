@@ -1671,5 +1671,6 @@
     "pliqra/static/responsive.css": "bab2e2f3a55ff3fb9f174a9c7acb53327eda42ffa1d78510ef0d9873b81178f9",
     "pliqra/static/fleet.js": "dda5917cb4ae155a00df1b4c27667822ecad256fcb6616bb3199a0244b998298",
     "pliqra/static/index.html": "ecda1723417423055289a35653a08a836540917d1453a1f4c9b67ac0e9264b28"
-  }
+  },
+  "tested_source_revision": "00f2683cbf65a5b4ea5d8ae3207972e76e9ce1da"
 }

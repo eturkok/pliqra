@@ -77,3 +77,5 @@ Dispatch the current publisher workflow from `main` while selecting the original
 ```sh
 gh workflow run sdk-publish.yml --ref main -f release_tag=v2.1.0-rc.3 -f registry=both
 ```
+
+The corrected retry workflow completed successfully for both npm and PyPI, verifying existing release bytes and public downloads while skipping redundant uploads. [Successful run](https://github.com/eturkok/pliqra/actions/runs/42402749716) · [Machine-readable retry evidence](evidence/sdk-publication-retry.json).
