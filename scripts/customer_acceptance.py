@@ -27,6 +27,20 @@ from cryptography.x509.oid import NameOID, ExtendedKeyUsageOID
 ROOT=Path(__file__).resolve().parents[1]
 
 
+def validate_stable(report, policy):
+    """Fail a release on an incomplete or unhealthy synthetic run, never relabel it."""
+    for phase in ('load','soak'):
+        result=report[phase]
+        assert result['requests']>0 and result['statuses']=={'200':result['requests']},(phase,'unsuccessful requests')
+        assert result['p95_ms']<=policy['maximum_p95_ms'],(phase,'synthetic latency gate exceeded')
+    soak=report['soak']
+    assert soak['duration_seconds']>=policy['soak_seconds'],'Incomplete stable soak'
+    assert soak['requests']>=policy['minimum_soak_requests'],'Insufficient stable soak requests'
+    rss=soak['gateway_west_rss_kib']
+    assert len(rss)>=2,'Insufficient memory samples'
+    assert max(rss)-rss[0]<=policy['maximum_rss_growth_kib'],'Synthetic memory growth gate exceeded'
+
+
 def certificates(directory):
     directory.mkdir(parents=True,exist_ok=True)
     instant=datetime.now(UTC)
@@ -83,6 +97,7 @@ class Lab:
         self.secrets={}
         image_details=json.loads(subprocess.check_output(['docker','image','inspect',image],text=True))[0]
         self.report['environment'].update(image_id=image_details['Id'],source_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),source_dirty=bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True)))
+        self.report['environment']['image_revision']=image_details['Config']['Labels'].get('org.opencontainers.image.revision')
         runtime=json.loads(subprocess.check_output(['docker','info','--format','{{json .}}'],text=True))
         self.report['environment'].update(docker_cpus=runtime['NCPU'],docker_memory_bytes=runtime['MemTotal'])
         (self.directory/'lab.json').write_text(json.dumps({'project':self.project,'directory':str(self.directory)},indent=2)+'\n')
@@ -294,14 +309,17 @@ class Lab:
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--state',type=Path,required=True)
-    parser.add_argument('--image',default='pliqra:rc3-acceptance')
+    parser.add_argument('--image',default='pliqra:acceptance')
     parser.add_argument('--load-seconds',type=int,default=30)
     parser.add_argument('--soak-seconds',type=int,default=600)
     parser.add_argument('--concurrency',type=int,default=8)
     parser.add_argument('--soak-rate',type=float,default=5)
     parser.add_argument('--keep',action='store_true')
     parser.add_argument('--resume',action='store_true',help='Resume only a prior disposable lab created by this script')
+    parser.add_argument('--stable',action='store_true',help='Enforce the committed stable-release synthetic acceptance policy')
     args=parser.parse_args()
+    policy=json.loads((ROOT/'release-policy.json').read_text())['stable_acceptance']
+    if args.stable:args.soak_seconds=policy['soak_seconds']
     if not (1<=args.concurrency<=32 and 0<=args.load_seconds<=600 and 0<=args.soak_seconds<=3600 and 0<args.soak_rate<=50):parser.error('Acceptance bounds exceeded')
     lab=Lab.resume(args.state) if args.resume else Lab(args.state,args.image)
     try:
@@ -309,6 +327,9 @@ if __name__=='__main__':
         lab.routing_and_quotas();lab.fleet();lab.native()
         if args.load_seconds:lab.report['load']=lab.measurements(args.load_seconds,args.concurrency);lab.mark('load_measurement')
         if args.soak_seconds:lab.report['soak']=lab.measurements(args.soak_seconds,args.concurrency,args.soak_rate);lab.mark('soak_measurement')
+        if args.stable:
+            validate_stable(lab.report,policy)
+            lab.mark('stable_synthetic_envelope',policy=policy)
         lab.faults()
         lab.report['passed']=True;lab.save()
     except BaseException as exc:

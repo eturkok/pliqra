@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-07",
+  "tool": "pip-audit 2.10.1",
+  "source_lock_sha256": "e027cbc8e1e9686b4d99818cd3936c5de03db2d2cee33edae13af158f8493b92",
+  "advisory_service": "PyPI",
+  "resolved_dependency_count": 35,
+  "known_vulnerabilities": 0,
+  "suppressions": [],
+  "scope": "Python runtime graph, including resolved dependencies; not OS/image or penetration testing"
+}

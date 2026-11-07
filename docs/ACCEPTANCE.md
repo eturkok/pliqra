@@ -33,7 +33,7 @@ Requirements: Docker Compose, Python 3.13+, Node 22+ (or the optional Node Docke
 ```sh
 python -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt -r requirements-sdk.txt
-docker build --build-arg REVISION="$(git rev-parse HEAD)" -t pliqra:rc3-acceptance .
+docker build --build-arg REVISION="$(git rev-parse HEAD)" -t pliqra:acceptance .
 .venv/bin/python scripts/build_sdks.py
 .venv/bin/python scripts/check_sdk_install.py dist/sdk
 .venv/bin/python scripts/customer_acceptance.py --state work/customer-lab \
@@ -107,3 +107,9 @@ Both official registries serve SDK 0.1.0-rc.1: [PyPI](https://pypi.org/project/p
 PyPI publication used the configured GitHub OIDC publisher. The first npm version used the owner-authenticated bootstrap; the subsequent GitHub OIDC attempt validated the npm trust and was intentionally rejected with E403 because the exact version already existed. The npm settings showed **Valid** afterward. This negative check did not overwrite the version or add provenance to the already published bootstrap artifact. Future new npm versions use the configured workflow.
 
 Publisher retries were subsequently improved for RC4: identical existing registry artifacts are verified and complete successfully; changed/incomplete artifacts or registry errors fail. The [successful npm/PyPI retry record](evidence/sdk-publication-retry.json) supersedes the old duplicate-upload failure as the current delivery behavior.
+
+## Stable-release gate
+
+For 2.1.0, acceptance is a required dependency of publication and runs the **exact built image digest** with the same tested SDK assets. `--stable` enforces [release-policy.json](../release-policy.json): a 30-minute soak, zero failed load/soak calls, at least 8,000 soak calls, p95 ≤2,000 ms and sampled west-gateway RSS growth ≤64 MiB. The additional upgrade exercise uses the pinned RC4 image, verifies persistent credentials, contracts, keys, events and consumed quotas, imports the old encrypted backup on the new image and proves pre-upgrade backup recovery on RC4 in a separate volume. Only public result JSON is retained.
+
+The stable release attaches the actual four reports as `acceptance-evidence.tar.gz`, plus a Python dependency advisory report. Older RC3 measurements above are historical and are not relabelled. [Readiness review](STABLE_2_1.md) · [Support envelope](SUPPORT.md).

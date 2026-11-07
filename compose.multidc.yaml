@@ -3,7 +3,7 @@
 name: pliqra-${PLIQRA_SITE:?Set a unique site name}
 services:
   gateway:
-    image: pliqra:2.1.0-rc.4
+    image: pliqra:2.1.0
     build: .
     environment:
       PLIQRA_MULTI_DC: "1"

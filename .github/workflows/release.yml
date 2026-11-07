@@ -101,8 +101,19 @@ jobs:
           docker run -d --name pliqra-release-check -p 127.0.0.1:8088:8080 "$IMAGE"
           trap 'docker logs pliqra-release-check; docker rm -fv pliqra-release-check' EXIT
           python scripts/smoke_release.py http://127.0.0.1:8088 "$VERSION"
+  acceptance:
+    needs: [metadata, image]
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/acceptance.yml
+    with:
+      image: ghcr.io/${{ github.repository }}@${{ needs.image.outputs.digest }}
+      expected_revision: ${{ github.sha }}
+      sdk_artifact_run_id: ${{ github.run_id }}
+      stable: ${{ needs.metadata.outputs.prerelease == 'false' }}
   publish:
-    needs: [metadata, image, smoke]
+    needs: [metadata, image, smoke, acceptance]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -125,6 +136,16 @@ jobs:
           set -eu
           mkdir -p dist
           gh run download "$GITHUB_RUN_ID" --name sdk-packages --dir dist
+          gh run download "$GITHUB_RUN_ID" --name synthetic-customer-results --dir dist/acceptance
+          gh run download "$GITHUB_RUN_ID" --name dependency-audit --dir dist
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('report.json', 'installed-clients.json', 'official-clients.json', 'upgrade.json'):
+              report = json.loads((Path('dist/acceptance') / name).read_text())
+              assert report['passed'], name
+          PY
+          tar -czf dist/acceptance-evidence.tar.gz -C dist/acceptance .
           cp compose.release.yaml dist/compose.release.yaml
           cp docs/DISTRIBUTION.md dist/DISTRIBUTION.md
           printf 'ghcr.io/%s@%s\n' "$GITHUB_REPOSITORY" "$DIGEST" > dist/image.txt
@@ -141,11 +162,11 @@ jobs:
               'inference_contract': int(constant('pliqra/inference_schema.py','INFERENCE_CONTRACT_REVISION').split('/')[-1]), 'protocol': 'pliqra/0.1-draft'
           }, indent=2) + '\n')
           PY
-          (cd dist && sha256sum compose.release.yaml DISTRIBUTION.md image.txt release.json SDK-MANIFEST.json *.whl *.tar.gz *.tgz > SHA256SUMS)
+          (cd dist && sha256sum compose.release.yaml DISTRIBUTION.md image.txt release.json dependency-audit.json SDK-MANIFEST.json *.whl *.tar.gz *.tgz > SHA256SUMS)
           cp "$NOTES" dist/notes.md
           printf '\n## Exact image\n\n`ghcr.io/%s@%s`\n\nAMD64 and ARM64; SBOM and build provenance are attached to the OCI image.\n' "$GITHUB_REPOSITORY" "$DIGEST" >> dist/notes.md
           if [ "$PRERELEASE" = true ]; then
-            gh release create "$RELEASE_TAG" --verify-tag --title "Pliqra $VERSION" --prerelease --latest=false --notes-file dist/notes.md dist/compose.release.yaml dist/DISTRIBUTION.md dist/image.txt dist/release.json dist/SHA256SUMS dist/SDK-MANIFEST.json dist/*.whl dist/*.tar.gz dist/*.tgz
+            gh release create "$RELEASE_TAG" --verify-tag --title "Pliqra $VERSION" --prerelease --latest=false --notes-file dist/notes.md dist/compose.release.yaml dist/DISTRIBUTION.md dist/image.txt dist/release.json dist/dependency-audit.json dist/SHA256SUMS dist/SDK-MANIFEST.json dist/*.whl dist/*.tar.gz dist/*.tgz
           else
-            gh release create "$RELEASE_TAG" --verify-tag --title "Pliqra $VERSION" --latest --notes-file dist/notes.md dist/compose.release.yaml dist/DISTRIBUTION.md dist/image.txt dist/release.json dist/SHA256SUMS dist/SDK-MANIFEST.json dist/*.whl dist/*.tar.gz dist/*.tgz
+            gh release create "$RELEASE_TAG" --verify-tag --title "Pliqra $VERSION" --latest --notes-file dist/notes.md dist/compose.release.yaml dist/DISTRIBUTION.md dist/image.txt dist/release.json dist/dependency-audit.json dist/SHA256SUMS dist/SDK-MANIFEST.json dist/*.whl dist/*.tar.gz dist/*.tgz
           fi

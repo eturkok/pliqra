@@ -1,6 +1,6 @@
 # Disposable synthetic customer lab. Never connect real provider credentials here.
 x-gateway: &gateway
-  image: ${PLIQRA_ACCEPTANCE_IMAGE:-pliqra:rc3-acceptance}
+  image: ${PLIQRA_ACCEPTANCE_IMAGE:-pliqra:acceptance}
   depends_on:
     database:
       condition: service_healthy
@@ -72,7 +72,7 @@ services:
       - branch:/data
       - ${PLIQRA_ACCEPTANCE_STATE:?}/pki:/fixture:ro
   controller:
-    image: ${PLIQRA_ACCEPTANCE_IMAGE:-pliqra:rc3-acceptance}
+    image: ${PLIQRA_ACCEPTANCE_IMAGE:-pliqra:acceptance}
     environment:
       PLIQRA_CA_BUNDLE: /fixture/ca.pem
     ports: ['127.0.0.1:18094:8080']

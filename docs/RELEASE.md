@@ -1,8 +1,12 @@
 # Pliqra 2.1 — validation and scope
 
-The published distribution is **[2.1.0-rc.4](releases/v2.1.0-rc.4.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline.
+The published distribution is **[2.1.0](releases/v2.1.0.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline.
 
 The RC3 additions were validated on 7 November 2026; [synthetic acceptance](ACCEPTANCE.md) records streaming, SDK, fleet, load and recovery evidence. The multi-DC baseline below was validated on 6 November 2026. The [2.0 validation record](RELEASE_2_0.md) and [1.2 record](RELEASE_1_2.md) remain available as history. The deployment contract, including infrastructure responsibilities, is in [MULTI_DC.md](MULTI_DC.md).
+
+## Stable release gates
+
+[Stable readiness](STABLE_2_1.md) and [support/compatibility](SUPPORT.md) define 2.1.0. The release workflow requires exact-image synthetic acceptance, a predeclared 30-minute soak, RC4 upgrade and encrypted-backup recovery, SDK compatibility and an unsuppressed Python dependency advisory scan before publication. The release carries the measured reports; older numbers below remain historical. SDK 0.1.0 uses stable registry versions while the wire protocol remains draft 0.1.
 
 ## RC4 console validation
 

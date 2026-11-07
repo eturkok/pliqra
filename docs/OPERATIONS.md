@@ -74,7 +74,7 @@ docker run -d --name pliqra \
   -p 127.0.0.1:8088:8080 \
   -v modelport-data:/data \
   --add-host host.docker.internal:host-gateway \
-  --restart unless-stopped pliqra:2.1.0-rc.4
+  --restart unless-stopped pliqra:2.1.0
 ```
 
 The volume name is an existing storage reference, not the product name. Do not run the old and new processes on the same volume simultaneously. Restore the pre-upgrade backup before returning to the old build.

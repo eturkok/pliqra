@@ -4,6 +4,10 @@ import ast
 import json
 from pathlib import Path
 import re
+try:
+    from scripts.sdk_metadata import metadata as sdk_metadata
+except ModuleNotFoundError:
+    from sdk_metadata import metadata as sdk_metadata
 
 ROOT = Path(__file__).resolve().parents[1]
 TAG = re.compile(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-(alpha|beta|rc)\.([1-9][0-9]*))?")
@@ -26,7 +30,11 @@ def metadata(tag: str, root: Path = ROOT) -> dict:
     image = re.search(r"^\s*image:\s*\$\{PLIQRA_IMAGE:-([^}]+)\}\s*$", compose, re.MULTILINE)
     if not image or image[1] != f"ghcr.io/eturkok/pliqra:{version}":
         raise ValueError("Prebuilt Compose must default to the exact release version")
-    return {"tag": tag, "version": version, "prerelease": "true" if match[4] else "false", "notes": notes}
+    sdk = sdk_metadata(root)
+    if not match[4] and sdk['npm_tag'] != 'latest':
+        raise ValueError('A stable gateway release requires a stable packaged SDK')
+    return {"tag": tag, "version": version, "prerelease": "true" if match[4] else "false", "notes": notes,
+            "sdk_version": sdk['sdk_version']}
 
 
 if __name__ == "__main__":

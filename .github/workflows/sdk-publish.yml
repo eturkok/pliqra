@@ -6,7 +6,7 @@ on:
         description: 'Published gateway tag containing the original tested SDK assets'
         required: true
         type: string
-        default: v2.1.0-rc.3
+        default: v2.1.0
       registry:
         description: 'Destination registry'
         required: true
@@ -89,8 +89,13 @@ jobs:
       - name: Verify any already-published npm artifact byte for byte
         id: registry
         run: python scripts/check_sdk_registry.py npm dist/publish --github-output "$GITHUB_OUTPUT"
+      - name: Select the immutable SDK source's publication channel
+        id: sdk
+        run: python scripts/sdk_metadata.py release-source --github-output "$GITHUB_OUTPUT"
       - name: Publish a new npm version through OIDC
         if: steps.registry.outputs.already_published == 'false'
-        run: npm publish dist/publish/npm/*.tgz --access public --tag next --provenance --ignore-scripts
+        env:
+          SDK_TAG: ${{ steps.sdk.outputs.npm_tag }}
+        run: npm publish dist/publish/npm/*.tgz --access public --tag "$SDK_TAG" --provenance --ignore-scripts
       - name: Require the exact tested npm file to be publicly downloadable
         run: python scripts/check_sdk_registry.py npm dist/publish --require-existing --wait-seconds 120

@@ -1,19 +1,48 @@
 {
   "name": "@eturkok/pliqra",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0",
   "description": "Dependency-free Pliqra discovery, binding and inference client",
   "type": "module",
   "main": "./pliqra.mjs",
   "types": "./pliqra.d.mts",
-  "exports": {".": {"types": "./pliqra.d.mts", "import": "./pliqra.mjs"}},
-  "files": ["pliqra.mjs", "pliqra.d.mts", "README.md", "LICENSE", "NOTICE"],
+  "exports": {
+    ".": {
+      "types": "./pliqra.d.mts",
+      "import": "./pliqra.mjs"
+    }
+  },
+  "files": [
+    "pliqra.mjs",
+    "pliqra.d.mts",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
   "sideEffects": false,
-  "engines": {"node": ">=22"},
+  "engines": {
+    "node": ">=22"
+  },
   "license": "Apache-2.0",
   "author": "Pliqra contributors",
-  "repository": {"type": "git", "url": "git+https://github.com/eturkok/pliqra.git", "directory": "sdk/javascript"},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eturkok/pliqra.git",
+    "directory": "sdk/javascript"
+  },
   "homepage": "https://github.com/eturkok/pliqra",
-  "bugs": {"url": "https://github.com/eturkok/pliqra/issues"},
-  "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/", "tag": "next"},
-  "keywords": ["pliqra", "llm", "inference", "gateway", "protocol"]
+  "bugs": {
+    "url": "https://github.com/eturkok/pliqra/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
+  "keywords": [
+    "pliqra",
+    "llm",
+    "inference",
+    "gateway",
+    "protocol"
+  ]
 }

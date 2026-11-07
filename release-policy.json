@@ -1,0 +1,12 @@
+{
+  "previous_release": {
+    "version": "2.1.0-rc.4",
+    "image": "ghcr.io/eturkok/pliqra@sha256:92e6efa44007b1be5dde58d425ab80b650539d3f63be08bd898a0e64a1b53de6"
+  },
+  "stable_acceptance": {
+    "soak_seconds": 1800,
+    "minimum_soak_requests": 8000,
+    "maximum_p95_ms": 2000,
+    "maximum_rss_growth_kib": 65536
+  }
+}

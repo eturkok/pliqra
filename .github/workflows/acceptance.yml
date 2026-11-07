@@ -1,5 +1,19 @@
 name: Synthetic customer acceptance
 on:
+  workflow_call:
+    inputs:
+      image:
+        type: string
+        required: true
+      expected_revision:
+        type: string
+        required: true
+      sdk_artifact_run_id:
+        type: string
+        required: true
+      stable:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       soak_seconds:
@@ -8,6 +22,7 @@ on:
         default: '600'
 permissions:
   contents: read
+  actions: read
 jobs:
   acceptance:
     runs-on: ubuntu-latest
@@ -21,13 +36,37 @@ jobs:
         with:
           node-version: '24'
       - run: python -m pip install -r requirements-dev.txt -r requirements-sdk.txt
-      - run: python scripts/build_sdks.py
+      - name: Build SDKs for a standalone acceptance run
+        if: github.event_name == 'workflow_dispatch'
+        run: python scripts/build_sdks.py
+      - name: Download the exact tested SDK assets for a release
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SDK_RUN: ${{ inputs.sdk_artifact_run_id }}
+        run: gh run download "$SDK_RUN" --name sdk-packages --dir dist/sdk
       - name: Build an isolated local image
-        run: docker build --build-arg REVISION="$GITHUB_SHA" -t pliqra:rc3-acceptance .
+        if: github.event_name == 'workflow_dispatch'
+        run: docker build --build-arg REVISION="$GITHUB_SHA" -t pliqra:acceptance .
+      - name: Pull the exact release image by digest
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          IMAGE: ${{ inputs.image }}
+          REVISION: ${{ inputs.expected_revision }}
+        run: |
+          docker pull "$IMAGE"
+          test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE")" = "$REVISION"
       - name: Exercise onboarding, quota, fleet, streaming, load, soak and recovery
         env:
-          SOAK_SECONDS: ${{ inputs.soak_seconds }}
-        run: python scripts/customer_acceptance.py --state work/customer-ci --soak-seconds "$SOAK_SECONDS" --keep
+          SOAK_SECONDS: ${{ inputs.soak_seconds || '60' }}
+          IMAGE: ${{ inputs.image || 'pliqra:acceptance' }}
+          STABLE: ${{ inputs.stable }}
+        run: |
+          if [ "$STABLE" = true ]; then
+            python scripts/customer_acceptance.py --state work/customer-ci --image "$IMAGE" --stable --keep
+          else
+            python scripts/customer_acceptance.py --state work/customer-ci --image "$IMAGE" --soak-seconds "$SOAK_SECONDS" --keep
+          fi
       - name: Invoke from independently installed Python and npm applications
         run: python scripts/check_customer_clients.py work/customer-ci
       - name: Verify official native clients against synthetic upstreams
@@ -35,6 +74,10 @@ jobs:
           python -m venv work/official-client-env
           work/official-client-env/bin/python -m pip install -r requirements-acceptance.txt
           work/official-client-env/bin/python tests/acceptance/official_clients.py work/customer-ci
+      - name: Verify upgrade, persistent policies, backup and recovery from the previous published image
+        env:
+          IMAGE: ${{ inputs.image || 'pliqra:acceptance' }}
+        run: python scripts/check_release_upgrade.py --image "$IMAGE" --output work/customer-ci/upgrade.json
       - name: Remove only the owned disposable lab
         if: always()
         run: |
@@ -56,5 +99,6 @@ jobs:
             work/customer-ci/report.json
             work/customer-ci/installed-clients.json
             work/customer-ci/official-clients.json
+            work/customer-ci/upgrade.json
           if-no-files-found: warn
           retention-days: 14

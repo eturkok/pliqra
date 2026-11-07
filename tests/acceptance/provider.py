@@ -36,6 +36,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path not in ('/v1/chat/completions', '/v1/responses', '/v1/messages'):
             return self.respond(404, {'error': 'Synthetic fixture route not found'})
         body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+        expected = os.environ.get('SYNTHETIC_EXPECTED_AUTH')
+        if expected and self.headers.get('Authorization') != expected:
+            return self.respond(401, {'error': 'Synthetic credential mismatch'})
         with LOCK:
             COUNTS['accepted'] += 1
         tool = bool(body.get('tools'))
