@@ -21,6 +21,8 @@ def install(command, registry, cwd=None, wait_seconds=300, runner=subprocess.run
             return
         unavailable=('No matching distribution found for pliqra-client==' in output if registry=='pypi'
                      else bool(re.search(r'npm (?:error|ERR!) code ETARGET',output)))
+        if re.search(r'CERTIFICATE_VERIFY_FAILED|\bSSL\b|\bTLS\b|\bE401\b|\bE403\b|\bEINTEGRITY\b|(?:401|403) (?:Client Error|Unauthorized|Forbidden)|hash mismatch|DO NOT MATCH THE HASHES',output,re.I):
+            unavailable=False
         if not unavailable or clock()>=deadline:
             print(output,file=sys.stderr,end='')
             raise subprocess.CalledProcessError(result.returncode,command)

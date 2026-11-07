@@ -16,8 +16,10 @@ def test_install_waits_for_version_visibility_then_requires_real_success(registr
 
 
 @pytest.mark.parametrize('registry',['pypi','npm'])
-def test_install_does_not_retry_auth_tls_or_integrity_failure(registry):
-    def runner(command,**kwargs):return subprocess.CompletedProcess(command,1,'','TLS verification or package integrity failed')
+@pytest.mark.parametrize('error',['CERTIFICATE_VERIFY_FAILED','401 Unauthorized','npm error code EINTEGRITY'])
+def test_install_does_not_retry_auth_tls_or_integrity_failure(registry,error):
+    missing='No matching distribution found for pliqra-client==0.1.1' if registry=='pypi' else 'npm error code ETARGET'
+    def runner(command,**kwargs):return subprocess.CompletedProcess(command,1,'',missing+'\n'+error)
     def no_sleep(n):raise AssertionError('Non-visibility errors must fail immediately')
     with pytest.raises(subprocess.CalledProcessError):
         install(['canonical-installer'],registry,runner=runner,sleep=no_sleep)
