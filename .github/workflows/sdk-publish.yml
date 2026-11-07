@@ -64,7 +64,7 @@ jobs:
           SDK_VERSION: ${{ steps.sdk.outputs.python_version }}
         run: |
           python -m venv "$RUNNER_TEMP/pliqra-python-consumer"
-          "$RUNNER_TEMP/pliqra-python-consumer/bin/python" -m pip --isolated install --index-url https://pypi.org/simple --no-deps "pliqra-client==$SDK_VERSION"
+          python scripts/install_registry_sdk.py pypi dist/publish --python "$RUNNER_TEMP/pliqra-python-consumer/bin/python"
           "$RUNNER_TEMP/pliqra-python-consumer/bin/python" -I -c 'import importlib.metadata,os,sys,pliqra_client,pliqra_conformance; assert importlib.metadata.version("pliqra-client")==os.environ["SDK_VERSION"]; assert "fastapi" not in sys.modules'
           "$RUNNER_TEMP/pliqra-python-consumer/bin/pliqra-client" --help
   npm:
@@ -117,7 +117,7 @@ jobs:
           SDK_VERSION: ${{ steps.sdk.outputs.sdk_version }}
         run: |
           mkdir "$RUNNER_TEMP/pliqra-npm-consumer"
+          printf '%s\n' '{"private":true,"type":"module"}' > "$RUNNER_TEMP/pliqra-npm-consumer/package.json"
+          python scripts/install_registry_sdk.py npm dist/publish --directory "$RUNNER_TEMP/pliqra-npm-consumer"
           cd "$RUNNER_TEMP/pliqra-npm-consumer"
-          printf '%s\n' '{"private":true,"type":"module"}' > package.json
-          npm install --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org "@eturkok/pliqra@$SDK_VERSION"
           node --input-type=module -e 'import {Pliqra,ContractChanged} from "@eturkok/pliqra"; import {readFileSync} from "node:fs"; if(!Pliqra||!ContractChanged||JSON.parse(readFileSync("node_modules/@eturkok/pliqra/package.json")).version!==process.env.SDK_VERSION)throw Error("SDK registry install mismatch");'
