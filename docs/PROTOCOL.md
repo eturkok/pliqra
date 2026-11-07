@@ -79,7 +79,7 @@ See the 2.0 [model interfaces](MODEL_INTERFACES.md), [workflows](WORKFLOWS.md), 
 
 Discovery advertises optional `pliqra.policy/1`, `pliqra.operations/1`, `pliqra.prompts/1` and `pliqra.batches/1` identifiers. Bind requests accept `required_extensions` and `optional_extensions`; unknown required identifiers return 422, unknown optional identifiers are ignored. Successful responses list the accepted identifiers. Negotiation describes interface expectations; it never grants identity permissions or bypasses policies.
 
-Requirements may additionally include `embeddings`, `audio_speech` and `audio_transcription`; these imply the operations extension. The binding response supplies `operation_invocations` for embeddings, speech and transcription. Existing core chat invocations remain unchanged. Optional implementations may support only the core profile and reject all required extensions. Fingerprints include implementation revision **pliqra-inference/4**; upgrading from an older implementation requires explicit rebinding. Canary publication and policy changes do too.
+Requirements may additionally include `embeddings`, `audio_speech` and `audio_transcription`; these imply the operations extension. The binding response supplies `operation_invocations` for embeddings, speech and transcription. Existing core chat invocations remain unchanged. Optional implementations may support only the core profile and reject all required extensions. Fingerprints include implementation revision **pliqra-inference/5**; upgrading from an older implementation requires explicit rebinding. Canary publication and policy changes do too.
 
 ## Site-aware placement extension
 

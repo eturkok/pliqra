@@ -61,6 +61,6 @@ Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose referen
 
 ## Upgrade and recover
 
-Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. This release uses **schema 6**, inference contract revision **5** and protocol draft **0.1**. Upgrade every shared-state replica together and renew old application bindings. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
+Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. This release uses **schema 6**, inference contract revision **5** and protocol draft **0.1**. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged RC4 bindings are preserved by 2.1.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
 
 Returning to an older image may require restoring its pre-upgrade backup: a newer database is not automatically downgraded. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
