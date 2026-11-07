@@ -1,0 +1,29 @@
+{
+  "synthetic": true,
+  "passed": true,
+  "previous": {
+    "version": "2.1.0-rc.4",
+    "image": "ghcr.io/eturkok/pliqra@sha256:92e6efa44007b1be5dde58d425ab80b650539d3f63be08bd898a0e64a1b53de6"
+  },
+  "target_image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+  "checks": [
+    {
+      "check": "previous_digest_verified_initialized_and_encrypted_backup_created",
+      "passed": true
+    },
+    {
+      "check": "upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage",
+      "passed": true
+    },
+    {
+      "check": "new_image_restores_previous_backup_rejects_wrong_password_and_revokes_sessions",
+      "passed": true
+    },
+    {
+      "check": "rollback_to_previous_image_restores_pre_upgrade_backup_in_a_separate_volume",
+      "passed": true
+    }
+  ],
+  "target_version": "2.1.0",
+  "owned_containers_volumes_network_removed": true
+}

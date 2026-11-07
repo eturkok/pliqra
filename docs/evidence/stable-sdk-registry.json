@@ -1,0 +1,118 @@
+{
+  "passed": true,
+  "public_registry_downloads_match_tested_release_bytes": true,
+  "versions": [
+    {
+      "sdk_version": "0.1.0",
+      "source_revision": "8a6fdf4abe7ff4dc3afba71281de3ce9cec7f136",
+      "results": [
+        {
+          "registry": "pypi",
+          "version": "0.1.0",
+          "already_published": true,
+          "verified_artifacts": [
+            "pliqra_client-0.1.0-py3-none-any.whl",
+            "pliqra_client-0.1.0.tar.gz"
+          ]
+        },
+        {
+          "registry": "npm",
+          "version": "0.1.0",
+          "already_published": true,
+          "verified_artifacts": [
+            "eturkok-pliqra-0.1.0.tgz"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "file": "eturkok-pliqra-0.1.0.tgz",
+          "sha256": "4addac2b140e3a925725d991d7ca2867f578148cda9c39fd21ea291c8257cc4c"
+        },
+        {
+          "file": "pliqra_client-0.1.0-py3-none-any.whl",
+          "sha256": "6b0dd6375687ccb002aba96f64dfd581561819622fb0c90454cee24db7549c2d"
+        },
+        {
+          "file": "pliqra_client-0.1.0.tar.gz",
+          "sha256": "4f4ed0bf054eeb2a4d96f3c543d174893dfd50dd7fa81b960d742418316ce008"
+        }
+      ]
+    },
+    {
+      "sdk_version": "0.1.1",
+      "source_revision": "ea41c78633230d3640c618795b16789ff99c490a",
+      "results": [
+        {
+          "registry": "pypi",
+          "version": "0.1.1",
+          "already_published": true,
+          "verified_artifacts": [
+            "pliqra_client-0.1.1-py3-none-any.whl",
+            "pliqra_client-0.1.1.tar.gz"
+          ]
+        },
+        {
+          "registry": "npm",
+          "version": "0.1.1",
+          "already_published": true,
+          "verified_artifacts": [
+            "eturkok-pliqra-0.1.1.tgz"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "file": "eturkok-pliqra-0.1.1.tgz",
+          "sha256": "a3c58d77c869b8fc658b90b2415aefa9acbb492ea6dd5fe229a8411d6d61d4c5"
+        },
+        {
+          "file": "pliqra_client-0.1.1-py3-none-any.whl",
+          "sha256": "ba3b8579bfd73ebfca3ac2f08d29ae1c71e1dec3aa129fdcb2e8b67b8327147c"
+        },
+        {
+          "file": "pliqra_client-0.1.1.tar.gz",
+          "sha256": "88e5ae265e7b0c21f39fdf3ea0daf61ada576dee07b96bf987ca260fe51bdc29"
+        }
+      ]
+    }
+  ],
+  "npm_default": "0.1.1",
+  "pypi_default": "0.1.1",
+  "npm_provenance_metadata": {
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@eturkok%2fpliqra@0.1.1",
+    "provenance": {
+      "predicateType": "https://slsa.dev/provenance/v1"
+    }
+  },
+  "unchanged_client_implementation_sha256": {
+    "sdk/pliqra_client.py": "c0fc54f575a98e4389648f095f7897e162351a28b29e992c9c926163329c34a7",
+    "sdk/conformance.py": "1e99e28e4a75de58feef2a01e3ef5f966d51f3b257762f9c70d7b660af840a3d",
+    "sdk/javascript/pliqra.mjs": "63f9b5dc792300cd6b32fd335b2bc79343f103cd4d9e7c40839e194107255047",
+    "sdk/javascript/pliqra.d.mts": "66e25dbfa22ea60921f5f4ffe64c691d79bdef66d5e32d2d524c6768347f0d9a"
+  },
+  "successful_verification_runs": [
+    {
+      "sdk_version": "0.1.0",
+      "workflow": "https://github.com/eturkok/pliqra/actions/runs/42408333982",
+      "source_revision": "3611e8028700a57d3d3e4c03a3d4f3a210bb8ce9",
+      "conclusion": "success",
+      "canonical_registry_install": {
+        "pypi": "success",
+        "npm": "success"
+      }
+    },
+    {
+      "sdk_version": "0.1.1",
+      "workflow": "https://github.com/eturkok/pliqra/actions/runs/42408692802",
+      "source_revision": "7d0dc53c6735b34b13c3581c09cf7a2ad2f872fb",
+      "conclusion": "success",
+      "canonical_registry_install": {
+        "npm": "success",
+        "pypi": "success"
+      }
+    }
+  ],
+  "new_version_visibility_wait_bound_seconds": 300,
+  "trust_integrity_auth_errors_are_not_retried": true
+}

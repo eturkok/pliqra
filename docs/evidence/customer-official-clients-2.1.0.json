@@ -1,0 +1,39 @@
+{
+  "synthetic": true,
+  "real_vendor_model_called": false,
+  "official_clients": {
+    "openai": "3.46.0",
+    "anthropic": "2.6.0"
+  },
+  "results": [
+    {
+      "client": "openai",
+      "service": "synthetic-responses",
+      "live_text": "passed"
+    },
+    {
+      "client": "openai",
+      "service": "synthetic-messages",
+      "live_text": "passed"
+    },
+    {
+      "client": "openai",
+      "tool_call": "passed"
+    },
+    {
+      "client": "anthropic",
+      "service": "synthetic-responses",
+      "live_text": "passed"
+    },
+    {
+      "client": "anthropic",
+      "service": "synthetic-messages",
+      "live_text": "passed"
+    },
+    {
+      "client": "anthropic",
+      "tool_call": "passed"
+    }
+  ],
+  "passed": true
+}

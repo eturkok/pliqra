@@ -1,0 +1,30 @@
+{
+  "synthetic": true,
+  "human_feedback_collected": false,
+  "passed": true,
+  "applications": [
+    {
+      "application": "installed-python-sdk",
+      "core_checks": 9,
+      "streaming": "passed",
+      "gateway_imported": false,
+      "synthetic": true
+    },
+    {
+      "application": "installed-npm-sdk",
+      "streaming": "passed",
+      "gatewayImported": false,
+      "synthetic": true
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "pliqra_client-0.1.0-py3-none-any.whl",
+      "sha256": "6b0dd6375687ccb002aba96f64dfd581561819622fb0c90454cee24db7549c2d"
+    },
+    {
+      "file": "eturkok-pliqra-0.1.0.tgz",
+      "sha256": "4addac2b140e3a925725d991d7ca2867f578148cda9c39fd21ea291c8257cc4c"
+    }
+  ]
+}

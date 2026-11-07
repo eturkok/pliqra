@@ -1,0 +1,174 @@
+{
+  "synthetic": true,
+  "real_customer_reference": false,
+  "environment": {
+    "host": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+    "machine": "x86_64",
+    "physical_hosts": 1,
+    "database": "PostgreSQL 18, one primary with verified fixture TLS",
+    "site_regions_are_synthetic": true,
+    "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+    "image_id": "sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+    "source_revision": "8a6fdf4abe7ff4dc3afba71281de3ce9cec7f136",
+    "source_dirty": false,
+    "image_revision": "8a6fdf4abe7ff4dc3afba71281de3ce9cec7f136",
+    "docker_cpus": 4,
+    "docker_memory_bytes": 16759439360
+  },
+  "checks": [
+    {
+      "check": "onboarding_endpoint_discovery_pricing_and_scoped_key",
+      "passed": true
+    },
+    {
+      "check": "two_site_local_routing",
+      "passed": true
+    },
+    {
+      "check": "global_quota_exact_under_concurrency",
+      "passed": true,
+      "accepted": 8,
+      "rejected": 8
+    },
+    {
+      "check": "independent_fleet_pairing_separate_approval_and_delivery",
+      "passed": true,
+      "members": 2
+    },
+    {
+      "check": "native_incremental_delivery_and_incomplete_stream_rejection",
+      "passed": true,
+      "cases": [
+        {
+          "service": "synthetic-responses",
+          "interface": "responses",
+          "first_delta_ms": 70.88,
+          "complete_ms": 166.6
+        },
+        {
+          "service": "synthetic-responses",
+          "interface": "messages",
+          "first_delta_ms": 72.11,
+          "complete_ms": 167.81
+        },
+        {
+          "service": "synthetic-messages",
+          "interface": "responses",
+          "first_delta_ms": 69.84,
+          "complete_ms": 197.97
+        },
+        {
+          "service": "synthetic-messages",
+          "interface": "messages",
+          "first_delta_ms": 72.58,
+          "complete_ms": 198.69
+        },
+        {
+          "service": "customer-chat",
+          "interface": "responses",
+          "first_delta_ms": 13.95,
+          "complete_ms": 107.53
+        },
+        {
+          "service": "customer-chat",
+          "interface": "messages",
+          "first_delta_ms": 12.9,
+          "complete_ms": 105.56
+        }
+      ]
+    },
+    {
+      "check": "load_measurement",
+      "passed": true
+    },
+    {
+      "check": "soak_measurement",
+      "passed": true
+    },
+    {
+      "check": "stable_synthetic_envelope",
+      "passed": true,
+      "policy": {
+        "soak_seconds": 1800,
+        "minimum_soak_requests": 8000,
+        "maximum_p95_ms": 2000,
+        "maximum_rss_growth_kib": 65536
+      }
+    },
+    {
+      "check": "pre_stream_model_failure_falls_back_to_allowed_remote_site",
+      "passed": true
+    },
+    {
+      "check": "database_restart_fail_closed_no_new_model_calls_and_fresh_process_rejoin",
+      "passed": true,
+      "primary_promotion_tested": false
+    }
+  ],
+  "load": {
+    "duration_seconds": 30.08,
+    "concurrency": 8,
+    "target_requests_per_second": null,
+    "requests": 2704,
+    "statuses": {
+      "200": 2704
+    },
+    "observed_requests_per_second": 89.9,
+    "p50_ms": 77.98,
+    "p95_ms": 97.42,
+    "p99_ms": 127.7,
+    "gateway_west_rss_kib": [
+      110544
+    ],
+    "synthetic_model_delay_ms": 5,
+    "not_a_production_capacity_claim": true
+  },
+  "soak": {
+    "duration_seconds": 1800.12,
+    "concurrency": 8,
+    "target_requests_per_second": 5,
+    "requests": 9000,
+    "statuses": {
+      "200": 9000
+    },
+    "observed_requests_per_second": 5.0,
+    "p50_ms": 88.18,
+    "p95_ms": 113.16,
+    "p99_ms": 152.02,
+    "gateway_west_rss_kib": [
+      110560,
+      110588,
+      110616,
+      110620,
+      110904,
+      110928,
+      110976,
+      111228,
+      111276,
+      111560,
+      111596,
+      111872,
+      112132,
+      112440,
+      112452,
+      112456,
+      112696,
+      112948,
+      112964,
+      113228,
+      113252,
+      113272,
+      113544,
+      113560,
+      113560,
+      113560,
+      113560,
+      113560,
+      113560,
+      113564
+    ],
+    "synthetic_model_delay_ms": 5,
+    "not_a_production_capacity_claim": true
+  },
+  "passed": true
+}

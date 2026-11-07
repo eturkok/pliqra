@@ -1,0 +1,71 @@
+{
+  "release": {
+    "tag": "v2.1.0",
+    "version": "2.1.0",
+    "revision": "8a6fdf4abe7ff4dc3afba71281de3ce9cec7f136",
+    "image": "ghcr.io/eturkok/pliqra",
+    "digest": "sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "prerelease": false,
+    "schema": 6,
+    "inference_contract": 5,
+    "protocol": "pliqra/0.1-draft"
+  },
+  "release_url": "https://github.com/eturkok/pliqra/releases/tag/v2.1.0",
+  "release_workflow": "https://github.com/eturkok/pliqra/actions/runs/42405015917",
+  "release_workflow_conclusion": "success",
+  "jobs": {
+    "metadata": "success",
+    "tests / python (3.13)": "success",
+    "tests / clients": "success",
+    "tests / postgres": "success",
+    "tests / sdk-packages": "success",
+    "tests / dependency-audit": "success",
+    "tests / python (3.14)": "success",
+    "tests / docker": "success",
+    "tests / sdk-compatibility (3.10, 22)": "success",
+    "tests / sdk-compatibility (3.14, 24)": "success",
+    "image": "success",
+    "smoke (ubuntu-24.04, linux/amd64)": "success",
+    "smoke (ubuntu-24.04-arm, linux/arm64)": "success",
+    "acceptance / acceptance": "success",
+    "publish": "success"
+  },
+  "sdk_patch_release_workflow": "https://github.com/eturkok/pliqra/actions/runs/42405587983",
+  "public_asset_checksums_verified": true,
+  "exact_image_matches_acceptance": true,
+  "known_python_dependency_vulnerabilities": 0,
+  "audited_resolved_python_dependencies": 35,
+  "synthetic_customer": true,
+  "real_customer_or_geographic_failover_certification": false,
+  "local_docker_started": false,
+  "public_image_anonymous_access_verified": true,
+  "current_sdk": "0.1.1",
+  "sdk_release": "https://github.com/eturkok/pliqra/releases/tag/sdk-v0.1.1",
+  "sdk_registry_verification_runs": [
+    {
+      "sdk_version": "0.1.0",
+      "workflow": "https://github.com/eturkok/pliqra/actions/runs/42408333982",
+      "source_revision": "3611e8028700a57d3d3e4c03a3d4f3a210bb8ce9",
+      "conclusion": "success",
+      "canonical_registry_install": {
+        "pypi": "success",
+        "npm": "success"
+      }
+    },
+    {
+      "sdk_version": "0.1.1",
+      "workflow": "https://github.com/eturkok/pliqra/actions/runs/42408692802",
+      "source_revision": "7d0dc53c6735b34b13c3581c09cf7a2ad2f872fb",
+      "conclusion": "success",
+      "canonical_registry_install": {
+        "npm": "success",
+        "pypi": "success"
+      }
+    }
+  ],
+  "public_registry_default_versions_verified": true
+}

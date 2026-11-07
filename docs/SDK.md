@@ -79,3 +79,7 @@ gh workflow run sdk-publish.yml --ref main -f release_tag=sdk-v0.1.1 -f registry
 ```
 
 The corrected retry workflow completed successfully for both npm and PyPI, verifying existing release bytes and public downloads while skipping redundant uploads. [Successful run](https://github.com/eturkok/pliqra/actions/runs/42402749716) · [Machine-readable retry evidence](evidence/sdk-publication-retry.json).
+
+Registry publication also verifies the canonical PyPI installer index links and their SHA-256 values before a clean `pip install`. Version JSON, file downloads and the installer index can propagate at different times; a bounded wait handles that delay without weakening integrity checks. Both registry jobs then install the exact version from the official registry into an independent consumer environment. Four index regression cases reject stale/incomplete listings, changed hashes and unexpected download hosts.
+
+Stable registry delivery is verified for SDK 0.1.0 and 0.1.1; **0.1.1 is the current default on both registries**. Canonical clean installs and public artifact hashes passed in the [final patch verification](https://github.com/eturkok/pliqra/actions/runs/42408692802). [Registry evidence](evidence/stable-sdk-registry.json). Installer visibility retries are bounded to 300 seconds and apply only to a missing new version; trust, authentication and integrity failures stop immediately.
