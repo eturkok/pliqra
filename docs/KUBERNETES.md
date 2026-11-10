@@ -106,3 +106,5 @@ The **Helm chart** workflow lints and renders the chart, rejects unsafe values, 
 The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-version>` tag, reruns the checks, then publishes the exact tested archive, SHA-256 checksum and both cluster reports as a separate GitHub release. It does not overwrite the application image or stable application release.
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
+
+[Published chart acceptance record](evidence/helm-0.1.0.json) links the exact release, source revision, package checksum and both cluster reports.

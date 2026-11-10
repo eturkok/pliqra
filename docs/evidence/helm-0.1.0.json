@@ -1,0 +1,150 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-10T19:18:35.806638+00:00",
+  "chart_version": "0.1.0",
+  "app_version": "2.1.0",
+  "source_commit": "ac9f445556d3690bcecb5b02a16265bb1611ef53",
+  "workflow": "https://github.com/eturkok/pliqra/actions/runs/42883001675",
+  "release": "https://github.com/eturkok/pliqra/releases/tag/helm-v0.1.0",
+  "released_package_sha256": "0dc88d6ff9d40d9824a8517e7ef54b898086c44a7ae10ad9c9161270d2ba572d",
+  "anonymous_download": "passed",
+  "helm_version": "4.3.1",
+  "reports": [
+    {
+      "passed": true,
+      "chart_version": "0.1.0",
+      "app_version": "2.1.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+      "context": "kind-pliqra-chart-42883001675-0",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "RC4-to-2.1.0 image upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 image upgrade/rollback on schema 6 and PostgreSQL chart configuration upgrades. No incompatible database-schema downgrade, geographic HA or real model capacity certification."
+    },
+    {
+      "passed": true,
+      "chart_version": "0.1.0",
+      "app_version": "2.1.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+      "context": "kind-pliqra-chart-42883001675-1",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "RC4-to-2.1.0 image upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 image upgrade/rollback on schema 6 and PostgreSQL chart configuration upgrades. No incompatible database-schema downgrade, geographic HA or real model capacity certification."
+    }
+  ]
+}
