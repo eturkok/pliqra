@@ -1,0 +1,90 @@
+# SQLite: one pod and one retained volume. PostgreSQL: independent pod-local
+# scratch space, one shared writable database and an existing encryption key.
+replicaCount: 1
+nameOverride: ""
+fullnameOverride: ""
+image:
+  repository: ghcr.io/eturkok/pliqra
+  tag: "2.1.0"
+  digest: sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+storage:
+  mode: sqlite
+persistence:
+  existingClaim: ""
+  size: 5Gi
+  storageClass: ""
+  accessModes: [ReadWriteOnce]
+database:
+  existingSecret: ""
+  urlKey: database-url
+  schema: pliqra
+  tls:
+    existingSecret: ""
+    caKey: ca.crt
+encryption:
+  existingSecret: ""
+  key: encryption-key
+config:
+  publicUrl: ""
+  secureCookies: false
+topology:
+  multiDC: false
+  site: local
+  region: local
+service:
+  port: 8080
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: ""
+  tlsSecret: ""
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+terminationGracePeriodSeconds: 60
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+networkPolicy:
+  enabled: false
+  # Empty rules deny ingress when enabled. Supply the ingress controller and
+  # other intended clients explicitly. Egress is managed by your cluster.
+  ingress: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+extraEnv: []
+extraVolumes: []
+extraVolumeMounts: []
+tests:
+  enabled: true

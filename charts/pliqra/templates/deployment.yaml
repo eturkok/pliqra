@@ -1,0 +1,139 @@
+{{- include "pliqra.validate" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pliqra.fullname" . }}
+  annotations:
+    pliqra.io/storage-mode: {{ .Values.storage.mode }}
+    {{- if eq .Values.storage.mode "sqlite" }}
+    pliqra.io/data-claim: {{ default (include "pliqra.fullname" .) .Values.persistence.existingClaim }}
+    {{- end }}
+  labels:
+    {{- include "pliqra.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  # Stop the old writers before a new version can perform startup migration.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "pliqra.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "pliqra.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "pliqra.serviceAccount" . }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: pliqra
+          image: {{ include "pliqra.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - {name: PLIQRA_HOST, value: "0.0.0.0"}
+            - {name: PLIQRA_PORT, value: "8080"}
+            - {name: PLIQRA_DATA_DIR, value: /data}
+            - {name: PLIQRA_PUBLIC_URL, value: {{ .Values.config.publicUrl | quote }}}
+            - {name: PLIQRA_SECURE_COOKIES, value: {{ ternary "1" "0" .Values.config.secureCookies | quote }}}
+            - {name: PLIQRA_MULTI_DC, value: {{ ternary "1" "0" .Values.topology.multiDC | quote }}}
+            - {name: PLIQRA_SITE, value: {{ .Values.topology.site | quote }}}
+            - {name: PLIQRA_REGION, value: {{ .Values.topology.region | quote }}}
+            {{- if eq .Values.storage.mode "postgresql" }}
+            - {name: PLIQRA_RESTART_ON_FENCE, value: "1"}
+            - {name: PLIQRA_DATABASE_SCHEMA, value: {{ .Values.database.schema | quote }}}
+            - name: PLIQRA_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.urlKey }}
+            {{- end }}
+            {{- if .Values.encryption.existingSecret }}
+            - name: PLIQRA_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.encryption.existingSecret }}
+                  key: {{ .Values.encryption.key }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet: {path: /livez, port: http}
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: {path: /livez, port: http}
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: [python, -c, "import time; time.sleep(5)"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: tmp, mountPath: /tmp}
+            {{- if .Values.database.tls.existingSecret }}
+            - {name: database-ca, mountPath: /run/pliqra/database, readOnly: true}
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: data
+          {{- if eq .Values.storage.mode "sqlite" }}
+          persistentVolumeClaim:
+            claimName: {{ default (include "pliqra.fullname" .) .Values.persistence.existingClaim }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.database.tls.existingSecret }}
+        - name: database-ca
+          secret:
+            secretName: {{ .Values.database.tls.existingSecret }}
+            items:
+              - {key: {{ .Values.database.tls.caKey }}, path: ca.crt}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

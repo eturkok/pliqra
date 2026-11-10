@@ -1,0 +1,96 @@
+name: Helm chart
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'charts/**'
+      - 'scripts/*chart*.py'
+      - 'scripts/check_kubernetes_install.py'
+      - 'requirements-chart.txt'
+      - '.github/workflows/helm-*.yml'
+  pull_request:
+    paths:
+      - 'charts/**'
+      - 'scripts/*chart*.py'
+      - 'scripts/check_kubernetes_install.py'
+      - 'requirements-chart.txt'
+      - '.github/workflows/helm-*.yml'
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements-chart.txt
+      - run: python scripts/install_chart_tools.py --directory work/chart-bin
+      - run: echo "$PWD/work/chart-bin" >> "$GITHUB_PATH"
+      - run: helm lint charts/pliqra --strict
+      - run: python scripts/check_chart.py
+      - name: Package the exact chart that the cluster jobs will install
+        run: |
+          mkdir -p dist/helm
+          helm package charts/pliqra --destination dist/helm
+          cd dist/helm
+          sha256sum pliqra-*.tgz > SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: helm-chart
+          path: dist/helm/*
+          if-no-files-found: error
+  kubernetes:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - kubernetes: v1.34.11
+            node_image: kindest/node:v1.34.11@sha256:44e222ee2132dab25ff87301682f89eb82c7880ea3a1bf543bfe9708fd08d67d
+          - kubernetes: v1.37.0
+            node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+    env:
+      CLUSTER_NAME: pliqra-chart-${{ github.run_id }}-${{ strategy.job-index }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements-chart.txt
+      - run: python scripts/install_chart_tools.py --directory work/chart-bin --kind --kubectl-version '${{ matrix.kubernetes }}'
+      - run: echo "$PWD/work/chart-bin" >> "$GITHUB_PATH"
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: helm-chart
+          path: dist/helm
+      - name: Verify package and create only the owned disposable cluster
+        env:
+          NODE_IMAGE: ${{ matrix.node_image }}
+        run: |
+          (cd dist/helm && sha256sum --check SHA256SUMS)
+          kind create cluster --name "$CLUSTER_NAME" --image "$NODE_IMAGE" --wait 180s
+      - name: Validate optional resources against the actual Kubernetes API
+        run: |
+          chart=$(find dist/helm -maxdepth 1 -name 'pliqra-*.tgz')
+          helm template check "$chart" -f charts/pliqra/examples/postgresql.yaml -f charts/pliqra/examples/ingress.yaml -f charts/pliqra/examples/multidc.yaml --set autoscaling.enabled=true --set networkPolicy.enabled=true | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
+      - name: Exercise SQLite persistence and shared PostgreSQL installs and upgrades
+        run: |
+          chart=$(find dist/helm -maxdepth 1 -name 'pliqra-*.tgz')
+          python scripts/check_kubernetes_install.py --context "kind-$CLUSTER_NAME" --chart "$chart" --output 'work/kubernetes-${{ matrix.kubernetes }}.json'
+      - name: Remove only the owned disposable cluster
+        if: always()
+        run: |
+          case "$CLUSTER_NAME" in pliqra-chart-*) kind delete cluster --name "$CLUSTER_NAME" ;; *) exit 1 ;; esac
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: kubernetes-${{ matrix.kubernetes }}
+          path: work/kubernetes-*.json
+          if-no-files-found: warn

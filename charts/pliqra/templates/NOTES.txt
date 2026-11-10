@@ -1,0 +1,23 @@
+Pliqra {{ .Chart.AppVersion }} (chart {{ .Chart.Version }}) is installed.
+
+Private first connection:
+  kubectl -n {{ .Release.Namespace }} port-forward service/{{ include "pliqra.fullname" . }} 8088:{{ .Values.service.port }}
+  Open http://localhost:8088 and create the administrator before enabling ingress.
+
+Check readiness and protocol discovery:
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+{{- if eq .Values.storage.mode "sqlite" }}
+SQLite uses one pod and a retained PVC. Back up /data including encryption.key.
+Uninstall keeps the chart-created PVC. Delete it separately only when intentional.
+{{- else }}
+PostgreSQL replicas share the external writable database and encryption Secret.
+Back up that database and key before changing versions. This chart does not
+provision database HA, replication or failover.
+{{- end }}
+
+Upgrades use Recreate: plan downtime, back up first, and stop all old writers
+across other releases/sites before a schema-changing upgrade. Helm rollback
+does not restore a database or make an incompatible image downgrade safe.
+
+Guide: https://github.com/eturkok/pliqra/blob/main/docs/KUBERNETES.md

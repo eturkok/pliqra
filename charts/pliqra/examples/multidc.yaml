@@ -1,0 +1,6 @@
+# Combine with postgresql.yaml and ingress.yaml. Each cluster/site uses the same
+# writable authority and encryption key. Set a distinct site per installation.
+topology:
+  multiDC: true
+  site: dc-west
+  region: eu

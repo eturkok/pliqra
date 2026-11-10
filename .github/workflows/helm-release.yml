@@ -1,0 +1,68 @@
+name: Publish Helm chart
+on:
+  push:
+    tags: ['helm-v*']
+permissions:
+  contents: read
+concurrency:
+  group: helm-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements-chart.txt
+      - name: Require a matching, new chart version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os,re,yaml
+          from pathlib import Path
+          version=yaml.safe_load(Path('charts/pliqra/Chart.yaml').read_text())['version']
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',version)
+          assert os.environ['RELEASE_TAG']=='helm-v'+version
+          PY
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            echo 'This chart release already exists; use a new chart version.'
+            exit 1
+          fi
+  checks:
+    needs: validate
+    uses: ./.github/workflows/helm-test.yml
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: helm-chart
+          path: dist/helm
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          pattern: kubernetes-*
+          path: dist/evidence
+          merge-multiple: true
+      - name: Publish the exact cluster-tested chart and acceptance reports
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          (cd dist/helm && sha256sum --check SHA256SUMS)
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          reports=list(Path('dist/evidence').glob('kubernetes-*.json'))
+          assert len(reports)==2
+          assert all(json.loads(p.read_text())['passed'] for p in reports)
+          PY
+          gh release create "$RELEASE_TAG" --verify-tag --latest=false --title "Pliqra Helm chart ${RELEASE_TAG#helm-v}" --notes-file charts/pliqra/README.md dist/helm/* dist/evidence/*.json

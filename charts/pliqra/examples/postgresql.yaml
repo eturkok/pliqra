@@ -1,0 +1,21 @@
+storage:
+  mode: postgresql
+replicaCount: 2
+database:
+  existingSecret: pliqra-backend
+  urlKey: database-url
+  tls:
+    existingSecret: pliqra-database-ca
+encryption:
+  existingSecret: pliqra-backend
+podDisruptionBudget:
+  enabled: true
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pliqra
+          topologyKey: kubernetes.io/hostname
