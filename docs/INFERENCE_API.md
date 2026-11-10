@@ -53,6 +53,6 @@ Definitions are limited to 20 KB and 40 nesting levels. Remote reference retriev
 
 The 1.2 request boundary is intentionally stricter. Clients using undocumented provider parameters must move to supported controls instead of relying on ignored/forwarded fields.
 
-The implementation revision is part of service/gateway fingerprints. Existing bindings from 1.1 require an explicit rebind; they are not silently upgraded. The wire protocol remains draft 0.1. Existing cached responses are treated as misses and rebuilt with deployment provenance. Accounts, credentials and persisted request history remain in the same schema-3 workspace.
+The implementation revision is part of service/gateway fingerprints. Existing bindings from 1.1 require an explicit rebind; they are not silently upgraded. That release used wire protocol draft 0.1; stable 1.0 is introduced in Gateway 2.2. Existing cached responses are treated as misses and rebuilt with deployment provenance. Accounts, credentials and persisted request history remain in the same schema-3 workspace.
 
 See the 2.0 [model interfaces](MODEL_INTERFACES.md), [workflows](WORKFLOWS.md), [scale topology](PLATFORM.md) and [language clients/conformance](CONFORMANCE.md) for the expanded surfaces. The existing typed chat boundary remains in force.

@@ -1,0 +1,308 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-10T21:56:27.730067+00:00",
+  "protocol": "pliqra/1.0",
+  "specification_version": "1.0.0",
+  "gateway_release": "https://github.com/eturkok/pliqra/releases/tag/v2.2.0",
+  "release": {
+    "tag": "v2.2.0",
+    "version": "2.2.0",
+    "revision": "59f15fed80e3bc4515954004d61b7596c6e3c373",
+    "image": "ghcr.io/eturkok/pliqra",
+    "digest": "sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "prerelease": false,
+    "schema": 6,
+    "inference_contract": 5,
+    "protocol": "pliqra/1.0",
+    "legacy_protocol": "pliqra/0.1-draft",
+    "specification": "1.0.0"
+  },
+  "core_ci": "https://github.com/eturkok/pliqra/actions/runs/42902747142",
+  "release_workflow": "https://github.com/eturkok/pliqra/actions/runs/42903315007",
+  "registry_workflow": "https://github.com/eturkok/pliqra/actions/runs/42909387104",
+  "compatibility": {
+    "http_combinations": 18,
+    "client_languages": [
+      "Python",
+      "JavaScript",
+      "Go"
+    ],
+    "client_generations": [
+      "SDK 0.1.1 (also identical to Gateway 2.1.0 bundled sources)",
+      "SDK 1.0.0"
+    ],
+    "server_targets": [
+      "Gateway 2.2.0",
+      "independent reference 1.0",
+      "frozen legacy reference"
+    ],
+    "operations": [
+      "discovery",
+      "binding",
+      "completion",
+      "streaming"
+    ],
+    "frozen_fixture_manifest": "tests/compat/sdk011/manifest.json",
+    "core_profile": "pliqra-core/1",
+    "core_checks_with_inference_per_stable_implementation": 13,
+    "legacy_envelope": "pliqra/0.1-draft",
+    "version_selection_invalidates_existing_bindings": false,
+    "database_schema_unchanged": 6,
+    "inference_contract_unchanged": 5
+  },
+  "ci": {
+    "python_3_13": {
+      "passed": 246,
+      "postgres_cases_skipped_here": 33
+    },
+    "python_3_14": {
+      "passed": 246,
+      "postgres_cases_skipped_here": 33
+    },
+    "dedicated_real_postgresql_job": "passed",
+    "required_all_three_language_runtimes": true
+  },
+  "sdk": {
+    "version": "1.0.0",
+    "manifest": {
+      "sdk_version": "1.0.0",
+      "python_version": "1.0.0",
+      "revision": "59f15fed80e3bc4515954004d61b7596c6e3c373",
+      "artifacts": [
+        {
+          "file": "eturkok-pliqra-1.0.0.tgz",
+          "sha256": "74a217a977cd7486f8744565692d18e8509cc4e46764e7e2cc98c96545d03cca"
+        },
+        {
+          "file": "pliqra_client-1.0.0-py3-none-any.whl",
+          "sha256": "c766ffffeaffce5f55ee7654b40294e57fd185a65087cc5e7ac4d5bb36067ecf"
+        },
+        {
+          "file": "pliqra_client-1.0.0.tar.gz",
+          "sha256": "081f5c5b7f3a5fde8a2522b40f4a89d190f6888af55891a3e049d3d60d60749e"
+        }
+      ]
+    },
+    "pypi": "https://pypi.org/project/pliqra-client/1.0.0/",
+    "npm": "https://www.npmjs.com/package/@eturkok/pliqra/v/1.0.0",
+    "public_registry_bytes_match_original_release": true,
+    "clean_canonical_index_installs": "passed",
+    "go": {
+      "module": "github.com/etrkk5/pliqra/sdk/go",
+      "tag": "sdk/go/v1.0.0",
+      "public_proxy_download": "passed",
+      "sum": "h1:Tb/xWlTHx8plDFWbm0E67nNBYGq/+vSOPkS+pB92DdE=",
+      "go_mod_sum": "h1:jZiWLhKLNKjIRUm/6hXLy1Cug0niCvtwpWVAcRk4S3A="
+    }
+  },
+  "exact_image_acceptance": {
+    "artifact": "https://github.com/eturkok/pliqra/releases/download/v2.2.0/acceptance-evidence.tar.gz",
+    "sha256": "eb6fca4bf4de5534919492e9954fdd3a89e9dd223e5d49573aa043a29f11337b",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "environment": {
+      "host": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+      "machine": "x86_64",
+      "physical_hosts": 1,
+      "database": "PostgreSQL 18, one primary with verified fixture TLS",
+      "site_regions_are_synthetic": true,
+      "image": "ghcr.io/eturkok/pliqra@sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67",
+      "image_id": "sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67",
+      "source_revision": "59f15fed80e3bc4515954004d61b7596c6e3c373",
+      "source_dirty": false,
+      "image_revision": "59f15fed80e3bc4515954004d61b7596c6e3c373",
+      "docker_cpus": 4,
+      "docker_memory_bytes": 16759439360
+    },
+    "load": {
+      "duration_seconds": 30.04,
+      "concurrency": 8,
+      "target_requests_per_second": null,
+      "requests": 2640,
+      "statuses": {
+        "200": 2640
+      },
+      "observed_requests_per_second": 87.87,
+      "p50_ms": 76.48,
+      "p95_ms": 101.64,
+      "p99_ms": 204.9,
+      "gateway_west_rss_kib": [
+        110712
+      ],
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true
+    },
+    "soak": {
+      "duration_seconds": 1800.11,
+      "concurrency": 8,
+      "target_requests_per_second": 5,
+      "requests": 9000,
+      "statuses": {
+        "200": 9000
+      },
+      "observed_requests_per_second": 5.0,
+      "p50_ms": 84.43,
+      "p95_ms": 114.71,
+      "p99_ms": 245.03,
+      "gateway_west_rss_kib": [
+        110732,
+        110760,
+        110780,
+        110784,
+        110796,
+        110828,
+        110864,
+        111136,
+        111440,
+        111480,
+        111512,
+        111756,
+        111808,
+        112100,
+        112116,
+        112140,
+        112392,
+        112420,
+        112732,
+        112764,
+        113024,
+        113060,
+        113324,
+        113328,
+        113332,
+        113336,
+        113336,
+        113336,
+        113340,
+        113340
+      ],
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true
+    },
+    "upgrade_recovery": {
+      "synthetic": true,
+      "passed": true,
+      "previous": {
+        "version": "2.1.0",
+        "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39"
+      },
+      "target_image": "ghcr.io/eturkok/pliqra@sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67",
+      "checks": [
+        {
+          "check": "new_sdk_completes_and_streams_against_previous_published_image",
+          "passed": true
+        },
+        {
+          "check": "previous_digest_verified_initialized_and_encrypted_backup_created",
+          "passed": true
+        },
+        {
+          "check": "pre_upgrade_binding_invokes_through_stable_protocol_without_rebinding",
+          "passed": true
+        },
+        {
+          "check": "upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage",
+          "passed": true
+        },
+        {
+          "check": "new_image_restores_previous_backup_rejects_wrong_password_and_revokes_sessions",
+          "passed": true
+        },
+        {
+          "check": "rollback_to_previous_image_restores_pre_upgrade_backup_in_a_separate_volume",
+          "passed": true
+        }
+      ],
+      "target_version": "2.2.0",
+      "owned_containers_volumes_network_removed": true
+    },
+    "installed_clients": {
+      "synthetic": true,
+      "human_feedback_collected": false,
+      "passed": true,
+      "applications": [
+        {
+          "application": "installed-python-sdk",
+          "core_checks": 13,
+          "streaming": "passed",
+          "gateway_imported": false,
+          "synthetic": true
+        },
+        {
+          "application": "installed-npm-sdk",
+          "streaming": "passed",
+          "gatewayImported": false,
+          "synthetic": true
+        }
+      ],
+      "artifacts": [
+        {
+          "file": "pliqra_client-1.0.0-py3-none-any.whl",
+          "sha256": "c766ffffeaffce5f55ee7654b40294e57fd185a65087cc5e7ac4d5bb36067ecf"
+        },
+        {
+          "file": "eturkok-pliqra-1.0.0.tgz",
+          "sha256": "74a217a977cd7486f8744565692d18e8509cc4e46764e7e2cc98c96545d03cca"
+        }
+      ]
+    },
+    "official_clients": {
+      "synthetic": true,
+      "real_vendor_model_called": false,
+      "official_clients": {
+        "openai": "3.46.0",
+        "anthropic": "2.6.0"
+      },
+      "results": [
+        {
+          "client": "openai",
+          "service": "synthetic-responses",
+          "live_text": "passed"
+        },
+        {
+          "client": "openai",
+          "service": "synthetic-messages",
+          "live_text": "passed"
+        },
+        {
+          "client": "openai",
+          "tool_call": "passed"
+        },
+        {
+          "client": "anthropic",
+          "service": "synthetic-responses",
+          "live_text": "passed"
+        },
+        {
+          "client": "anthropic",
+          "service": "synthetic-messages",
+          "live_text": "passed"
+        },
+        {
+          "client": "anthropic",
+          "tool_call": "passed"
+        }
+      ],
+      "passed": true
+    }
+  },
+  "boundary": "Project-maintained core interoperability and synthetic regression evidence. No real customer reference, external certification, model capacity, geographic-failure or availability guarantee.",
+  "helm": {
+    "version": "0.3.0",
+    "workflow": "https://github.com/eturkok/pliqra/actions/runs/42909405502",
+    "record": "helm-0.3.0.json",
+    "cluster_checks": 32,
+    "image_matches_release": true
+  },
+  "distribution_guide": {
+    "path": "docs/DISTRIBUTION.md",
+    "sha256": "b5a082218b1d65acf114e1f53f8ff317226ee9ec19a019e6598a54dc8e821899",
+    "note": "Editorial installation-guide correction after the release build; image and SDK artifacts remain unchanged. The release notes identify the source commit."
+  }
+}

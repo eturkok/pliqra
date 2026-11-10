@@ -4,6 +4,8 @@
 
 This is a **scripted synthetic customer exercise**, not a customer reference, usability study or external protocol certification. It provides repeatable evidence before a real pilot is available. No paid vendor inference, customer records or existing user workspace is used.
 
+Gateway **2.2.0**, SDK **1.0.0** and stable Protocol **1.0** are revalidated against their exact release artifacts. The [1.0 delivery record](evidence/protocol-1.0.json) links the new native-image, 30-minute soak, installed-client and 2.1-to-2.2 upgrade/recovery reports. Dated measurements below remain historical evidence for the identified earlier source/image.
+
 ## Scenario and topology
 
 A fictional organization connects model endpoints, publishes a shared AI service, binds an application, uses both native client APIs and governs an independent branch installation.

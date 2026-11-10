@@ -1,4 +1,4 @@
-> Current release: **[2.2.0](releases/v2.2.0.md)** with stable Connection Protocol 1.0 and SDK 1.0.0. The 2.1/RC records below remain historical.
+> Current release: **[2.2.0](releases/v2.2.0.md)** with stable Connection Protocol 1.0 and SDK 1.0.0. [Current delivery evidence](evidence/protocol-1.0.json). The 2.1/RC records below remain historical.
 
 # Pliqra 2.1 — validation and scope
 
@@ -8,7 +8,7 @@ The RC3 additions were validated on 7 November 2026; [synthetic acceptance](ACCE
 
 ## Stable release gates
 
-[Stable readiness](STABLE_2_1.md) and [support/compatibility](SUPPORT.md) define 2.1.0. The release workflow requires exact-image synthetic acceptance, a predeclared 30-minute soak, RC4 upgrade and encrypted-backup recovery, SDK compatibility and an unsuppressed Python dependency advisory scan before publication. The release carries the measured reports; older numbers below remain historical. SDK 0.1.0 uses stable registry versions while the wire protocol remains draft 0.1.
+[Stable readiness](STABLE_2_1.md) and [support/compatibility](SUPPORT.md) define 2.1.0. The release workflow requires exact-image synthetic acceptance, a predeclared 30-minute soak, RC4 upgrade and encrypted-backup recovery, SDK compatibility and an unsuppressed Python dependency advisory scan before publication. The release carries the measured reports; older numbers below remain historical. SDK 0.1.0 used stable registry versions while that release's wire protocol was draft 0.1.
 
 ## RC4 console validation
 

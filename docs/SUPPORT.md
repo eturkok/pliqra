@@ -9,7 +9,7 @@
 | Area | Supported scope and evidence |
 |---|---|
 | Distribution | One non-root Linux container, AMD64 or ARM64; native architecture startup checks. Docker Desktop uses the matching Linux image. |
-| Kubernetes | Official chart 0.2.0; Helm 4.3.1, Kubernetes 1.34.11/1.37.0 and both storage profiles tested in disposable single-node kind clusters. No vendor, storage-driver or multi-zone availability certification. [Installation and test scope](KUBERNETES.md). |
+| Kubernetes | Official chart 0.3.0; Helm 4.3.1, Kubernetes 1.34.11/1.37.0 and both storage profiles tested in disposable single-node kind clusters. No vendor, storage-driver or multi-zone availability certification. [Installation and test scope](KUBERNETES.md). |
 | Default storage | One SQLite/WAL process per persistent volume. Preserve the entire volume and its encryption key. |
 | Shared storage | PostgreSQL 18 is the tested baseline. Replicas share a schema and master key; one writable database authority owns policies and exact admission. |
 | Active/active sites | Local-preference/placement routing, global admission, site drain and fenced-process recovery. The container exercise runs on one host; geographic WAN and database primary promotion remain operator acceptance. |
@@ -18,7 +18,7 @@
 | Console | Responsive browser console checked at 320–1440 px, including keyboard navigation and bounded dialogs. Real-device and cross-engine certification are not claimed. |
 | Inference | The [documented Chat/native/embedding/audio subsets](MODEL_INTERFACES.md), admission, guardrails and accounting. Complete-output guardrails deliberately buffer output. |
 | Identity / guardrails | Documented OIDC/SAML/SCIM behavior, real Keycloak evidence and signed fixtures. Actual Entra/Okta/NeMo/Vault deployments need their environment-specific acceptance. |
-| Operations | Fresh install, published-image SQLite RC4-to-2.1 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on RC4 in separate storage. |
+| Operations | Fresh install, published-image SQLite 2.1-to-2.2 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on 2.1.0 in separate storage. |
 | Chart operations | Isolated SQLite/PostgreSQL archive recovery, configuration-revision rollout and monitoring-token authorization. Optional Prometheus Operator 0.95.1 CRD schemas and promtool 3.16.0 rule tests; actual Operator discovery, Alertmanager delivery and backup RPO/RTO need deployment acceptance. |
 
 The predeclared synthetic release envelope is **eight clients, 30 seconds of bounded load and 30 minutes at a target five calls/second**, with zero unsuccessful load/soak calls, at least 8,000 soak calls, p95 ≤2,000 ms and sampled west-gateway RSS growth ≤64 MiB. These are regression thresholds for a deterministic 5 ms fixture on a CI runner. They are **not** model token-throughput guarantees, customer sizing advice or days of endurance evidence. Full results identify the actual source/image, runner, duration and observations.
@@ -27,7 +27,7 @@ The predeclared synthetic release envelope is **eight clients, 30 seconds of bou
 
 - Gateway releases use `MAJOR.MINOR.PATCH`. A 2.2.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
 - Gateway **2.2.0**, SDK **1.0.0**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **6** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
-- Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. RC4-to-2.1 uses the same schema/inference revision and tests an unchanged binding across the upgrade.
+- Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. 2.1-to-2.2 uses the same schema/inference revision and tests an unchanged binding across the upgrade.
 - Stop all shared-state replicas, back up and upgrade together. Preserve one writable authority; no offline quota grants are supported. Do not use independent writable DC databases as a substitute for database HA.
 - Returning to an older image uses its **pre-upgrade backup** in separately prepared storage. Never assume an older image can downgrade a newer database. The release acceptance exercises that recovery path.
 
@@ -37,4 +37,4 @@ Configured request/token limits, retention and concurrency ceilings are policy v
 
 Global ingress, verified TLS, PostgreSQL replication/promotion/durability, host patches, model capacity, regional network behavior, actual IdP/guardrail integrations and workload-specific acceptance belong to the installation. Run a staged pilot with your endpoint before broad rollout. Unavailable infrastructure, unaudited third-party safety, commercial support or external adoption are not asserted by the stable version number.
 
-[Release evidence](STABLE_2_1.md) · [Security policy](../SECURITY.md) · [Issue tracker](https://github.com/eturkok/pliqra/issues)
+[Protocol 1.0 and release evidence](evidence/protocol-1.0.json) · [Previous 2.1 baseline](STABLE_2_1.md) · [Security policy](../SECURITY.md) · [Issue tracker](https://github.com/eturkok/pliqra/issues)

@@ -40,7 +40,7 @@ pliqra-conformance --url http://localhost:8088 --service support
 pliqra-conformance --url http://localhost:8088 --service support --invoke
 ```
 
-For negotiated 1.0, eleven metadata/negative checks cover discovery, service contracts, explicit binding, unknown capabilities, required/optional extensions invalid credentials, explicit/unknown version selection, invalid TTL, missing bindings and wrong bound service names. `--invoke` adds completion and terminal-stream checks. JSON output includes individual pass/fail results, scope and inference flag; exit status fails when any check fails. The suite imports no gateway code. Automated live HTTP tests run it against Pliqra and the separate standard-library reference server with synthetic upstreams. A passing core profile does not certify quality, policy effectiveness, resilience, every optional extension or external adoption.
+For negotiated 1.0, eleven metadata/negative checks cover discovery, service contracts, explicit binding, unknown capabilities, required/optional extensions, invalid credentials, explicit/unknown version selection, invalid TTL, missing bindings and wrong bound service names. `--invoke` adds completion and terminal-stream checks. JSON output includes individual pass/fail results, scope and inference flag; exit status fails when any check fails. The suite imports no gateway code. Automated live HTTP tests run it against Pliqra and the separate standard-library reference server with synthetic upstreams. A passing core profile does not certify quality, policy effectiveness, resilience, every optional extension or external adoption.
 
 Run `node sdk/javascript/test.mjs`, `cd sdk/go && go test ./...`, and `python -m pytest tests/test_live_conformance.py -q`. CI runs these checks too. Third parties can use the suite against an independently implemented server; no external attestation has been obtained.
 
@@ -51,3 +51,5 @@ Run `node sdk/javascript/test.mjs`, `cd sdk/go && go test ./...`, and `python -m
 Stateful tests cover binding ownership, expiry, revoked credentials, contract changes, version-independent fingerprints/invocation, unsupported-version rejection before side effects, duplicate headers and mounted workspace paths. Canonical gateway messages are checked against the versioned JSON schema. All three SDKs reject unknown protocols and inconsistent negotiation; Python/JavaScript do not cache a rejected discovery response.
 
 The CLI reports its actual negotiated `protocol` and `stability`. Against an old server it runs the legacy seven-check core (nine with inference) and reports **compatibility**, not stable 1.0. A 1.0 server runs eleven checks (thirteen with inference). Conformance does not create an ecosystem-adoption or external-vendor claim.
+
+[Published 1.0 acceptance record](evidence/protocol-1.0.json) identifies the immutable gateway/SDK source, compatibility matrix, release image and exact-image upgrade/recovery run.

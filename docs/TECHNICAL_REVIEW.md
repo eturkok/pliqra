@@ -76,7 +76,7 @@ This diagram shows the buffered response path with output checks. During live up
 4. **Explicit failure behavior.** Revoked access returns 401/403; changed service/policy contracts require renewal with 409; temporary eligibility failures return 503; unsupported requests return 422. An upstream stream that has started is never replayed.
 5. **Observable, bounded side effects.** Tests, probes and evaluations require explicit initiation. Raw content is not retained by default. Child processes and temporary services must not remain running after work finishes.
 
-Release 1.2 added the inference implementation revision to the fingerprint calculation. Existing bindings and cache entries do not silently inherit changed execution semantics; applications explicitly bind to the new contract. The wire protocol remains draft 0.1.
+Release 1.2 added the inference implementation revision to the fingerprint calculation. Existing bindings and cache entries do not silently inherit changed execution semantics; applications explicitly bind to the new contract. That release used wire protocol draft 0.1; Gateway 2.2 promotes the compatible core to stable 1.0.
 
 ## Validation and acceptance for 1.2
 
@@ -108,7 +108,7 @@ The previous future-scope list is now linked to delivered features and acceptanc
 
 Replica leases fence stale processes; recovery retains uncertain charges and never replays started inference. Management writes participate in restore barriers. Logical restore is transactional, bounded, key-validated and isolated to the selected schema. Organization sessions and keys are separate, with root-directory administration distinct from tenant data permissions.
 
-Native/binary routes share authentication/admission/accounting and apply guardrails only to inspectable content; incompatible required stages fail closed. Provider-native streaming is labeled buffered. External score evidence includes dataset/judge/service versions, and publication rejects stale or failed evidence. The protocol remains draft and its executable core profile makes no vendor-safety or ecosystem claim.
+Native/binary routes share authentication/admission/accounting and apply guardrails only to inspectable content; incompatible required stages fail closed. Provider-native streaming is labeled buffered. External score evidence includes dataset/judge/service versions, and publication rejects stale or failed evidence. At that checkpoint the protocol was draft; the executable core profile made no vendor-safety or ecosystem claim. Gateway 2.2 publishes the stable 1.0 contract with the same claim boundaries.
 
 [2.0 validation](RELEASE.md) and [deployment limits](PLATFORM.md) record real local interoperability separately from synthetic provider fixtures and unavailable customer tenants. Database HA infrastructure and production capacity still require operator validation.
 

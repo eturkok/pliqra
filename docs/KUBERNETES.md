@@ -136,4 +136,4 @@ The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-versio
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
 
-[Chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [The original 0.1.0 record](evidence/helm-0.1.0.json) remains available for that earlier release.
+[Chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.
