@@ -179,11 +179,16 @@
         },
         "secureCookies": {
           "type": "boolean"
+        },
+        "revision": {
+          "type": "string",
+          "maxLength": 128
         }
       },
       "required": [
         "publicUrl",
-        "secureCookies"
+        "secureCookies",
+        "revision"
       ]
     },
     "topology": {
@@ -353,11 +358,18 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 100
+        },
+        "unhealthyPodEvictionPolicy": {
+          "enum": [
+            "IfHealthyBudget",
+            "AlwaysAllow"
+          ]
         }
       },
       "required": [
         "enabled",
-        "minAvailable"
+        "minAvailable",
+        "unhealthyPodEvictionPolicy"
       ]
     },
     "networkPolicy": {
@@ -451,6 +463,98 @@
       "required": [
         "enabled"
       ]
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "interval": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*s$"
+        },
+        "scrapeTimeout": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*s$"
+        },
+        "existingSecret": {
+          "type": "string",
+          "maxLength": 253,
+          "pattern": "^$|^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+        },
+        "tokenKey": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$"
+        },
+        "prometheusRule": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "enabled",
+            "labels"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "labels",
+        "interval",
+        "scrapeTimeout",
+        "existingSecret",
+        "tokenKey",
+        "prometheusRule"
+      ]
+    },
+    "topologySpreadConstraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "maxSkew": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "topologyKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "whenUnsatisfiable": {
+            "enum": [
+              "DoNotSchedule",
+              "ScheduleAnyway"
+            ]
+          },
+          "minDomains": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "maxSkew",
+          "topologyKey",
+          "whenUnsatisfiable"
+        ]
+      }
     }
   },
   "required": [
@@ -482,6 +586,8 @@
     "extraEnv",
     "extraVolumes",
     "extraVolumeMounts",
-    "tests"
+    "tests",
+    "monitoring",
+    "topologySpreadConstraints"
   ]
 }

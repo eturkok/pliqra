@@ -13,7 +13,7 @@ Pliqra's optional Helm chart packages the same platform-independent application 
 Use Kubernetes 1.34+ and Helm. The tested Helm version is 4.3.1. A default StorageClass must exist unless you set `persistence.storageClass` or `persistence.existingClaim`.
 
 ```sh
-helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.1.0/pliqra-0.1.0.tgz --namespace pliqra --create-namespace --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.2.0/pliqra-0.2.0.tgz --namespace pliqra --create-namespace --wait
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
@@ -21,15 +21,15 @@ Open **http://localhost:8088**, create the administrator, connect a model endpoi
 
 The default Service is cluster-internal and ingress is disabled. Initialize the administrator privately before exposing a workspace. `helm test pliqra -n pliqra` checks readiness and protocol discovery through the Service without creating an administrator or making an inference call.
 
-Chart **0.1.0** pins the published **2.1.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
+Chart **0.2.0** pins the published **2.1.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
 
 ## Verify the downloadable package
 
 ```sh
-curl -fL -o pliqra-0.1.0.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.1.0/pliqra-0.1.0.tgz
-curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.1.0/SHA256SUMS
+curl -fL -o pliqra-0.2.0.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.2.0/pliqra-0.2.0.tgz
+curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.2.0/SHA256SUMS
 sha256sum --check SHA256SUMS
-helm show values ./pliqra-0.1.0.tgz
+helm show values ./pliqra-0.2.0.tgz
 ```
 
 On macOS, use `shasum -a 256 -c SHA256SUMS` instead. The public GitHub release archive needs no registry login; it can also be mirrored into your own Helm/OCI repository. A checksum detects changed bytes; it is not a separate signature or third-party attestation.
@@ -69,12 +69,34 @@ host=db.example.com port=5432 dbname=pliqra user=pliqra password=YOUR_PASSWORD s
 The configured role needs schema creation/migration permissions. Supply actual credentials through your secret manager or private files with `kubectl create secret generic ... --from-file`, not committed YAML. Then use the [PostgreSQL values example](../charts/pliqra/examples/postgresql.yaml):
 
 ```sh
-helm upgrade --install pliqra ./pliqra-0.1.0.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
+helm upgrade --install pliqra ./pliqra-0.2.0.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
 ```
 
 Use this profile on a **fresh installation**. Changing `storage.mode` or an existing SQLite data claim in place is rejected. For SQLite-to-PostgreSQL migration, stop the source and follow [offline migration](PLATFORM.md#backup-and-migration), preserving its encryption key, then install a separate release against the restored database. The chart does not migrate data between backends.
 
-The default key is backed by the SQLite PVC when no external encryption Secret is selected. With PostgreSQL, only pod-local scratch space is ephemeral; the shared database and encryption Secret are your durable state. Never attach one SQLite volume to several replicas. The optional anti-affinity example uses release name `pliqra`; adapt its instance label if you choose another name.
+The default key is backed by the SQLite PVC when no external encryption Secret is selected. With PostgreSQL, only pod-local scratch space is ephemeral; the shared database and encryption Secret are your durable state. Never attach one SQLite volume to several replicas.
+
+## Failure domains and maintenance
+
+The PostgreSQL example includes **soft hostname spread**. `topologySpreadConstraints` receives the release's pod selector automatically, including a custom release name. For a strict two-zone requirement, use `topology.kubernetes.io/zone`, `DoNotSchedule` and `minDomains: 2`. The cluster must actually have eligible nodes and capacity in those zones; hard constraints can leave pods Pending. Multiple replicas on one node are not node-failure protection. [Kubernetes topology spread](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/) explains this scheduling boundary.
+
+A PDB's `minAvailable` must be lower than the minimum configured replica count, including the HPA minimum. The chart rejects a configuration that blocks every healthy voluntary eviction. A one-pod SQLite installation normally leaves PDB disabled and accepts a maintenance interruption. `unhealthyPodEvictionPolicy: AlwaysAllow` lets an unhealthy pod be evicted during node maintenance; it does not make healthy-pod eviction bypass the budget. PDBs do not protect against node crashes or the chart's Recreate upgrade. See [the Kubernetes PDB API](https://kubernetes.io/docs/reference/kubernetes-api/policy/pod-disruption-budget-v1/).
+
+After a reviewed database credential or CA update, change a non-secret `config.revision` in your values and run the usual reviewed Helm upgrade. The changed pod annotation replaces the pods; environment-based Secret references and TLS connections are initialized again. This is an explicit rollout trigger, not a Secret watcher or encryption-key rotation. Never replace the master key without a supported data re-encryption/migration procedure. Account for the Recreate interruption and coordinate other releases/sites using that database.
+
+## Monitoring integration
+
+Initialize the administrator privately, create a monitoring token in **Operations**, and deliver it through your secret manager as `pliqra-monitoring/token` in the application namespace. With an existing Prometheus Operator installation, add [monitoring values](../charts/pliqra/examples/monitoring.yaml):
+
+```sh
+helm upgrade pliqra ./pliqra-0.2.0.tgz -n pliqra -f your-values.yaml -f charts/pliqra/examples/monitoring.yaml --wait
+```
+
+The optional **ServiceMonitor** scrapes `/metrics` with `authorization.credentials` referencing the Secret; no token is stored in values or rendered resources. Enable its **PrometheusRule** for missing/all-failed scrapes, an individual failed replica and unresolved usage reservations. Both are opt-in and require existing CRDs; the chart fails clearly if they are missing. It installs neither CRDs nor a monitoring stack. Adapt the example labels to your Prometheus `serviceMonitorSelector`, namespace selector and rule selector. Allow the Prometheus pods through NetworkPolicy. [Operator selection and troubleshooting](https://prometheus-operator.dev/docs/platform/troubleshooting/) covers discovery failures.
+
+An HTTP scrape inside the cluster is unencrypted unless your service mesh supplies transport encryption. Keep this path private and restrict ingress to trusted collectors; use your existing encrypted transport policy when required. The existing public ingress is not required for scraping.
+
+See [metric aggregation, alarm response and external availability checks](OPERATIONS.md#monitoring-and-alerts). Scrape success is not proof that a model call succeeds. These rules deliberately avoid deriving request rates from the retained-history counter.
 
 ## HTTPS and inference traffic
 
@@ -101,10 +123,12 @@ A same-image Helm rollback can restore chart configuration. An image downgrade i
 
 ## Validation and release pipeline
 
-The **Helm chart** workflow lints and renders the chart, rejects unsafe values, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, a real RC4-to-2.1.0 SQLite image upgrade and same-schema rollback, PostgreSQL configuration upgrades/rollback, three replicas, retained SQLite PVC and reinstall. Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernetes API; an ingress controller, metrics-server and policy-enforcing CNI are not part of that test fixture.
+The **Helm chart** workflow lints and renders the chart, rejects unsafe values, tests alert failure/recovery/deduplication with checksum-pinned **promtool 3.16.0**, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, a real RC4-to-2.1.0 SQLite image upgrade and same-schema rollback, PostgreSQL configuration upgrades/rollback, three replicas, retained SQLite PVC and reinstall. It also creates encrypted backups, rejects incorrect passwords, restores into isolated SQLite directories/PostgreSQL schemas, verifies credentials/bindings and session revocation, and checks the source remains usable. Monitoring-token authorization, configuration-revision pod replacement and topology-spread resources are exercised too.
+
+Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernetes API. ServiceMonitor and PrometheusRule resources use the pinned **Prometheus Operator 0.95.1 CRD schemas**. The fixture does not run the Operator/controller, an ingress controller, metrics-server or a policy-enforcing CNI. Alarm expressions are tested with promtool; actual collector discovery, Alertmanager delivery and node/zone loss belong in your deployment acceptance.
 
 The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-version>` tag, reruns the checks, then publishes the exact tested archive, SHA-256 checksum and both cluster reports as a separate GitHub release. It does not overwrite the application image or stable application release.
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
 
-[Published chart acceptance record](evidence/helm-0.1.0.json) links the exact release, source revision, package checksum and both cluster reports.
+[Initial chart 0.1.0 acceptance record](evidence/helm-0.1.0.json) records the first published package. Current chart releases attach their exact package checksum and both cluster reports; see the release linked above.

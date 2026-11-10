@@ -13,16 +13,20 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--helm', default='helm')
+    parser.add_argument('--rules-directory', type=Path)
     args = parser.parse_args()
     chart = ROOT / 'charts/pliqra'
     checks = []
 
-    def render(values=None, reject=None):
+    def render(values=None, reject=None, api_versions=()):
         with tempfile.TemporaryDirectory(prefix='pliqra-chart-render-') as directory:
             path = Path(directory) / 'values.json'
             path.write_text(json.dumps(values or {}))
-            result = subprocess.run([args.helm, 'template', 'pliqra', str(chart), '--namespace', 'chart-check',
-                                     '--kube-version', '1.34.11', '-f', str(path)], text=True, capture_output=True)
+            command = [args.helm, 'template', 'pliqra', str(chart), '--namespace', 'chart-check',
+                       '--kube-version', '1.34.11', '-f', str(path)]
+            for version in api_versions:
+                command.extend(['--api-versions', version])
+            result = subprocess.run(command, text=True, capture_output=True)
         if reject:
             assert result.returncode != 0 and reject.lower() in result.stderr.lower(), result.stderr
             checks.append('rejected ' + reject)
@@ -71,6 +75,32 @@ def main():
     assert {'Ingress', 'HorizontalPodAutoscaler', 'PodDisruptionBudget', 'NetworkPolicy'} <= {x['kind'] for x in objects}
     assert 'replicas' not in get(objects, 'Deployment')['spec']
     checks.append('multi-DC, HTTPS ingress, HPA, PDB and network policy render together')
+    spread = [{'maxSkew': 1, 'topologyKey': 'topology.kubernetes.io/zone',
+               'whenUnsatisfiable': 'DoNotSchedule', 'minDomains': 2}]
+    changed = render({**pg, 'config': {'revision': 'secret-2'}, 'topologySpreadConstraints': spread})
+    template = get(changed, 'Deployment')['spec']['template']
+    constraint = template['spec']['topologySpreadConstraints'][0]
+    assert constraint['labelSelector']['matchLabels'] == deployment['spec']['selector']['matchLabels']
+    assert constraint['minDomains'] == 2 and template['metadata']['annotations']['pliqra.io/config-revision'] == 'secret-2'
+    assert get(objects, 'PodDisruptionBudget')['spec']['unhealthyPodEvictionPolicy'] == 'AlwaysAllow'
+    checks.append('release-scoped topology spread, controlled Secret revision and unhealthy pod eviction')
+    monitoring = {'monitoring': {'enabled': True, 'existingSecret': 'monitoring-token',
+                                'prometheusRule': {'enabled': True}}}
+    apis = ['monitoring.coreos.com/v1/ServiceMonitor', 'monitoring.coreos.com/v1/PrometheusRule']
+    monitored = render(monitoring, api_versions=apis)
+    monitor = get(monitored, 'ServiceMonitor')['spec']
+    assert monitor['selector']['matchLabels'] == get(monitored, 'Service')['spec']['selector']
+    assert monitor['namespaceSelector']['matchNames'] == ['chart-check']
+    assert monitor['endpoints'][0]['authorization']['credentials'] == {'name': 'monitoring-token', 'key': 'token'}
+    rules = get(monitored, 'PrometheusRule')['spec']
+    assert len(rules['groups'][0]['rules']) == 3
+    if args.rules_directory:
+        args.rules_directory.mkdir(parents=True, exist_ok=True)
+        (args.rules_directory / 'pliqra.rules.yaml').write_text(yaml.safe_dump(rules))
+    checks.append('optional monitoring uses a scoped Secret reference and workspace-deduplicated alerts')
+    render({'monitoring': {'enabled': True}}, reject='monitoring.existingSecret')
+    render(monitoring, reject='ServiceMonitor CRD')
+    render(monitoring, reject='PrometheusRule CRD', api_versions=apis[:1])
     for values, message in [
         ({'replicaCount': 2}, 'SQLite requires'),
         ({'autoscaling': {'enabled': True}}, 'SQLite cannot'),
@@ -87,6 +117,17 @@ def main():
         ({'database': {'url': 'inline-secret-is-not-supported'}}, 'additional'),
         ({'topology': {'site': 'shared'}}, 'not'),
         ({'extraVolumes': [{'name': 'data', 'emptyDir': {}}]}, 'reserved volume'),
+        ({'podDisruptionBudget': {'enabled': True}}, 'PDB minAvailable'),
+        ({**pg, 'autoscaling': {'enabled': True, 'minReplicas': 1}, 'podDisruptionBudget': {'enabled': True}}, 'PDB minAvailable'),
+        ({'topologySpreadConstraints': [{**spread[0], 'whenUnsatisfiable': 'ScheduleAnyway'}]}, 'minDomains requires'),
+        ({'monitoring': {'prometheusRule': {'enabled': True}}}, 'requires monitoring.enabled'),
+        ({'monitoring': {'enabled': True, 'existingSecret': 'token', 'scrapeTimeout': '60s'}}, 'scrapeTimeout cannot exceed'),
+        ({'monitoring': {'labels': {'app.kubernetes.io/instance': 'other'}}}, 'managed chart labels'),
+        ({'podAnnotations': {'pliqra.io/config-revision': 'other'}}, 'Use config.revision'),
+        ({'extraVolumeMounts': [{'name': 'other', 'mountPath': '/data/key'}]}, 'shadow managed paths'),
+        ({'extraVolumeMounts': [{'name': 'other', 'mountPath': '/run'}]}, 'shadow managed paths'),
+        ({'extraVolumeMounts': [{'name': 'other', 'mountPath': '/app'}]}, 'shadow managed paths'),
+        ({'extraVolumeMounts': [{'name': 'other', 'mountPath': '/data/../tmp'}]}, 'shadow managed paths'),
     ]:
         render(values, reject=message)
     metadata = yaml.safe_load((chart / 'Chart.yaml').read_text())

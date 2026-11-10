@@ -1,0 +1,14 @@
+# First initialize the administrator privately. Rotate a monitoring token in
+# Operations and deliver it to this namespace as Secret pliqra-monitoring/token.
+# Prometheus Operator CRDs/controller must already be installed.
+monitoring:
+  enabled: true
+  existingSecret: pliqra-monitoring
+  labels:
+    release: monitoring
+  prometheusRule:
+    enabled: true
+    labels:
+      release: monitoring
+# Adapt both labels to your Prometheus selectors. When NetworkPolicy is enabled,
+# also permit the actual Prometheus pods/namespaces to reach TCP 8080.

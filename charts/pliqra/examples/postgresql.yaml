@@ -10,12 +10,13 @@ encryption:
   existingSecret: pliqra-backend
 podDisruptionBudget:
   enabled: true
-affinity:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/instance: pliqra
-          topologyKey: kubernetes.io/hostname
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+# For a strict two-zone requirement, use a multi-zone cluster and add:
+# - maxSkew: 1
+#   topologyKey: topology.kubernetes.io/zone
+#   whenUnsatisfiable: DoNotSchedule
+#   minDomains: 2
+# Hard constraints can leave pods Pending if the required capacity is absent.

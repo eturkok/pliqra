@@ -14,7 +14,6 @@ import urllib.error
 import urllib.request
 import uuid
 
-import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = '''from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -36,6 +35,48 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(401, {'error': 'Synthetic credential mismatch'})
         self.send(200, {'id': 'fixture', 'model': body['model'], 'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': 'Chart acceptance passed'}, 'finish_reason': 'stop'}], 'usage': {'prompt_tokens': 2, 'completion_tokens': 3, 'total_tokens': 5}})
 ThreadingHTTPServer(('0.0.0.0', 8090), Handler).serve_forever()
+'''
+RECOVERY_DRILL = '''import base64, json, os, tempfile, uuid
+from pathlib import Path
+from fastapi import HTTPException
+from pliqra.db import SQLiteStore
+from pliqra.operations import restore_bytes
+from pliqra.security import Vault
+data = json.load(__import__('sys').stdin)
+archive = base64.b64decode(data['archive'], validate=True)
+schema = 'drill_' + uuid.uuid4().hex
+store = None
+try:
+    with tempfile.TemporaryDirectory(prefix='pliqra-restore-drill-') as directory:
+        directory = Path(directory)
+        if data['profile'] == 'postgresql':
+            from pliqra.postgres import PostgresStore
+            store = PostgresStore(directory, os.environ['PLIQRA_DATABASE_URL'], schema)
+        else:
+            store = SQLiteStore(directory)
+        vault = Vault(directory, store)
+        try:
+            restore_bytes(store, vault, archive, 'deliberately-wrong-password')
+        except HTTPException as error:
+            assert error.status_code == 422
+        else:
+            raise AssertionError('Incorrect archive password was accepted')
+        assert store.one('SELECT COUNT(*) AS n FROM users')['n'] == 0
+        restore_bytes(store, vault, archive, data['password'])
+        assert store.one('SELECT COUNT(*) AS n FROM sessions')['n'] == 0
+        assert store.one("SELECT id FROM users WHERE role='admin' AND active=1")
+        assert store.one('SELECT id FROM bindings WHERE id=?', (data['binding'],))
+        credential = store.one('SELECT secret FROM connections WHERE id=?', (data['connection'],))
+        assert vault.decrypt(credential['secret']) == 'fixture-secret'
+        print('Isolated restore verified: admin, binding, encrypted credential, revoked sessions; wrong password rejected.')
+finally:
+    if store is not None:
+        store.close()
+    if data['profile'] == 'postgresql':
+        import psycopg
+        from psycopg import sql
+        with psycopg.connect(os.environ['PLIQRA_DATABASE_URL'], autocommit=True) as db:
+            db.execute(sql.SQL('DROP SCHEMA IF EXISTS {} CASCADE').format(sql.Identifier(schema)))
 '''
 
 
@@ -246,6 +287,51 @@ class Lab:
                     assert request(base, '/readyz')['version'] == '2.1.0'
                     request(base, binding['invoke'], body)
                 self.mark(('RC4-to-2.1.0 image' if self.profile == 'sqlite' else 'Recreate configuration') + ' upgrade preserves identity, bindings and encrypted provider access')
+                with self.forward(pods[0]) as base:
+                    password = secrets.token_urlsafe(24)
+                    req = urllib.request.Request(base + '/api/v1/backups',
+                        data=json.dumps({'password': password}).encode(),
+                        headers={'Content-Type': 'application/json', 'X-Pliqra-CSRF': csrf})
+                    with cookies.open(req, timeout=30) as response:
+                        archive = response.read()
+                    payload = {'profile': self.profile, 'password': password,
+                               'archive': base64.b64encode(archive).decode(),
+                               'binding': binding['id'], 'connection': connection['id']}
+                    result = self.kube('exec', '-i', pods[0], '--', 'python', '-c', RECOVERY_DRILL,
+                                       payload=json.dumps(payload))
+                    assert 'Isolated restore verified' in result
+                    # The drill uses another SQLite directory/PostgreSQL schema;
+                    # source identity and inference must remain usable.
+                    request(base, binding['invoke'], body)
+                    monitoring = request(base, '/api/v1/monitoring-token', {})['token']
+                    for token, expected in [(None, 401), (monitoring, 200)]:
+                        headers = {'Authorization': 'Bearer ' + token} if token else {}
+                        try:
+                            response = urllib.request.urlopen(urllib.request.Request(base + '/metrics', headers=headers), timeout=10)
+                        except urllib.error.HTTPError as error:
+                            response = error
+                        with response:
+                            content = response.read()
+                            assert response.status == expected
+                            if token:
+                                assert b'pliqra_unresolved_costs' in content
+                self.mark('encrypted backup restores into an isolated target; wrong password rejected and source remains usable')
+                self.apply({'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': 'monitoring'},
+                            'stringData': {'token': monitoring}})
+                before_revision = set(pods)
+                monitored = {**self.values, 'config': {'revision': 'monitoring-1'},
+                             'monitoring': {'enabled': True, 'existingSecret': 'monitoring', 'prometheusRule': {'enabled': True}},
+                             'topologySpreadConstraints': [{'maxSkew': 1, 'topologyKey': 'kubernetes.io/hostname', 'whenUnsatisfiable': 'ScheduleAnyway'}]}
+                values.write_text(json.dumps(monitored))
+                self.helm('upgrade', 'pliqra', str(self.chart), '-f', str(values), '--wait', '--timeout', '5m')
+                pods = self.ready(count)
+                assert not before_revision.intersection(pods)
+                monitor = json.loads(self.kube('get', 'servicemonitor', 'pliqra', '-o', 'json'))
+                assert monitor['spec']['endpoints'][0]['authorization']['credentials']['name'] == 'monitoring'
+                assert len(json.loads(self.kube('get', 'prometheusrule', 'pliqra', '-o', 'json'))['spec']['groups'][0]['rules']) == 3
+                with self.forward(pods[0]) as base:
+                    request(base, binding['invoke'], body)
+                self.mark('authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state')
                 self.helm('rollback', 'pliqra', '1', '--wait', '--timeout', '5m')
                 pods = self.ready(count)
                 with self.forward(pods[0]) as base:
@@ -278,6 +364,7 @@ class Lab:
 
 
 def main():
+    import yaml
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--context', required=True)
     parser.add_argument('--chart', type=Path, required=True)
@@ -291,7 +378,7 @@ def main():
     image = values['image']['repository'] + '@' + values['image']['digest']
     report = {'passed': False, 'chart_version': metadata['version'], 'app_version': metadata['appVersion'],
               'image': image, 'context': args.context, 'profiles': [],
-              'boundary': 'Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 image upgrade/rollback on schema 6 and PostgreSQL chart configuration upgrades. No incompatible database-schema downgrade, geographic HA or real model capacity certification.'}
+              'boundary': 'Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 upgrade/rollback on schema 6, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification.'}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
         for profile in ('sqlite', 'postgresql'):

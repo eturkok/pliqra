@@ -67,4 +67,4 @@ Returning to an older image may require restoring its pre-upgrade backup: a newe
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.1.0 uses the existing 2.1.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; the latest application release remains 2.1.0. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.2.0 uses the existing 2.1.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; the latest application release remains 2.1.0. [Chart source](../charts/pliqra/README.md).

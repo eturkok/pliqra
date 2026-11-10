@@ -57,6 +57,27 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 {{- if and .Values.autoscaling.enabled (lt (int .Values.autoscaling.maxReplicas) (int .Values.autoscaling.minReplicas)) -}}{{ fail "autoscaling.maxReplicas must be >= minReplicas" }}{{- end -}}
 {{- if .Values.autoscaling.enabled -}}{{- $_ := required "CPU autoscaling requires resources.requests.cpu" (dig "requests" "cpu" "" .Values.resources) -}}{{- end -}}
+{{- $minimumReplicas := int .Values.replicaCount -}}
+{{- if .Values.autoscaling.enabled -}}{{- $minimumReplicas = int .Values.autoscaling.minReplicas -}}{{- end -}}
+{{- if and .Values.podDisruptionBudget.enabled (ge (int .Values.podDisruptionBudget.minAvailable) $minimumReplicas) -}}{{ fail "PDB minAvailable must be lower than the minimum replica count; otherwise every healthy voluntary eviction is blocked" }}{{- end -}}
+{{- if hasKey .Values.podAnnotations "pliqra.io/config-revision" -}}{{ fail "Use config.revision instead of overriding the managed pod annotation" }}{{- end -}}
+{{- range .Values.topologySpreadConstraints -}}
+  {{- if and (hasKey . "minDomains") (ne .whenUnsatisfiable "DoNotSchedule") -}}{{ fail "topologySpreadConstraints minDomains requires DoNotSchedule" }}{{- end -}}
+{{- end -}}
+{{- if .Values.monitoring.enabled -}}
+  {{- $_ := required "Monitoring requires monitoring.existingSecret containing an Operations monitoring token" .Values.monitoring.existingSecret -}}
+  {{- if gt (int (trimSuffix "s" .Values.monitoring.scrapeTimeout)) (int (trimSuffix "s" .Values.monitoring.interval)) -}}{{ fail "monitoring.scrapeTimeout cannot exceed monitoring.interval" }}{{- end -}}
+  {{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor") -}}{{ fail "Monitoring requires an installed ServiceMonitor CRD (Prometheus Operator)" }}{{- end -}}
+{{- end -}}
+{{- range $labels := list .Values.monitoring.labels .Values.monitoring.prometheusRule.labels -}}
+  {{- range $name, $value := $labels -}}
+    {{- if or (hasPrefix "app.kubernetes.io/" $name) (eq $name "helm.sh/chart") -}}{{ fail "monitoring labels cannot override managed chart labels" }}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if .Values.monitoring.prometheusRule.enabled -}}
+  {{- if not .Values.monitoring.enabled -}}{{ fail "PrometheusRule requires monitoring.enabled=true" }}{{- end -}}
+  {{- if not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PrometheusRule") -}}{{ fail "Alert rules require an installed PrometheusRule CRD (Prometheus Operator)" }}{{- end -}}
+{{- end -}}
 {{- if .Values.ingress.enabled -}}
   {{- $_ := required "Ingress requires ingress.host" .Values.ingress.host -}}
   {{- $_ := required "Ingress requires an existing ingress.tlsSecret" .Values.ingress.tlsSecret -}}
@@ -71,5 +92,11 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- $_ := set $names .name true -}}
 {{- end -}}
 {{- range .Values.extraVolumes -}}{{- if has .name (list "data" "tmp" "database-ca") -}}{{ fail "extraVolumes uses a reserved volume name" }}{{- end -}}{{- end -}}
-{{- range .Values.extraVolumeMounts -}}{{- if or (has .name (list "data" "tmp" "database-ca")) (has .mountPath (list "/data" "/tmp" "/run/pliqra/database")) -}}{{ fail "extraVolumeMounts uses a reserved volume or mount path" }}{{- end -}}{{- end -}}
+{{- range .Values.extraVolumeMounts -}}
+  {{- $path := clean .mountPath -}}
+  {{- if or (has .name (list "data" "tmp" "database-ca")) (eq $path "/") -}}{{ fail "extraVolumeMounts uses a reserved volume or mount path" }}{{- end -}}
+  {{- range $reserved := list "/data" "/tmp" "/app" "/run/pliqra/database" -}}
+    {{- if or (eq $path $reserved) (hasPrefix (printf "%s/" $reserved) $path) (hasPrefix (printf "%s/" $path) $reserved) -}}{{ fail "extraVolumeMounts cannot shadow managed paths or their parents/children" }}{{- end -}}
+  {{- end -}}
+{{- end -}}
 {{- end -}}

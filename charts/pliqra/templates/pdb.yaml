@@ -7,6 +7,7 @@ metadata:
     {{- include "pliqra.labels" . | nindent 4 }}
 spec:
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  unhealthyPodEvictionPolicy: {{ .Values.podDisruptionBudget.unhealthyPodEvictionPolicy }}
   selector:
     matchLabels:
       {{- include "pliqra.selectorLabels" . | nindent 6 }}

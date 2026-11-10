@@ -22,6 +22,27 @@ from tests.test_app import workspace, connect
 from tests.test_fabric import gateway, rail, bound_key, invoke
 
 
+def test_packaged_image_recovery_drill_is_isolated(workspace):
+    """Run the same offline restore used by the real Kubernetes acceptance job."""
+    import subprocess
+    import sys
+    from scripts.check_kubernetes_install import RECOVERY_DRILL
+    client, app, _ = workspace
+    connection = connect(client, api_key='fixture-secret')
+    service = connection['services'][0]
+    binding = client.post('/protocol/v1/bindings', json={'service': service['name']}).json()
+    password = 'synthetic-recovery-drill-password'
+    archive = client.post('/api/v1/backups', json={'password': password}).content
+    payload = {'profile': 'sqlite', 'archive': base64.b64encode(archive).decode(),
+               'password': password, 'connection': connection['id'], 'binding': binding['id']}
+    result = subprocess.run([sys.executable, '-c', RECOVERY_DRILL], input=json.dumps(payload),
+                            text=True, capture_output=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    assert 'Isolated restore verified' in result.stdout
+    assert client.get('/api/v1/session').json()['user']['role'] == 'admin'
+    assert app.state.vault.decrypt(app.state.store.one('SELECT secret FROM connections')['secret']) == 'fixture-secret'
+
+
 def swap_upstream(app, handler):
     mock = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     app.state.gateway.client = mock

@@ -1,0 +1,46 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "pliqra.fullname" . }}
+  labels:
+    {{- include "pliqra.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: {{ include "pliqra.fullname" . }}.operations
+      rules:
+        - alert: PliqraMetricsUnavailable
+          expr: max(up{namespace={{ .Release.Namespace | quote }},service={{ include "pliqra.fullname" . | quote }},endpoint="http"}) == 0 or max(absent(up{namespace={{ .Release.Namespace | quote }},service={{ include "pliqra.fullname" . | quote }},endpoint="http"}))
+          for: 5m
+          labels:
+            severity: critical
+            namespace: {{ .Release.Namespace | quote }}
+            service: {{ include "pliqra.fullname" . | quote }}
+          annotations:
+            summary: No successful authenticated Pliqra metrics scrape
+            description: Check ready endpoints, database connectivity, monitoring token and Prometheus selectors. This is a monitoring signal, not an external inference availability check.
+            runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+        - alert: PliqraReplicaScrapeFailed
+          expr: up{namespace={{ .Release.Namespace | quote }},service={{ include "pliqra.fullname" . | quote }},endpoint="http"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: A Pliqra replica cannot be scraped
+            description: Inspect the target pod, monitoring credentials and network policy. Other replicas may still be available.
+            runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+        - alert: PliqraUnresolvedCosts
+          expr: max(pliqra_unresolved_costs{namespace={{ .Release.Namespace | quote }},service={{ include "pliqra.fullname" . | quote }},endpoint="http"}) > 0
+          for: 15m
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace | quote }}
+            service: {{ include "pliqra.fullname" . | quote }}
+          annotations:
+            summary: Pliqra has unresolved usage reservations
+            description: Review Operations and reconcile interrupted or unknown charges with an audit note; do not clear reservations to silence this alert.
+            runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+{{- end }}

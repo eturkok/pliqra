@@ -1,0 +1,108 @@
+rule_files:
+- pliqra.rules.yaml
+evaluation_interval: 1m
+tests:
+- name: missing discovery is visible after five minutes
+  interval: 1m
+  input_series: []
+  alert_rule_test:
+  - eval_time: 4m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts: []
+  - eval_time: 5m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts:
+    - &id001
+      exp_labels:
+        severity: critical
+        namespace: chart-check
+        service: pliqra
+      exp_annotations:
+        summary: No successful authenticated Pliqra metrics scrape
+        description: Check ready endpoints, database connectivity, monitoring token
+          and Prometheus selectors. This is a monitoring signal, not an external inference
+          availability check.
+        runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+- name: one failed replica preserves service-level health
+  interval: 1m
+  input_series:
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="a"}
+    values: 1x20
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="b"}
+    values: '0x20'
+  alert_rule_test:
+  - eval_time: 5m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts: []
+  - eval_time: 5m
+    alertname: PliqraReplicaScrapeFailed
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: chart-check
+        service: pliqra
+        endpoint: http
+        instance: b
+      exp_annotations:
+        summary: A Pliqra replica cannot be scraped
+        description: Inspect the target pod, monitoring credentials and network policy.
+          Other replicas may still be available.
+        runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+- name: all failed targets alert and recovered targets clear
+  interval: 1m
+  input_series:
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="a"}
+    values: 0x5 1x15
+  alert_rule_test:
+  - eval_time: 5m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts:
+    - *id001
+  - eval_time: 10m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts: []
+  - eval_time: 10m
+    alertname: PliqraReplicaScrapeFailed
+    exp_alerts: []
+- name: shared reservations create one alert and reconciliation clears it
+  interval: 1m
+  input_series:
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="a"}
+    values: 1x30
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="b"}
+    values: 1x30
+  - series: pliqra_unresolved_costs{namespace="chart-check",service="pliqra",endpoint="http",instance="a"}
+    values: 2x16 0x10
+  - series: pliqra_unresolved_costs{namespace="chart-check",service="pliqra",endpoint="http",instance="b"}
+    values: 2x16 0x10
+  alert_rule_test:
+  - eval_time: 14m
+    alertname: PliqraUnresolvedCosts
+    exp_alerts: []
+  - eval_time: 15m
+    alertname: PliqraUnresolvedCosts
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+        namespace: chart-check
+        service: pliqra
+      exp_annotations:
+        summary: Pliqra has unresolved usage reservations
+        description: Review Operations and reconcile interrupted or unknown charges
+          with an audit note; do not clear reservations to silence this alert.
+        runbook_url: https://github.com/eturkok/pliqra/blob/main/docs/OPERATIONS.md#monitoring-and-alerts
+  - eval_time: 20m
+    alertname: PliqraUnresolvedCosts
+    exp_alerts: []
+- name: brief scrape interruption does not page
+  interval: 1m
+  input_series:
+  - series: up{namespace="chart-check",service="pliqra",endpoint="http",instance="a"}
+    values: 0x3 1x20
+  alert_rule_test:
+  - eval_time: 10m
+    alertname: PliqraMetricsUnavailable
+    exp_alerts: []
+  - eval_time: 10m
+    alertname: PliqraReplicaScrapeFailed
+    exp_alerts: []

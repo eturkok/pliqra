@@ -29,6 +29,9 @@ encryption:
 config:
   publicUrl: ""
   secureCookies: false
+  # Bump after a reviewed database Secret/CA change to replace the pods.
+  # This is not a master-key rotation mechanism.
+  revision: ""
 topology:
   multiDC: false
   site: local
@@ -75,6 +78,18 @@ autoscaling:
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+monitoring:
+  # Requires existing Prometheus Operator CRDs; the chart installs none.
+  enabled: false
+  labels: {}
+  interval: 30s
+  scrapeTimeout: 10s
+  existingSecret: ""
+  tokenKey: token
+  prometheusRule:
+    enabled: false
+    labels: {}
 networkPolicy:
   enabled: false
   # Empty rules deny ingress when enabled. Supply the ingress controller and
@@ -83,6 +98,8 @@ networkPolicy:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+# Each constraint receives this release's pod selector automatically.
+topologySpreadConstraints: []
 extraEnv: []
 extraVolumes: []
 extraVolumeMounts: []

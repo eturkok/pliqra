@@ -1,0 +1,38 @@
+# SQLite maintenance only. Apply in an isolated drill namespace AFTER scaling
+# its gateway to zero and waiting for its pods to terminate. This pod never
+# starts a server. Change claimName if the recovery release has another name.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pliqra-recovery
+spec:
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: recovery
+      image: ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39
+      command: [python, -c, "import time; time.sleep(3600)"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      resources:
+        requests: {cpu: 100m, memory: 256Mi}
+        limits: {cpu: "1", memory: 512Mi}
+      volumeMounts:
+        - {name: data, mountPath: /data}
+        - {name: tmp, mountPath: /tmp}
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: pliqra
+    - name: tmp
+      emptyDir: {}
