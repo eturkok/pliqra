@@ -61,10 +61,10 @@ Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose referen
 
 ## Upgrade and recover
 
-Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. This release uses **schema 6**, inference contract revision **5** and protocol draft **0.1**. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged RC4 bindings are preserved by 2.1.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
+Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.2.0 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged RC4 bindings are preserved by 2.1.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
 
 Returning to an older image may require restoring its pre-upgrade backup: a newer database is not automatically downgraded. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.2.0 uses the existing 2.1.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; the latest application release remains 2.1.0. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.2.0 uses the existing 2.1.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. [Chart source](../charts/pliqra/README.md).

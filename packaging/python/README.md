@@ -1,6 +1,6 @@
 # Pliqra Python client
 
-Dependency-free Python 3.10+ client for the draft Pliqra discovery/binding protocol. Stable SDK 0.1.1 accompanies the Pliqra 2.1 gateway; SDK versions have their own lifecycle.
+Dependency-free Python 3.10+ client for the stable Pliqra Connection Protocol 1.0. Stable SDK 1.0.0 accompanies the Pliqra 2.2 gateway; SDK versions have their own lifecycle.
 
 ```sh
 python -m pip install pliqra-client
@@ -21,4 +21,4 @@ Changed contracts raise `ContractChanged` (HTTP 409); rediscover and bind explic
 
 `pliqra-client --help` and `pliqra-conformance --help` expose the included CLIs. Conformance performs no model call unless `--invoke` is supplied. Set `PLIQRA_API_KEY` through your secret environment rather than a command argument.
 
-See [Pliqra](https://github.com/eturkok/pliqra), [protocol](https://github.com/eturkok/pliqra/blob/main/docs/PROTOCOL.md) and [client documentation](https://github.com/eturkok/pliqra/blob/main/docs/CONFORMANCE.md). The protocol remains a draft; a passing core profile is not vendor certification or a guarantee of model quality. Licensed under Apache-2.0.
+See [Pliqra](https://github.com/eturkok/pliqra), [protocol](https://github.com/eturkok/pliqra/blob/main/docs/PROTOCOL.md) and [client documentation](https://github.com/eturkok/pliqra/blob/main/docs/CONFORMANCE.md). Existing 0.1 clients remain compatible; a passing core profile is not vendor certification or a guarantee of model quality. Licensed under Apache-2.0.

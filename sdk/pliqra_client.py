@@ -40,9 +40,9 @@ class Pliqra:
         self.protocol=None
 
     def request(self,path,body=None):
-        if not path.startswith('/') or path.startswith('//') or '://' in path:raise ValueError('Server returned a non-local protocol path')
+        if not path.startswith('/') or path.startswith('//') or '://' in path or '\\' in path:raise ValueError('Server returned a non-local protocol path')
         data=json.dumps(body).encode() if body is not None else None
-        request=Request(self.base_url+path,data=data,headers={'Authorization':'Bearer '+self.api_key,'Content-Type':'application/json'},method='POST' if data is not None else 'GET')
+        request=Request(self.base_url+path,data=data,headers={'Authorization':'Bearer '+self.api_key,'Content-Type':'application/json','Pliqra-Protocol':'pliqra/1.0'},method='POST' if data is not None else 'GET')
         try:return self.opener.open(request,timeout=self.timeout)
         except HTTPError as exc:
             try:detail=json.loads(exc.read(200000)).get('detail','Protocol request failed')
@@ -55,8 +55,11 @@ class Pliqra:
 
     def metadata(self):
         if self.protocol is None:
-            with self.request('/.well-known/pliqra') as response:self.protocol=checked_json(response)
-            if self.protocol.get('protocol')!='pliqra/0.1-draft':raise PliqraError(422,'Unsupported Pliqra protocol version')
+            with self.request('/.well-known/pliqra') as response:document=checked_json(response)
+            if not isinstance(document,dict) or document.get('protocol') not in ('pliqra/1.0','pliqra/0.1-draft'):raise PliqraError(422,'Unsupported Pliqra protocol version')
+            if not isinstance(document.get('supported_protocols',[]),list):raise PliqraError(422,'Invalid protocol advertisement')
+            if document.get('protocol')=='pliqra/0.1-draft' and 'pliqra/1.0' in document.get('supported_protocols',[]):raise PliqraError(422,'Server did not honor explicit protocol selection')
+            self.protocol=document
         return self.protocol
 
     def connect(self,service,requirements=None,ttl_seconds=3600,required_extensions=None,optional_extensions=None):

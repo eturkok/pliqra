@@ -1,0 +1,28 @@
+{
+  "tag": "sdk-v0.1.1",
+  "commit": "ea41c78633230d3640c618795b16789ff99c490a",
+  "license": "Apache-2.0; see repository LICENSE and NOTICE",
+  "files": [
+    {
+      "file": "python.py",
+      "source": "sdk/pliqra_client.py",
+      "sha256": "c0fc54f575a98e4389648f095f7897e162351a28b29e992c9c926163329c34a7"
+    },
+    {
+      "file": "javascript.mjs",
+      "source": "sdk/javascript/pliqra.mjs",
+      "sha256": "63f9b5dc792300cd6b32fd335b2bc79343f103cd4d9e7c40839e194107255047"
+    },
+    {
+      "file": "go.go",
+      "source": "sdk/go/pliqra.go",
+      "sha256": "4936e07a15539c04f72afdb866a310235a48056edf4f8873afaa464c958d9ad5"
+    },
+    {
+      "file": "reference_server.py",
+      "source": "examples/reference_server.py",
+      "sha256": "5854a5f845dbdfe81bd3c4d85bdcb303a0a8d23e3bce195ddd2e0333a94aa2d4"
+    }
+  ],
+  "also_matches_gateway": "v2.1.0"
+}

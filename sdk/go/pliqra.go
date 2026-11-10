@@ -28,9 +28,13 @@ type Client struct {
 	HTTP    *http.Client
 }
 type Metadata struct {
-	Protocol  string `json:"protocol"`
-	Discovery string `json:"discovery"`
-	Bind      string `json:"bind"`
+	Protocol             string   `json:"protocol"`
+	Discovery            string   `json:"discovery"`
+	Bind                 string   `json:"bind"`
+	Status               string   `json:"status,omitempty"`
+	PreferredProtocol    string   `json:"preferred_protocol,omitempty"`
+	SupportedProtocols   []string `json:"supported_protocols,omitempty"`
+	SpecificationVersion string   `json:"specification_version,omitempty"`
 }
 type Binding struct {
 	Placement   map[string]any `json:"placement,omitempty"`
@@ -82,6 +86,7 @@ func (c *Client) Request(ctx context.Context, path string, body any) (*http.Resp
 	}
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Pliqra-Protocol", "pliqra/1.0")
 	// Clone the transport options so injected clients cannot accidentally follow a
 	// discovery redirect carrying the application key.
 	transport := *c.HTTP
@@ -120,8 +125,11 @@ func (c *Client) JSON(ctx context.Context, path string, body any, result any) er
 func (c *Client) Metadata(ctx context.Context) (Metadata, error) {
 	var metadata Metadata
 	err := c.JSON(ctx, "/.well-known/pliqra", nil, &metadata)
-	if err == nil && metadata.Protocol != "pliqra/0.1-draft" {
+	if err == nil && metadata.Protocol != "pliqra/1.0" && metadata.Protocol != "pliqra/0.1-draft" {
 		err = fmt.Errorf("unsupported Pliqra protocol version")
+	}
+	if err == nil && metadata.Protocol == "pliqra/0.1-draft" && contains(metadata.SupportedProtocols, "pliqra/1.0") {
+		err = fmt.Errorf("server did not honor explicit protocol selection")
 	}
 	return metadata, err
 }

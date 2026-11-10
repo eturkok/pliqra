@@ -42,7 +42,8 @@ def test_gateway_core_profile_over_http(workspace):
     with gateway_server(app) as url:
         report=run(Pliqra(url,token),service['name'],invoke=True)
     assert report['passed'],json.dumps(report)
-    assert len(report['results'])==9
+    assert len(report['results'])==13
+    assert report['protocol']=='pliqra/1.0'
 
 
 def test_independent_reference_core_profile_over_http(monkeypatch):
@@ -53,7 +54,8 @@ def test_independent_reference_core_profile_over_http(monkeypatch):
         with http_server(Reference) as url:
             report=run(Pliqra(url,'synthetic-reference-key'),'reference-chat',invoke=True)
     assert report['passed'],json.dumps(report)
-    assert len(report['results'])==9
+    assert len(report['results'])==13
+    assert report['protocol']=='pliqra/1.0'
 
 
 def test_release_smoke_waits_for_connection_reset_during_startup(tmp_path, monkeypatch):

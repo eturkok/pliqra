@@ -25,6 +25,8 @@ Pliqra combines a model-as-a-service catalog, inference routing, custom gateway 
 - **Review one policy across independent installations.** Finance needs the same limits and guardrails in three workspaces. Prepare a plan for each target, get a different administrator's approval, then inspect delivery receipts and policy drift. [Fleet governance →](docs/FLEET.md)
 - **Require evidence before a model rollout.** Send 10% of traffic to a candidate only after it meets the configured quality and regression gates. A changed dataset, judge or service invalidates the old evidence. [Controlled releases →](docs/WORKFLOWS.md)
 
+**Pliqra Connection Protocol 1.0 is stable**, with published [normative rules and compatibility policy](docs/protocol/1.0/SPEC.md). Existing 0.1 SDKs and accepted bindings remain compatible.
+
 Bindings are opt-in and track registered service/policy configuration. Evaluation gates cover the selected cases and evaluator. Start with the gateway, console and SQLite in one container; add shared PostgreSQL when you need multiple active sites.
 
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
@@ -49,14 +51,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.1.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.0/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.1.0 is the stable community release.** No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.1.0)
+**2.2.0 is the stable community release.** No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.0)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -110,7 +112,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.1.0](https://github.com/eturkok/pliqra/releases/tag/v2.1.0).** The default remains a single container. Protocol draft 0.1; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.2.0](https://github.com/eturkok/pliqra/releases/tag/v2.2.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 

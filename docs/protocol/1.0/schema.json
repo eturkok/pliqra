@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/eturkok/pliqra/v2.2.0/docs/protocol/1.0/schema.json",
+  "title": "Pliqra Connection Protocol 1.0.0 canonical messages",
+  "$defs": {
+    "discovery": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "status",
+        "preferred_protocol",
+        "supported_protocols",
+        "specification_version",
+        "discovery",
+        "bind",
+        "extensions",
+        "conformance_profile"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "pliqra/1.0"
+        },
+        "status": {
+          "const": "stable"
+        },
+        "preferred_protocol": {
+          "type": "string",
+          "pattern": "^pliqra/[0-9]+\\.[0-9]+$"
+        },
+        "supported_protocols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "pliqra/1.0"
+          }
+        },
+        "specification_version": {
+          "type": "string",
+          "pattern": "^1\\.0\\.[0-9]+$"
+        },
+        "discovery": {
+          "type": "string",
+          "pattern": "^/(?!/)(?!.*\\\\)(?!.*://).+"
+        },
+        "bind": {
+          "type": "string",
+          "pattern": "^/(?!/)(?!.*\\\\)(?!.*://).+"
+        },
+        "extensions": {
+          "type": "object"
+        },
+        "conformance_profile": {
+          "const": "pliqra-core/1"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "version",
+        "fingerprint",
+        "requirements",
+        "invocation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 16
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "invocation": {
+          "type": "object",
+          "required": [
+            "interface",
+            "path",
+            "model"
+          ],
+          "properties": {
+            "interface": {
+              "const": "openai-chat-completions"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?!/)(?!.*\\\\)(?!.*://).+"
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "services"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "pliqra/1.0"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/service"
+          }
+        }
+      }
+    },
+    "bindRequest": {
+      "type": "object",
+      "required": [
+        "service"
+      ],
+      "properties": {
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400
+        },
+        "required_extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20
+        },
+        "optional_extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20
+        }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "id",
+        "service",
+        "version",
+        "fingerprint",
+        "requirements",
+        "expires",
+        "invoke",
+        "extensions"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 16
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expires": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "invoke": {
+          "type": "string",
+          "pattern": "^/(?!/)(?!.*\\\\)(?!.*://).+"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "detail"
+      ],
+      "properties": {
+        "detail": {
+          "type": [
+            "string",
+            "object",
+            "array"
+          ]
+        }
+      }
+    }
+  }
+}

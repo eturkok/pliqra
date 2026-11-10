@@ -5,11 +5,13 @@ import {Pliqra,PliqraError,ContractChanged} from './pliqra.mjs';
 let requests=[];
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}});
 let mode='normal';
+let wireProtocol='pliqra/0.1-draft', advertised=[];
 async function transport(url,options){
   requests.push({url,options});
   assert.equal(options.redirect,'error');assert.equal(options.credentials,'omit');
   assert.equal(options.headers.Authorization,'Bearer synthetic-key');
-  if(url.endsWith('/.well-known/pliqra'))return json({protocol:'pliqra/0.1-draft',discovery:'/protocol/v1/services',bind:'/protocol/v1/bindings'});
+  assert.equal(options.headers['Pliqra-Protocol'],'pliqra/1.0');
+  if(url.endsWith('/.well-known/pliqra'))return json({protocol:wireProtocol,supported_protocols:advertised,discovery:'/protocol/v1/services',bind:'/protocol/v1/bindings'});
   if(url.endsWith('/protocol/v1/services'))return json({services:[{name:'synthetic'}]});
   const body=JSON.parse(options.body);
   if(url.endsWith('/protocol/v1/bindings'))return json({id:'binding',service:body.service,fingerprint:'fingerprint',expires:9999999999,invoke:'/protocol/v1/bindings/binding/invoke',extensions:mode==='ignore-extensions'?[]:body.required_extensions});
@@ -33,4 +35,11 @@ mode='truncated';await assert.rejects(async()=>{for await(const _ of bound.strea
 mode='ignore-extensions';await assert.rejects(()=>client.connect('synthetic',{requiredExtensions:['missing/1']}),error=>error.status===422);
 await assert.rejects(()=>client.json('//attacker.test/'),/local/);
 assert.throws(()=>new Pliqra('https://user:password@gateway.test','key'),/credentials/);
-export const result={passed:8,failed:0};
+wireProtocol='pliqra/1.0';advertised=['pliqra/1.0','pliqra/0.1-draft'];
+assert.equal((await new Pliqra('https://gateway.test','synthetic-key',{fetch:transport}).metadata()).protocol,'pliqra/1.0');
+for(const protocol of ['pliqra/2.0','pliqra/0.1-draft']){
+  wireProtocol=protocol;
+  const rejected=new Pliqra('https://gateway.test','synthetic-key',{fetch:transport});
+  for(let attempt=0;attempt<2;attempt++)await assert.rejects(()=>rejected.metadata(),error=>error.status===422);
+}
+export const result={passed:11,failed:0};

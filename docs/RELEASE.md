@@ -1,3 +1,5 @@
+> Current release: **[2.2.0](releases/v2.2.0.md)** with stable Connection Protocol 1.0 and SDK 1.0.0. The 2.1/RC records below remain historical.
+
 # Pliqra 2.1 — validation and scope
 
 The published distribution is **[2.1.0](releases/v2.1.0.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline. The [stable delivery record](STABLE_2_1.md#verified-stable-delivery--7-november-2026) contains the final exact-image measurements and release-job results.

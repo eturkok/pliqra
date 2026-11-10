@@ -168,7 +168,7 @@ All configuration and provider-test routes require a signed-in administrator. Ap
 
 Bindings now retain gateway ID and fingerprint alongside the service contract. A gateway or referenced guardrail change causes an old invocation to return **409 before model inference**. Clients explicitly bind again; stale paths are not silently upgraded. The overview includes gateway policy changes in renewal counts.
 
-Existing standalone protocol implementations can keep omitting the optional gateway fields. The protocol remains draft 0.1; these product extensions do not imply ecosystem standardization.
+Existing standalone protocol implementations can keep omitting the optional gateway fields. Stable protocol 1.0 retains the 0.1 compatibility envelope; optional product extensions do not imply ecosystem standardization.
 
 ## Console examples
 

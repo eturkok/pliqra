@@ -3,7 +3,7 @@ import argparse
 import json
 import time
 from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 
 def smoke(base: str, version: str) -> None:
@@ -25,6 +25,12 @@ def smoke(base: str, version: str) -> None:
     read("/readyz")
     discovery = json.loads(read("/.well-known/pliqra"))
     assert discovery["protocol"] == "pliqra/0.1-draft", discovery
+    if discovery.get('preferred_protocol')=='pliqra/1.0':
+        with urlopen(Request(base+'/.well-known/pliqra',headers={'Pliqra-Protocol':'pliqra/1.0'}),timeout=5) as response:
+            stable=json.load(response)
+            assert stable['protocol']=='pliqra/1.0' and stable['status']=='stable'
+            assert response.headers['Pliqra-Protocol']=='pliqra/1.0'
+
     session = json.loads(read("/api/v1/session"))
     assert session["setup_required"] and session["user"] is None, session
     assert session["version"] == version, session

@@ -7,10 +7,13 @@ import secrets
 import subprocess
 import time
 import uuid
+import sys
 
 import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'sdk'))
+from pliqra_client import Pliqra
 
 
 def docker(*args):
@@ -116,6 +119,14 @@ def check(image, output):
         connection = api(client, '/api/v1/connections', {'name': 'Preserved encrypted endpoint',
                          'endpoint': 'http://model:8099/v1', 'provider': 'openai', 'api_key': provider_secret}, 201).json()
         service = connection['services'][0]
+        compatibility_key=api(client,'/api/v1/keys',{'name':'New SDK on previous image','allowed_ports':[service['id']],'rpm':1000},201).json()['token']
+        consumer=Pliqra(str(client.base_url),compatibility_key)
+        assert consumer.metadata()['protocol']=='pliqra/0.1-draft'
+        connected=consumer.connect(service['name'],['chat','streaming'])
+        messages=[{'role':'user','content':'New SDK on previous published image'}]
+        assert connected.complete(messages,max_tokens=64)['choices']
+        assert list(connected.stream(messages,max_tokens=64))
+        fixture.mark('new_sdk_completes_and_streams_against_previous_published_image')
         profile = api(client, '/api/v1/gateways', {'name': 'Preserved policy', 'slug': 'upgrade-check',
                       'config': {'services': [service['id']], 'limits': [
                           {'metric': 'requests', 'scope': 'gateway', 'window_seconds': 86400, 'limit': 3}]}}, 201).json()
@@ -144,7 +155,9 @@ def check(image, output):
         assert restored_connection['has_secret']
         assert api(client, '/api/v1/events/' + event_id).json()['status'] == 'success'
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 200
-        assert client.post(invocation, headers=headers, json=body).status_code == 200
+        stable=client.post(invocation, headers={**headers,'Pliqra-Protocol':'pliqra/1.0'}, json=body)
+        assert stable.status_code==200 and stable.headers['Pliqra-Protocol']=='pliqra/1.0'
+        fixture.mark('pre_upgrade_binding_invokes_through_stable_protocol_without_rebinding')
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 429
         fixture.mark('upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage')
         api(client, '/api/v1/projects', {'name': 'After backup'}, 201)

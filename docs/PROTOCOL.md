@@ -1,12 +1,26 @@
-# Pliqra protocol — 0.1 draft
+# Pliqra Connection Protocol — 1.0 stable
 
-This is an experimental application-level contract layered over HTTP and existing inference interfaces. It does not depend on Kubernetes, a particular serving runtime, or a particular provider. No ecosystem-wide standardization is claimed.
+Pliqra Connection Protocol 1.0 is a stable, versioned application-level contract layered over HTTP and existing inference interfaces. It does not depend on Kubernetes, a particular serving runtime, or a particular provider. No ecosystem-wide standardization is claimed.
+
+The [normative 1.0 specification](protocol/1.0/SPEC.md) and [canonical JSON schemas](protocol/1.0/schema.json) define the frozen core contract and maintenance policy. SDK **1.0.0** selects 1.0 automatically; gateway **2.2.0** supports both 1.0 and the existing compatibility envelope.
+
+## Select 1.0; keep existing clients working
+
+```sh
+curl -H 'Pliqra-Protocol: pliqra/1.0' http://localhost:8088/.well-known/pliqra
+```
+
+This returns `protocol: pliqra/1.0`, `status: stable`, and specification revision `1.0.0`. An unsupported or duplicate version selection returns **406** before a binding or inference can be created.
+
+An **unversioned** request deliberately keeps `protocol: pliqra/0.1-draft` for already published Python, JavaScript and Go clients that compare that value exactly. It now also advertises `preferred_protocol: pliqra/1.0`, both supported versions and compatibility status. The legacy identifier is not the status of 1.0. Gateway 2.x retains this behavior; removal requires a new product major release and migration guide.
+
+SDK 1.x also recognizes older 2.1 servers that ignore the new header and advertise only the legacy protocol. Unknown future identifiers and inconsistent negotiation fail explicitly. Paths, schema **6**, inference contract **5**, and existing fingerprints/bindings are preserved by this promotion. Normal model/policy changes can still require rebinding.
 
 ## Discovery
 
 `GET /.well-known/pliqra` returns the protocol version, authenticated service discovery URI, binding endpoint, and invocation interfaces. It contains no service inventory or secrets.
 
-`GET /protocol/v1/services` requires a scoped bearer access key or a user session. It returns only services available to that identity, including:
+`GET /protocol/v1/services` requires a scoped bearer access key or a user session. The normative specification defines the core minimum; the gateway adds the extended manifest below. It returns only services available to that identity, including:
 
 - Stable service identity and profile revision.
 - Configuration fingerprint and required capabilities.
@@ -47,7 +61,7 @@ Before streaming starts, a failed eligible upstream may be replaced by another e
 
 ## Portability boundary
 
-Portable service exports contain no provider credentials or endpoint addresses. Import requires explicit deployment-reference mapping. The reference implementation and independent Python client below demonstrate a second implementation of discovery/binding/invocation. Provider-specific APIs, identity federation configuration and arbitrary third-party policies are not portable through this draft.
+Portable service exports contain no provider credentials or endpoint addresses. Import requires explicit deployment-reference mapping. The reference implementation and independent Python client below demonstrate a second implementation of discovery/binding/invocation. Provider-specific APIs, identity federation configuration and arbitrary third-party policies are not portable through this core contract.
 
 ## Independent client and implementation
 
@@ -61,13 +75,13 @@ python sdk/pliqra_client.py --url http://localhost:8088 chat --service your-serv
 
 The conformance command checks discovery, binding and unsupported capability rejection without inference. Chat and streaming are separate billable operations.
 
-`examples/reference_server.py` is a second implementation built only with Python's standard library. Configure `REFERENCE_UPSTREAM` with an OpenAI-compatible base URL ending in `/v1`, `REFERENCE_MODEL`, `REFERENCE_TOKEN`, and optionally `REFERENCE_UPSTREAM_KEY`; it listens on port 8098 by default. Its service is `reference-chat`. It demonstrates the handshake against an actual configured upstream and shares no gateway code, database or authentication state. It is a development reference, not an alternative hardened production gateway.
+`examples/reference_server.py` is a second implementation built only with Python's standard library. Configure `REFERENCE_UPSTREAM` with an OpenAI-compatible base URL ending in `/v1`, `REFERENCE_MODEL`, `REFERENCE_TOKEN`, and optionally `REFERENCE_UPSTREAM_KEY`; it listens on port 8098 by default. Its service is `reference-chat`. It demonstrates the handshake against an actual configured upstream and shares no gateway code, database or authentication state. The 1.0 reference implements text-only chat/streaming and optional `max_tokens`, explicitly rejecting unsupported controls. It is a development reference, not an alternative hardened production gateway.
 
 ## Portable configuration
 
 `GET /api/v1/ports/{id}/export` produces `pliqra/service-export/v1`: a service policy plus named deployment references, model names, adapter labels and connection labels. Credentials, endpoint addresses and local project grants are excluded. `POST /api/v1/ports/import` requires mapping every reference to an existing local deployment. Unknown policy fields and unmapped deployments are rejected; destination project access is set explicitly. Native manifests and portable service exports serve different purposes.
 
-The protocol remains draft 0.1 and has a separate lifecycle from gateway product releases. The independent client has been exercised against both implementations for discovery, bindings, completions, streaming and rejection of unsupported capabilities. This establishes interoperability between these implementations; it does not establish third-party adoption or ecosystem-wide standardization.
+Protocol 1.0 has a separate lifecycle from gateway and SDK releases. The [compatibility policy](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) freezes required behavior and reserves incompatible changes for a new wire major version. The independent client has been exercised against both implementations for discovery, bindings, completions, streaming and rejection of unsupported capabilities. This establishes interoperability between these implementations; it does not establish third-party adoption or ecosystem-wide standardization.
 
 ## Optional managed-gateway policy
 

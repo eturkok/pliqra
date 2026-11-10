@@ -159,7 +159,7 @@ jobs:
               'revision': os.environ['GITHUB_SHA'], 'image': 'ghcr.io/' + os.environ['GITHUB_REPOSITORY'],
               'digest': os.environ['DIGEST'], 'platforms': ['linux/amd64', 'linux/arm64'],
               'prerelease': os.environ['PRERELEASE'] == 'true', 'schema': constant('pliqra/db.py','SCHEMA_VERSION'),
-              'inference_contract': int(constant('pliqra/inference_schema.py','INFERENCE_CONTRACT_REVISION').split('/')[-1]), 'protocol': 'pliqra/0.1-draft'
+              'inference_contract': int(constant('pliqra/inference_schema.py','INFERENCE_CONTRACT_REVISION').split('/')[-1]), 'protocol': constant('pliqra/protocol.py','PROTOCOL_VERSION'), 'legacy_protocol': constant('pliqra/protocol.py','LEGACY_PROTOCOL_VERSION'), 'specification': constant('pliqra/protocol.py','SPECIFICATION_VERSION')
           }, indent=2) + '\n')
           PY
           (cd dist && sha256sum compose.release.yaml DISTRIBUTION.md image.txt release.json dependency-audit.json SDK-MANIFEST.json *.whl *.tar.gz *.tgz > SHA256SUMS)

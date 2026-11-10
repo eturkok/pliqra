@@ -3,11 +3,13 @@ import argparse
 import json
 import os
 import time
+from urllib.request import Request, build_opener
+from urllib.error import HTTPError
 
 try:
-    from .pliqra_client import Pliqra,PliqraError
+    from .pliqra_client import Pliqra,PliqraError,NoRedirect
 except ImportError:
-    from pliqra_client import Pliqra,PliqraError
+    from pliqra_client import Pliqra,PliqraError,NoRedirect
 
 
 def run(client,service,invoke=False):
@@ -17,7 +19,7 @@ def run(client,service,invoke=False):
         except Exception as exc:results.append({'id':identifier,'passed':False,'error':type(exc).__name__,'http_status':getattr(exc,'status',None)})
     def metadata():
         document=client.metadata()
-        assert document['protocol']=='pliqra/0.1-draft'
+        assert document['protocol'] in ('pliqra/1.0','pliqra/0.1-draft')
         for field in ('bind','discovery'):assert document[field].startswith('/') and not document[field].startswith('//')
         state['metadata']=document
     def discovery():
@@ -50,6 +52,32 @@ def run(client,service,invoke=False):
     check('CORE-05-required-extension',lambda:rejected({'service':service,'requirements':['chat'],'required_extensions':['pliqra.example-unsupported/999']}))
     check('CORE-06-optional-extension',optional)
     check('CORE-07-authentication',authentication)
+    if state.get('metadata',{}).get('protocol')=='pliqra/1.0':
+        def versioning():
+            document=state['metadata']
+            assert document['status']=='stable' and document['preferred_protocol'] in document['supported_protocols']
+            assert 'pliqra/1.0' in document['supported_protocols']
+            opener=build_opener(NoRedirect())
+            with opener.open(Request(client.base_url+'/.well-known/pliqra',headers={'Pliqra-Protocol':'pliqra/1.0'}),timeout=client.timeout) as response:
+                assert response.headers['Pliqra-Protocol']=='pliqra/1.0'
+                assert 'pliqra-protocol' in response.headers.get('Vary','').lower()
+            try:opener.open(Request(client.base_url+'/.well-known/pliqra',headers={'Pliqra-Protocol':'pliqra/999.0'}),timeout=client.timeout)
+            except HTTPError as exc:assert exc.code==406
+            else:raise AssertionError('Unknown protocol was accepted')
+        check('CORE-10-version-negotiation',versioning)
+        check('CORE-11-invalid-ttl',lambda:rejected({'service':service,'requirements':['chat'],'ttl_seconds':0}))
+        def missing_binding():
+            try:
+                with client.request('/protocol/v1/bindings/bind_conformance_missing/invoke',{'model':service,'messages':[{'role':'user','content':'Must not reach a provider'}]}):pass
+            except PliqraError as exc:assert exc.status==404
+            else:raise AssertionError('Missing binding was accepted')
+        check('CORE-12-missing-binding',missing_binding)
+        def bound_service():
+            try:
+                with client.request(state['connection'].binding['invoke'],{'model':'pliqra-conformance-wrong-service','messages':[{'role':'user','content':'Must not reach a provider'}]}):pass
+            except PliqraError as exc:assert exc.status==409
+            else:raise AssertionError('A binding was used for another service')
+        check('CORE-13-bound-service',bound_service)
     if invoke:
         def completion():
             response=state['connection'].complete([{'role':'user','content':'Synthetic conformance request. Reply with OK.'}],max_tokens=32)
@@ -59,7 +87,7 @@ def run(client,service,invoke=False):
             assert chunks and all(isinstance(item,dict) for item in chunks)
         check('CORE-08-completion',completion)
         check('CORE-09-stream-terminal',streaming)
-    return {'profile':'pliqra-core/1','target':client.base_url,'service':service,'tested_at':int(time.time()),'inference_performed':invoke,
+    return {'profile':'pliqra-core/1','protocol':state.get('metadata',{}).get('protocol'),'stability':'stable' if state.get('metadata',{}).get('protocol')=='pliqra/1.0' else 'compatibility','target':client.base_url,'service':service,'tested_at':int(time.time()),'inference_performed':invoke,
             'passed':all(result['passed'] for result in results),'results':results,
             'scope':'Core interoperability only. Does not certify model quality, safety, real-vendor compatibility, deployment resilience or third-party adoption.'}
 

@@ -25,7 +25,7 @@ export class Pliqra {
   }
   async request(path, body, {signal} = {}) {
     const abort = signal ? AbortSignal.any([signal,AbortSignal.timeout(this.timeout)]) : AbortSignal.timeout(this.timeout);
-    const response = await this.fetch(this.baseURL + localPath(path), {method: body === undefined ? 'GET' : 'POST', headers: {'Authorization':`Bearer ${this.apiKey}`,'Content-Type':'application/json'}, body: body === undefined ? undefined : JSON.stringify(body), redirect:'error', credentials:'omit', signal:abort});
+    const response = await this.fetch(this.baseURL + localPath(path), {method: body === undefined ? 'GET' : 'POST', headers: {'Authorization':`Bearer ${this.apiKey}`,'Content-Type':'application/json','Pliqra-Protocol':'pliqra/1.0'}, body: body === undefined ? undefined : JSON.stringify(body), redirect:'error', credentials:'omit', signal:abort});
     if (!response.ok) {
       let detail = 'Protocol request failed';
       try { detail = JSON.parse(new TextDecoder().decode(await bounded(response,200_000))).detail || detail; } catch {}
@@ -35,7 +35,7 @@ export class Pliqra {
   }
   async json(path,body,options) { return JSON.parse(new TextDecoder().decode(await bounded(await this.request(path,body,options)))); }
   async metadata() {
-    if (!this.protocol) { this.protocol = await this.json('/.well-known/pliqra'); if (this.protocol.protocol !== 'pliqra/0.1-draft') throw new PliqraError(422,'Unsupported Pliqra protocol'); }
+    if (!this.protocol) { const metadata = await this.json('/.well-known/pliqra'); if (!['pliqra/1.0','pliqra/0.1-draft'].includes(metadata?.protocol)) throw new PliqraError(422,'Unsupported Pliqra protocol'); if(metadata.supported_protocols!==undefined&&!Array.isArray(metadata.supported_protocols))throw new PliqraError(422,'Invalid protocol advertisement'); if(metadata.protocol==='pliqra/0.1-draft'&&metadata.supported_protocols?.includes('pliqra/1.0'))throw new PliqraError(422,'Server did not honor explicit protocol selection'); this.protocol=metadata; }
     return this.protocol;
   }
   async services() { return (await this.json((await this.metadata()).discovery)).services; }

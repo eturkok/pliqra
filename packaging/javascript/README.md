@@ -18,4 +18,4 @@ for await (const chunk of connection.stream([{role: 'user', content: 'Hello'}]))
 
 Changed contracts raise `ContractChanged` (HTTP 409). Rediscover/rebind deliberately. Streaming supports cancellation and rejects missing completion markers. The client does not forward credentials across redirects. Organizations use their `/org/slug` base URL. Model operations and batches are also supported.
 
-Use server-side secrets for applications; do not bundle privileged keys into a public browser application. The wire protocol remains draft 0.1; interoperability does not certify model quality or provider safety. See [Pliqra documentation](https://github.com/eturkok/pliqra/blob/main/docs/CONFORMANCE.md). Apache-2.0 licensed.
+Use server-side secrets for applications; do not bundle privileged keys into a public browser application. The stable wire protocol is 1.0 with legacy 0.1 compatibility; interoperability does not certify model quality or provider safety. See [Pliqra documentation](https://github.com/eturkok/pliqra/blob/main/docs/CONFORMANCE.md). Apache-2.0 licensed.

@@ -1,3 +1,4 @@
+from .protocol import PROTOCOL_VERSION
 """Platform status and optional idempotent export to a separate analytics database."""
 import asyncio
 from typing import Annotated
@@ -78,7 +79,7 @@ def mount(app):
         return {'storage':store.backend,'storage_label':'Shared PostgreSQL' if store.backend=='postgresql' else 'Local SQLite',
             'live_replicas':store.one('SELECT COUNT(*) AS n FROM runtime_nodes WHERE heartbeat>?',(store.clock()-NODE_TIMEOUT,))['n'],
             'active_requests':store.one("SELECT COUNT(*) AS n FROM runtime_leases WHERE kind!='management'")['n'],
-            'current_node':app.state.gateway.cluster.node,'topology':app.state.gateway.cluster.topology.model_dump(),'quota_consistency':'single-writable-authority','schema':SCHEMA_VERSION,'organization':app.state.context.get('organization'),'protocol':'pliqra/0.1-draft',
+            'current_node':app.state.gateway.cluster.node,'topology':app.state.gateway.cluster.topology.model_dump(),'quota_consistency':'single-writable-authority','schema':SCHEMA_VERSION,'organization':app.state.context.get('organization'),'protocol':PROTOCOL_VERSION,
             'interfaces':['chat','embeddings','speech','transcription','responses','anthropic','ollama'],
             'replicas':store.all('SELECT id,heartbeat,site,region FROM runtime_nodes ORDER BY heartbeat DESC')}
 

@@ -1,6 +1,6 @@
 # Security policy
 
-The maintained community release line is **2.1.x**. Security fixes are delivered as new patch versions and immutable image tags. Upgrade to the current patch; earlier candidates and unsupported lines do not receive backported fixes. This is a community policy, without a contractual response or remediation SLA.
+The maintained community release line is **2.2.x**. Security fixes are delivered as new patch versions and immutable image tags. Upgrade to the current patch; earlier candidates and unsupported lines do not receive backported fixes. This is a community policy, without a contractual response or remediation SLA.
 
 For a suspected vulnerability, use the repository's **Security → Report a vulnerability** option when available. If private reporting is unavailable, open an issue requesting a private maintainer contact **without** exploit details, credentials or customer data. Acknowledge the affected version and whether the issue is reproducible in an isolated workspace. Do not place credentials, captured prompts or unredacted backups in public issues.
 

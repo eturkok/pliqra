@@ -33,6 +33,7 @@ from .db import Store, encode, now, uid
 from .gateway import CAPABILITIES, Gateway, decoded_deployment, decoded_port
 from .security import Vault, digest, endpoint_url, hash_password, verify_password
 from .inference_schema import ChatInput
+from .protocol import PROTOCOL_VERSION, ProtocolVersionMiddleware, version_metadata
 
 STATIC = Path(__file__).parent / "static"
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -230,7 +231,7 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
                 app.state.gateway.cluster.close()
         store.close()
 
-    app = FastAPI(title="Pliqra", version=__version__, description="Endpoint-first model connectivity. Management API, OpenAI-compatible chat and the draft Pliqra discovery/binding protocol.", lifespan=lifespan, docs_url=None, redoc_url=None)
+    app = FastAPI(title="Pliqra", version=__version__, description="Endpoint-first model connectivity. Management API, OpenAI-compatible chat and Pliqra Connection Protocol 1.0 with legacy compatibility.", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.store, app.state.vault, app.state.oauth = store, vault, oauth
     app.add_middleware(WorkspaceSessionMiddleware, key_provider=lambda:vault.session_secret()+store.setting('auth_epoch',''), session_cookie='plq_oidc_'+organization['id'] if organization else 'plq_oidc', path=base_path or '/', same_site="lax", https_only=secure_cookies, max_age=600)
 
@@ -713,15 +714,15 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
 
     @app.get("/api/v1/settings", tags=["System"])
     def settings(p=Depends(user)):
-        return {"version": __version__, "storage": "PostgreSQL" if store.backend=="postgresql" else "SQLite / WAL", "deployment": "Shared database / multiple replicas" if store.backend=="postgresql" else "Single container / local storage", "protocol": "pliqra/0.1-draft", "content_logging": False, "secure_cookies": secure_cookies, "public_url": public_url or None, "identity_support": ["Local accounts", "OIDC with PKCE", "SAML 2.0", "SCIM 2.0 provisioning"], "planned_identity": [], "workspace_model": "Project memberships with scoped request visibility", "interfaces": ["Chat completions", "Embeddings", "Speech and transcription", "Responses", "Anthropic Messages", "Ollama native chat/generate"], "encryption": "Fernet authenticated encryption; volume-managed key or PLIQRA_ENCRYPTION_KEY"}
+        return {"version": __version__, "storage": "PostgreSQL" if store.backend=="postgresql" else "SQLite / WAL", "deployment": "Shared database / multiple replicas" if store.backend=="postgresql" else "Single container / local storage", "protocol": PROTOCOL_VERSION, "content_logging": False, "secure_cookies": secure_cookies, "public_url": public_url or None, "identity_support": ["Local accounts", "OIDC with PKCE", "SAML 2.0", "SCIM 2.0 provisioning"], "planned_identity": [], "workspace_model": "Project memberships with scoped request visibility", "interfaces": ["Chat completions", "Embeddings", "Speech and transcription", "Responses", "Anthropic Messages", "Ollama native chat/generate"], "encryption": "Fernet authenticated encryption; volume-managed key or PLIQRA_ENCRYPTION_KEY"}
 
     @app.get("/.well-known/pliqra", tags=["Protocol"])
-    def protocol():
+    def protocol(request: Request):
         from .protocol_extensions import EXTENSIONS
-        return {"protocol": "pliqra/0.1-draft", "status": "experimental", "discovery": "/protocol/v1/services", "bind": "/protocol/v1/bindings", "authentication": "Bearer access key", "gateway_policy": "/protocol/v1/gateway", "features": ["capability-discovery", "contract-fingerprint", "explicit-binding", "decision-records",'extension-negotiation'], "invocation_interfaces": ["openai-chat-completions",'embeddings','audio-speech','audio-transcription'], 'extensions':EXTENSIONS,'conformance_profile':'pliqra-core/1'}
+        return {**version_metadata(request.scope['pliqra.protocol']), "discovery": "/protocol/v1/services", "bind": "/protocol/v1/bindings", "authentication": "Bearer access key", "gateway_policy": "/protocol/v1/gateway", "features": ["capability-discovery", "contract-fingerprint", "explicit-binding", "decision-records",'extension-negotiation'], "invocation_interfaces": ["openai-chat-completions",'embeddings','audio-speech','audio-transcription'], 'extensions':EXTENSIONS,'conformance_profile':'pliqra-core/1'}
 
     @app.get("/protocol/v1/services", tags=["Protocol"])
-    def services(p=Depends(principal)):
+    def services(request: Request, p=Depends(principal)):
         result = []
         for row in store.all("SELECT * FROM ports WHERE enabled=1"):
             port = decoded_port(row)
@@ -729,8 +730,8 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
                 app.state.gateway.authorize_port(p, port)
             except HTTPException:
                 continue
-            result.append(app.state.gateway.manifest(port))
-        return {"protocol": "pliqra/0.1-draft", "services": result}
+            result.append({**app.state.gateway.manifest(port), 'protocol': request.scope['pliqra.protocol']})
+        return {"protocol": request.scope['pliqra.protocol'], "services": result}
 
     @app.post("/protocol/v1/bindings", tags=["Protocol"], status_code=201)
     def bind(body: BindingInput, p=Depends(principal)):
@@ -842,4 +843,5 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         html=html.replace('href="/static/',f'href="{base_path}/static/').replace('src="/static/',f'src="{base_path}/static/')
         return HTMLResponse(html.replace('<meta charset="UTF-8">','<meta charset="UTF-8"><meta name="pliqra-base" content="'+base_path+'">'))
 
+    app.add_middleware(ProtocolVersionMiddleware)
     return app

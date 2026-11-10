@@ -10,6 +10,33 @@ import (
 	"testing"
 )
 
+func TestStableNegotiationAndLegacyFallback(t *testing.T) {
+	for _, protocol := range []string{"pliqra/1.0", "pliqra/0.1-draft", "pliqra/2.0", "inconsistent"} {
+		t.Run(protocol, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Header.Get("Pliqra-Protocol") != "pliqra/1.0" {
+					t.Error("stable version not requested")
+				}
+				document := map[string]any{"protocol": protocol, "discovery": "/protocol/v1/services", "bind": "/protocol/v1/bindings"}
+				if protocol == "inconsistent" {
+					document["protocol"] = "pliqra/0.1-draft"
+					document["supported_protocols"] = []string{"pliqra/1.0"}
+				}
+				json.NewEncoder(w).Encode(document)
+			}))
+			defer server.Close()
+			client, _ := New(server.URL, "synthetic-key")
+			for attempt := 0; attempt < 2; attempt++ {
+				_, err := client.Metadata(context.Background())
+				rejected := protocol == "pliqra/2.0" || protocol == "inconsistent"
+				if (err != nil) != rejected {
+					t.Fatalf("wrong protocol decision: %v", err)
+				}
+			}
+		})
+	}
+}
+
 func TestProtocolAndFragmentedUnicode(t *testing.T) {
 	changed := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

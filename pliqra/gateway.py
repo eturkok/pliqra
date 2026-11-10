@@ -1,3 +1,4 @@
+from .protocol import PROTOCOL_VERSION
 import asyncio
 import hashlib
 import json
@@ -172,7 +173,7 @@ class Gateway:
 
     def manifest(self, port):
         candidates, decisions = self.candidates(port)
-        return {"protocol": "pliqra/0.1-draft", "contract_revision":INFERENCE_CONTRACT_REVISION, "id": port["id"], "name": port["name"], "description": port["description"], "version": port["version"], "fingerprint": self.fingerprint(port), "requirements": port["requirements"],"placement":port.get("placement") or {}, "invocation": {"interface": "openai-chat-completions", "path": "/v1/chat/completions", "model": port["name"]}, "deployments": [{"model": item["model"],"site":item.get("site") or "shared","region":item.get("region") or "unspecified", "capabilities": item["capabilities"], "verified": item["verified"], "evidence": "Declared capabilities; verified lists independently tested capabilities"} for item in candidates], "readiness": "ready" if candidates else "unavailable", "decisions": decisions}
+        return {"protocol": PROTOCOL_VERSION, "contract_revision":INFERENCE_CONTRACT_REVISION, "id": port["id"], "name": port["name"], "description": port["description"], "version": port["version"], "fingerprint": self.fingerprint(port), "requirements": port["requirements"],"placement":port.get("placement") or {}, "invocation": {"interface": "openai-chat-completions", "path": "/v1/chat/completions", "model": port["name"]}, "deployments": [{"model": item["model"],"site":item.get("site") or "shared","region":item.get("region") or "unspecified", "capabilities": item["capabilities"], "verified": item["verified"], "evidence": "Declared capabilities; verified lists independently tested capabilities"} for item in candidates], "readiness": "ready" if candidates else "unavailable", "decisions": decisions}
 
     def authorize_port(self, principal, port):
         if not service_allowed(self.store,principal,port):

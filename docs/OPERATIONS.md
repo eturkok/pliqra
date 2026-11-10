@@ -4,7 +4,7 @@
 
 Configuration, persistent data, recovery and release boundaries for a self-hosted workspace.
 
-For current prebuilt images, digest verification and release upgrades, see [distribution](DISTRIBUTION.md). Version 2.1 uses schema 6 and inference contract revision 5; follow [the current multi-DC upgrade procedure](MULTI_DC.md#evidence-and-upgrade) for shared deployments.
+For current prebuilt images, digest verification and release upgrades, see [distribution](DISTRIBUTION.md). Versions 2.1 and 2.2 use schema 6 and inference contract revision 5; follow [the current multi-DC upgrade procedure](MULTI_DC.md#evidence-and-upgrade) for shared deployments.
 
 ## Enterprise operations review
 
@@ -150,7 +150,7 @@ docker run -d --name pliqra \
   -p 127.0.0.1:8088:8080 \
   -v modelport-data:/data \
   --add-host host.docker.internal:host-gateway \
-  --restart unless-stopped pliqra:2.1.0
+  --restart unless-stopped pliqra:2.2.0
 ```
 
 The volume name is an existing storage reference, not the product name. Do not run the old and new processes on the same volume simultaneously. Restore the pre-upgrade backup before returning to the old build.
