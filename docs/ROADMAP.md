@@ -10,11 +10,11 @@ The five engineering tracks previously listed as future scope are implemented in
 | Model workloads | Embeddings, audio, stateless native APIs, Ollama tools, immutable prompts, durable batches | [Interfaces](MODEL_INTERFACES.md), boundary/guardrail/accounting/recovery tests |
 | Clients and interoperability | Python, JavaScript/TypeScript, Go; executable core conformance profile; independent reference server | [Conformance](CONFORMANCE.md), real HTTP against both implementations |
 
-See the [delivery checklist](DELIVERY_PLAN.md) and [release validation](RELEASE.md) for acceptance details.
+See [release validation](RELEASE.md) and [synthetic acceptance](ACCEPTANCE.md) for acceptance details.
 
 ## External acceptance remains external
 
-Entra/Okta customer tenants, actual Vault and NeMo deployments, intended real models and provider billing need environment-specific acceptance. Native APIs expose documented subsets; Responses/Messages text and tools now stream incrementally, while full-output checks retain buffering. [RC3 delivery](DELIVERY_RC3.md) adds packaged clients, independent fleet management and repeatable synthetic acceptance. Third-party protocol attestation, ecosystem adoption and an industry-standard status cannot be delivered by implementing gateway code. The executable suite is available for those participants; none of their approval or adoption is claimed.
+Entra/Okta customer tenants, actual Vault and NeMo deployments, intended real models and provider billing need environment-specific acceptance. Native APIs expose documented subsets; Responses/Messages text and tools now stream incrementally, while full-output checks retain buffering. [Synthetic acceptance](ACCEPTANCE.md) adds packaged clients, independent fleet management and repeatable synthetic acceptance. Third-party protocol attestation, ecosystem adoption and an industry-standard status cannot be delivered by implementing gateway code. The executable suite is available for those participants; none of their approval or adoption is claimed.
 
 Database failover infrastructure, model training/deployment, universal vendor API parity and autonomous production-quality rollout are outside the delivered product boundary. These are explicit limits, not completed checkboxes. See the corresponding guides before choosing a topology.
 

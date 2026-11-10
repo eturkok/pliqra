@@ -73,7 +73,6 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 | Guide | Contents |
 |---|---|
-| [Product website](docs/WEBSITE.md) | Public presentation, interactive demo, source and publication maintenance |
 | [Releases & prebuilt images](docs/DISTRIBUTION.md) | Versioned Docker images, checksums, SBOM/provenance, publication pipeline and upgrades |
 | [Gateways & guardrails](docs/GATEWAYS.md) | Policy builder, quota scopes, check providers, guarded streaming, APIs and request flow |
 | [Console tour](docs/CONSOLE.md) | Model onboarding, contracts, request inspection, team reporting and gateway screenshots |

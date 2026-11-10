@@ -2,7 +2,7 @@
 
 The published distribution is **[2.1.0](releases/v2.1.0.md)**. [Distribution](DISTRIBUTION.md) documents image verification and the tag-triggered publication gate; the functional acceptance evidence below describes the 2.1 baseline. The [stable delivery record](STABLE_2_1.md#verified-stable-delivery--7-november-2026) contains the final exact-image measurements and release-job results.
 
-The RC3 additions were validated on 7 November 2026; [synthetic acceptance](ACCEPTANCE.md) records streaming, SDK, fleet, load and recovery evidence. The multi-DC baseline below was validated on 6 November 2026. The [2.0 validation record](RELEASE_2_0.md) and [1.2 record](RELEASE_1_2.md) remain available as history. The deployment contract, including infrastructure responsibilities, is in [MULTI_DC.md](MULTI_DC.md).
+The RC3 additions were validated on 7 November 2026; [synthetic acceptance](ACCEPTANCE.md) records streaming, SDK, fleet, load and recovery evidence. The multi-DC baseline below was validated on 6 November 2026. The [2.0 validation record](https://github.com/eturkok/pliqra/blob/62e4ec0d02a9a5d85748bf0072ab6d532cc85abd/docs/RELEASE_2_0.md) and [1.2 record](https://github.com/eturkok/pliqra/blob/62e4ec0d02a9a5d85748bf0072ab6d532cc85abd/docs/RELEASE_1_2.md) remain available as history. The deployment contract, including infrastructure responsibilities, is in [MULTI_DC.md](MULTI_DC.md).
 
 ## Stable release gates
 
@@ -16,7 +16,7 @@ SDK publisher retries now verify immutable public artifacts and skip redundant u
 
 ## RC3 additions
 
-The local Python 3.14 baseline passed **205 tests** with a real PostgreSQL 18 service configured. A final native-usage correction added one regression case. At the published tag, both Python 3.13/3.14 jobs pass **173 tests** with 33 PostgreSQL cases explicitly skipped; the dedicated real-PostgreSQL job passes **43 cases** (including those 33 integration cases and ten shared SQLite fleet cases). Both independently installed SDK applications and all six official-native-client scenarios pass against synthetic providers with verified TLS. The console was exercised for instance visibility, two-target resource mapping and immutable proposal creation; the author sees no self-approval control. No real customer feedback is claimed. [Delivery checklist](DELIVERY_RC3.md) · [Fleet](FLEET.md) · [SDK installation](SDK.md)
+The local Python 3.14 baseline passed **205 tests** with a real PostgreSQL 18 service configured. A final native-usage correction added one regression case. At the published tag, both Python 3.13/3.14 jobs pass **173 tests** with 33 PostgreSQL cases explicitly skipped; the dedicated real-PostgreSQL job passes **43 cases** (including those 33 integration cases and ten shared SQLite fleet cases). Both independently installed SDK applications and all six official-native-client scenarios pass against synthetic providers with verified TLS. The console was exercised for instance visibility, two-target resource mapping and immutable proposal creation; the author sees no self-approval control. No real customer feedback is claimed. [Synthetic acceptance](ACCEPTANCE.md) · [Fleet](FLEET.md) · [SDK installation](SDK.md)
 
 ## Delivered behavior
 

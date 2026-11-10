@@ -4,7 +4,7 @@
 - **Reviewed baseline:** 2f5abc6 — Pliqra 1.1
 - **Remediation release:** 1.2
 
-[← Pliqra](../README.md) · [Architecture](ARCHITECTURE.md) · [1.2 validation record](RELEASE_1_2.md) · [Current validation record](RELEASE.md)
+[← Pliqra](../README.md) · [Architecture](ARCHITECTURE.md) · [1.2 validation record](https://github.com/eturkok/pliqra/blob/62e4ec0d02a9a5d85748bf0072ab6d532cc85abd/docs/RELEASE_1_2.md) · [Current validation record](RELEASE.md)
 
 This document records the original 1.2 review and its remediation evidence. The [2.0 follow-through](#20-architecture-follow-through--6-november-2026) below describes the subsequent implementation; current deployment scope and validation are documented separately.
 
@@ -98,7 +98,7 @@ Release 1.2 added the inference implementation revision to the fingerprint calcu
 | Real NeMo/IdP compatibility matrix | End-to-end testing with the organization's versions, claims, certificates and policy configuration |
 | Performance/SLO commitments | Load/soak measurements including new worker and guardrail overhead; the old synthetic benchmark must not be reused |
 
-At the 1.2 baseline, these requirements were not delivered capabilities and should not have been marketed as such. Scope and compatibility boundaries are documented in the [operations guide](OPERATIONS.md), [gateway guide](GATEWAYS.md) and [1.2 validation record](RELEASE_1_2.md). The following section records subsequent delivery in 2.0.
+At the 1.2 baseline, these requirements were not delivered capabilities and should not have been marketed as such. Scope and compatibility boundaries are documented in the [operations guide](OPERATIONS.md), [gateway guide](GATEWAYS.md) and [1.2 validation record](https://github.com/eturkok/pliqra/blob/62e4ec0d02a9a5d85748bf0072ab6d532cc85abd/docs/RELEASE_1_2.md). The following section records subsequent delivery in 2.0.
 
 ## 2.0 architecture follow-through — 6 November 2026
 
