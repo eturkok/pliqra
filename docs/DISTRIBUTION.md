@@ -4,13 +4,13 @@
 
 ## Install the stable release
 
-**2.1.0 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.1.0`; Docker Desktop on macOS/Windows runs the matching Linux image.
+**2.2.0 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.2.0`; Docker Desktop on macOS/Windows runs the matching Linux image.
 
 No source checkout, local build or registry login is required:
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.1.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.0/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
@@ -21,7 +21,7 @@ The named `pliqra-data` volume holds the workspace and local encryption key. To 
 
 ## Pin and verify
 
-The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.1.0) includes:
+The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.2.0) includes:
 
 - `compose.release.yaml`: installation using the exact version tag, without `build`.
 - `image.txt`: the exact multi-platform OCI digest reference.
@@ -61,10 +61,10 @@ Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose referen
 
 ## Upgrade and recover
 
-Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.2.0 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged RC4 bindings are preserved by 2.1.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
+Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.2.0 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged 2.1.0 bindings are preserved by 2.2.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
 
 Returning to an older image may require restoring its pre-upgrade backup: a newer database is not automatically downgraded. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.2.0 uses the existing 2.1.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.0 uses the published 2.2.0 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. [Chart source](../charts/pliqra/README.md).

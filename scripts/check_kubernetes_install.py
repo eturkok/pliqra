@@ -89,8 +89,9 @@ def command(args, *, payload=None):
 
 
 class Lab:
-    def __init__(self, context, chart, profile):
+    def __init__(self, context, chart, profile, app_version, previous):
         self.context, self.chart, self.profile = context, chart, profile
+        self.app_version, self.previous = app_version, previous
         self.namespace = 'pliqra-chart-' + profile + '-' + uuid.uuid4().hex[:8]
         self.checks = []
         self.values = {} if profile == 'sqlite' else {
@@ -214,7 +215,9 @@ class Lab:
             self.fixtures(image)
             with tempfile.TemporaryDirectory(prefix='pliqra-chart-values-') as directory:
                 values = Path(directory) / 'values.json'
-                initial = self.values if self.profile == 'postgresql' else {'image': {'digest': '', 'tag': '2.1.0-rc.4'}}
+                previous_repository, previous_digest = self.previous['image'].split('@', 1)
+                initial = self.values if self.profile == 'postgresql' else {
+                    'image': {'repository': previous_repository, 'digest': previous_digest, 'tag': self.previous['version']}}
                 values.write_text(json.dumps(initial))
                 self.helm('install', 'pliqra', str(self.chart), '-f', str(values), '--wait', '--timeout', '5m')
                 count = 1 if self.profile == 'sqlite' else 2
@@ -224,8 +227,10 @@ class Lab:
                 cookies = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
                 csrf = None
 
-                def request(base, path, body=None, token=None, expected=200):
+                def request(base, path, body=None, token=None, expected=200, protocol=None):
                     headers = {'Content-Type': 'application/json'}
+                    if protocol:
+                        headers['Pliqra-Protocol'] = protocol
                     if csrf:
                         headers['X-Pliqra-CSRF'] = csrf
                     if token:
@@ -239,10 +244,12 @@ class Lab:
                     with response:
                         payload = json.load(response)
                         assert response.status == expected, f'{path}: expected {expected}, got {response.status}'
+                        if protocol:
+                            assert response.headers.get('Pliqra-Protocol') == protocol
                         return payload
 
                 with self.forward(pods[0]) as base:
-                    initial_version = '2.1.0-rc.4' if self.profile == 'sqlite' else '2.1.0'
+                    initial_version = self.previous['version'] if self.profile == 'sqlite' else self.app_version
                     assert request(base, '/readyz')['version'] == initial_version
                     setup = request(base, '/api/v1/setup', {'name': 'Chart Owner', 'email': 'chart@example.test', 'password': secrets.token_urlsafe(24)})
                     csrf = setup['csrf']
@@ -284,9 +291,11 @@ class Lab:
                 pods = self.ready(count)
                 with self.forward(pods[0]) as base:
                     assert not request(base, '/api/v1/session')['setup_required']
-                    assert request(base, '/readyz')['version'] == '2.1.0'
-                    request(base, binding['invoke'], body)
-                self.mark(('RC4-to-2.1.0 image' if self.profile == 'sqlite' else 'Recreate configuration') + ' upgrade preserves identity, bindings and encrypted provider access')
+                    assert request(base, '/readyz')['version'] == self.app_version
+                    discovery = request(base, '/.well-known/pliqra', protocol='pliqra/1.0')
+                    assert discovery['protocol'] == 'pliqra/1.0' and discovery['status'] == 'stable'
+                    request(base, binding['invoke'], body, protocol='pliqra/1.0')
+                self.mark((f'{initial_version}-to-{self.app_version} image' if self.profile == 'sqlite' else 'Recreate configuration') + ' upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access')
                 with self.forward(pods[0]) as base:
                     password = secrets.token_urlsafe(24)
                     req = urllib.request.Request(base + '/api/v1/backups',
@@ -376,13 +385,15 @@ def main():
     metadata = yaml.safe_load(command(['helm', 'show', 'chart', str(chart)]))
     values = yaml.safe_load(command(['helm', 'show', 'values', str(chart)]))
     image = values['image']['repository'] + '@' + values['image']['digest']
+    previous = json.loads((ROOT / 'release-policy.json').read_text())['previous_release']
     report = {'passed': False, 'chart_version': metadata['version'], 'app_version': metadata['appVersion'],
               'image': image, 'context': args.context, 'profiles': [],
-              'boundary': 'Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 upgrade/rollback on schema 6, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification.'}
+              'previous_release': previous,
+              'boundary': f"Disposable single-node kind clusters and synthetic providers; SQLite {previous['version']}-to-{metadata['appVersion']} upgrade/rollback on schema 6, stable protocol negotiation with retained legacy bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
         for profile in ('sqlite', 'postgresql'):
-            lab = Lab(args.context, chart, profile)
+            lab = Lab(args.context, chart, profile, metadata['appVersion'], previous)
             report['profiles'].append({'name': profile, 'checks': lab.checks})
             lab.exercise(image)
         report['passed'] = True

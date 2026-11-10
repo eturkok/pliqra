@@ -1,5 +1,7 @@
 # Inference API boundary
 
+> Current release: Gateway 2.2.0 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
+
 [← Pliqra](../README.md) · [Protocol](PROTOCOL.md) · [Gateway policies](GATEWAYS.md)
 
 Pliqra implements a defined chat-completions subset. Version 1.2 rejects unknown fields and ambiguous generation controls with HTTP 422 before inference. This makes capability, token and permission enforcement explicit; arbitrary provider-native extensions are not silently forwarded.

@@ -2,8 +2,8 @@ apiVersion: v2
 name: pliqra
 description: Self-hosted AI services, governed gateways and explicit model contracts
 type: application
-version: 0.2.0
-appVersion: "2.1.0"
+version: 0.3.0
+appVersion: "2.2.0"
 kubeVersion: ">=1.34.0-0"
 home: https://pliqra.etlabio.com
 sources:

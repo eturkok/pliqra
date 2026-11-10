@@ -17,7 +17,7 @@ spec:
       type: RuntimeDefault
   containers:
     - name: recovery
-      image: ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39
+      image: ghcr.io/eturkok/pliqra@sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67
       command: [python, -c, "import time; time.sleep(3600)"]
       securityContext:
         allowPrivilegeEscalation: false
