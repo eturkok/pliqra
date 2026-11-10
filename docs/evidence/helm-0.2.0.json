@@ -1,0 +1,197 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-10T19:56:54.059652+00:00",
+  "chart_version": "0.2.0",
+  "app_version": "2.1.0",
+  "source_commit": "6e6ff9c6cb06d572219c076730a9ee9b8cad8785",
+  "workflow": "https://github.com/eturkok/pliqra/actions/runs/42889467395",
+  "core_tests": "https://github.com/eturkok/pliqra/actions/runs/42888579029",
+  "release": "https://github.com/eturkok/pliqra/releases/tag/helm-v0.2.0",
+  "released_package_sha256": "35f31fbe26c2af3d3460356f6ec5842da9fdde80409a9bb18e82209f87754a1a",
+  "anonymous_download": "passed",
+  "helm_version": "4.3.1",
+  "render_checks": 35,
+  "promtool": {
+    "version": "3.16.0",
+    "result": "passed",
+    "scenarios": 5,
+    "assertions": 12,
+    "source": "tests/monitoring/alerts.test.yaml"
+  },
+  "crd_schema": {
+    "project": "prometheus-operator/prometheus-operator",
+    "version": "0.95.1",
+    "commit": "22741007a4cabc700427bb3f6664b92fdfded624"
+  },
+  "cluster_checks": 32,
+  "reports": [
+    {
+      "passed": true,
+      "chart_version": "0.2.0",
+      "app_version": "2.1.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+      "context": "kind-pliqra-chart-42889467395-0",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "RC4-to-2.1.0 image upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 upgrade/rollback on schema 6, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+    },
+    {
+      "passed": true,
+      "chart_version": "0.2.0",
+      "app_version": "2.1.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:3b46ae2608b3b00dd1716367174017f1f76de132c78031e793b9f6018c441f39",
+      "context": "kind-pliqra-chart-42889467395-1",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "RC4-to-2.1.0 image upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, bindings and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 upgrade/rollback on schema 6, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+    }
+  ]
+}

@@ -21,6 +21,8 @@ Open **http://localhost:8088**, create the administrator, connect a model endpoi
 
 The default Service is cluster-internal and ingress is disabled. Initialize the administrator privately before exposing a workspace. `helm test pliqra -n pliqra` checks readiness and protocol discovery through the Service without creating an administrator or making an inference call.
 
+ClusterIP alone does not isolate bootstrap from other cluster tenants. In a shared cluster, restrict access with namespace/network controls **before** first setup, use an authorized port-forward for initialization, and verify untrusted pods cannot reach setup. When using the chart's NetworkPolicy, begin with explicit rules or a deny-all ingress policy and add only intended clients after initialization. Verify your CNI's port-forward behavior; do not temporarily expose public ingress to work around it.
+
 Chart **0.2.0** pins the published **2.1.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
 
 ## Verify the downloadable package
@@ -89,8 +91,11 @@ After a reviewed database credential or CA update, change a non-secret `config.r
 Initialize the administrator privately, create a monitoring token in **Operations**, and deliver it through your secret manager as `pliqra-monitoring/token` in the application namespace. With an existing Prometheus Operator installation, add [monitoring values](../charts/pliqra/examples/monitoring.yaml):
 
 ```sh
-helm upgrade pliqra ./pliqra-0.2.0.tgz -n pliqra -f your-values.yaml -f charts/pliqra/examples/monitoring.yaml --wait
+curl -fL -o monitoring.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.2.0/charts/pliqra/examples/monitoring.yaml
+helm upgrade pliqra ./pliqra-0.2.0.tgz -n pliqra -f your-values.yaml -f monitoring.yaml --wait
 ```
+
+Review the downloaded example and adapt its labels/Secret reference before upgrading. No source checkout is required.
 
 The optional **ServiceMonitor** scrapes `/metrics` with `authorization.credentials` referencing the Secret; no token is stored in values or rendered resources. Enable its **PrometheusRule** for missing/all-failed scrapes, an individual failed replica and unresolved usage reservations. Both are opt-in and require existing CRDs; the chart fails clearly if they are missing. It installs neither CRDs nor a monitoring stack. Adapt the example labels to your Prometheus `serviceMonitorSelector`, namespace selector and rule selector. Allow the Prometheus pods through NetworkPolicy. [Operator selection and troubleshooting](https://prometheus-operator.dev/docs/platform/troubleshooting/) covers discovery failures.
 
@@ -131,4 +136,4 @@ The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-versio
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
 
-[Initial chart 0.1.0 acceptance record](evidence/helm-0.1.0.json) records the first published package. Current chart releases attach their exact package checksum and both cluster reports; see the release linked above.
+[Chart 0.2.0 acceptance record](evidence/helm-0.2.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [The original 0.1.0 record](evidence/helm-0.1.0.json) remains available for that earlier release.
