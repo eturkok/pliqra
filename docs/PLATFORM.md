@@ -41,7 +41,7 @@ Each organization is a separate backup/recovery unit; a root archive does not bu
 
 The console exports password-encrypted physical SQLite snapshots or logical PostgreSQL archives. The online SQLite database limit and logical plaintext archive limit are **32 MB**; use native backup beyond them. Restore refuses active shared inference, management operations, evaluations and queued/running batches, and invalidates sessions. An externally managed/derived key must match the archive. Logical restore is transactional and requires the same schema version and encryption key.
 
-To migrate SQLite to PostgreSQL: stop the source, run `python -m pliqra backup --logical --file /data/workspace.mpb`, retain its encryption key, configure the destination with that same key, then use offline `restore` before starting any destination replica. Never point old and new storage backends at live traffic simultaneously. The schema version in 2.1 is 5. Take a pre-upgrade backup; roll back using that backup and the old image. Changing database format alone is not a downgrade path.
+To migrate SQLite to PostgreSQL: stop the source, run `python -m pliqra backup --logical --file /data/workspace.mpb`, retain its encryption key, configure the destination with that same key, then use offline `restore` before starting any destination replica. Never point old and new storage backends at live traffic simultaneously. The schema version in 2.1 is 6. Take a pre-upgrade backup; roll back using that backup and the old image. Changing database format alone is not a downgrade path.
 
 See [operations](OPERATIONS.md), [architecture](ARCHITECTURE.md) and [release evidence](RELEASE.md).
 

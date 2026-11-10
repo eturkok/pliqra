@@ -101,7 +101,7 @@ A same-image Helm rollback can restore chart configuration. An image downgrade i
 
 ## Validation and release pipeline
 
-The **Helm chart** workflow lints and renders the chart, rejects unsafe values, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, Recreate upgrades, same-image rollback, three replicas, retained SQLite PVC and reinstall. Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernetes API; an ingress controller, metrics-server and policy-enforcing CNI are not part of that test fixture.
+The **Helm chart** workflow lints and renders the chart, rejects unsafe values, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, a real RC4-to-2.1.0 SQLite image upgrade and same-schema rollback, PostgreSQL configuration upgrades/rollback, three replicas, retained SQLite PVC and reinstall. Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernetes API; an ingress controller, metrics-server and policy-enforcing CNI are not part of that test fixture.
 
 The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-version>` tag, reruns the checks, then publishes the exact tested archive, SHA-256 checksum and both cluster reports as a separate GitHub release. It does not overwrite the application image or stable application release.
 

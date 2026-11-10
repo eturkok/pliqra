@@ -173,7 +173,8 @@ class Lab:
             self.fixtures(image)
             with tempfile.TemporaryDirectory(prefix='pliqra-chart-values-') as directory:
                 values = Path(directory) / 'values.json'
-                values.write_text(json.dumps(self.values))
+                initial = self.values if self.profile == 'postgresql' else {'image': {'digest': '', 'tag': '2.1.0-rc.4'}}
+                values.write_text(json.dumps(initial))
                 self.helm('install', 'pliqra', str(self.chart), '-f', str(values), '--wait', '--timeout', '5m')
                 count = 1 if self.profile == 'sqlite' else 2
                 pods = self.ready(count)
@@ -200,6 +201,8 @@ class Lab:
                         return payload
 
                 with self.forward(pods[0]) as base:
+                    initial_version = '2.1.0-rc.4' if self.profile == 'sqlite' else '2.1.0'
+                    assert request(base, '/readyz')['version'] == initial_version
                     setup = request(base, '/api/v1/setup', {'name': 'Chart Owner', 'email': 'chart@example.test', 'password': secrets.token_urlsafe(24)})
                     csrf = setup['csrf']
                     connection = request(base, '/api/v1/connections', {'name': 'Chart fixture', 'endpoint': 'http://fixture:8090/v1', 'api_key': 'fixture-secret'}, expected=201)
@@ -235,17 +238,20 @@ class Lab:
                         request(base, '/v1/chat/completions', body, token=key['token'], expected=429)
                     self.mark('verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota')
                 pvc_uid = json.loads(self.kube('get', 'pvc', 'pliqra', '-o', 'json'))['metadata']['uid'] if self.profile == 'sqlite' else None
+                values.write_text(json.dumps(self.values))
                 self.helm('upgrade', 'pliqra', str(self.chart), '-f', str(values), '--set-string', 'podAnnotations.acceptance=upgrade', '--wait', '--timeout', '5m')
                 pods = self.ready(count)
                 with self.forward(pods[0]) as base:
                     assert not request(base, '/api/v1/session')['setup_required']
+                    assert request(base, '/readyz')['version'] == '2.1.0'
                     request(base, binding['invoke'], body)
-                self.mark('Recreate upgrade preserves identity, bindings and encrypted provider access')
+                self.mark(('RC4-to-2.1.0 image' if self.profile == 'sqlite' else 'Recreate configuration') + ' upgrade preserves identity, bindings and encrypted provider access')
                 self.helm('rollback', 'pliqra', '1', '--wait', '--timeout', '5m')
                 pods = self.ready(count)
                 with self.forward(pods[0]) as base:
+                    assert request(base, '/readyz')['version'] == initial_version
                     request(base, binding['invoke'], body)
-                self.mark('same-image Helm rollback preserves application state')
+                self.mark(('same-schema image' if self.profile == 'sqlite' else 'same-image configuration') + ' Helm rollback preserves application state')
                 if self.profile == 'sqlite':
                     assert json.loads(self.kube('get', 'pvc', 'pliqra', '-o', 'json'))['metadata']['uid'] == pvc_uid
                     self.helm('uninstall', 'pliqra', '--wait', '--timeout', '3m')
@@ -285,7 +291,7 @@ def main():
     image = values['image']['repository'] + '@' + values['image']['digest']
     report = {'passed': False, 'chart_version': metadata['version'], 'app_version': metadata['appVersion'],
               'image': image, 'context': args.context, 'profiles': [],
-              'boundary': 'Disposable single-node kind clusters and synthetic providers; same-image chart upgrades, not database-schema downgrade, geographic HA or real model capacity certification.'}
+              'boundary': 'Disposable single-node kind clusters and synthetic providers; SQLite RC4-to-2.1.0 image upgrade/rollback on schema 6 and PostgreSQL chart configuration upgrades. No incompatible database-schema downgrade, geographic HA or real model capacity certification.'}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
         for profile in ('sqlite', 'postgresql'):

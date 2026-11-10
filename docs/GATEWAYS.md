@@ -81,7 +81,7 @@ Admission is atomic inside the existing SQLite transaction, including concurrent
 - An input block with no model attempt settles to zero model tokens and releases model-budget reservation. An output block still records and charges model computation that already happened.
 - Administrators can reconcile unknown usage through the existing audited accounting dialog. Supplying both token totals also corrects the gateway ledger.
 
-Remote guardrail provider calls may incur separate charges. Those provider charges are not included in model-token or estimated model-cost totals. Rolling windows use request admission time, not calendar-day resets. Policies apply per workspace process; distributed/HA admission is outside this release.
+Remote guardrail provider calls may incur separate charges. Those provider charges are not included in model-token or estimated model-cost totals. Rolling windows use request admission time, not calendar-day resets. SQLite policies apply in one workspace process. PostgreSQL replicas share admission counters and reservations through one writable authority; see [multi-DC behavior](MULTI_DC.md).
 
 ## Reusable guardrails
 

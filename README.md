@@ -8,6 +8,7 @@
   <a href="https://github.com/eturkok/pliqra/actions/workflows/test.yml"><img src="https://github.com/eturkok/pliqra/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
   · <a href="https://pliqra.etlabio.com">Website & interactive demo</a>
   · <a href="#quick-start">Quick start</a>
+  · <a href="#kubernetes">Kubernetes</a>
   · <a href="#multi-dc">Multi-DC</a>
   · <a href="docs/CONSOLE.md">Console tour</a>
   · <a href="docs/ARCHITECTURE.md">Architecture</a>
@@ -61,6 +62,19 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 
 [Image verification & upgrades →](docs/DISTRIBUTION.md) · [Source build & first call →](docs/GETTING_STARTED.md) · [Two-replica installation →](docs/PLATFORM.md#start-two-gateways)
 
+## Kubernetes
+
+Use the **official Helm chart** with the prebuilt image. Start with one SQLite pod and retained storage; use external PostgreSQL and existing Secrets for multiple replicas.
+
+```sh
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.1.0/pliqra-0.1.0.tgz --namespace pliqra --create-namespace --wait
+kubectl -n pliqra port-forward service/pliqra 8088:8080
+```
+
+Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+
+[Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.1.0)
+
 ## Multi-DC
 
 Run active gateways across data centers with **one shared writable PostgreSQL authority**. Prefer local models, enforce global request/token quotas and concurrency limits, and control site draining or standby through the console or API.
@@ -73,6 +87,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 | Guide | Contents |
 |---|---|
+| [Kubernetes & Helm](docs/KUBERNETES.md) | Official chart, SQLite/PostgreSQL profiles, Secrets, ingress, upgrade and cluster acceptance |
 | [Releases & prebuilt images](docs/DISTRIBUTION.md) | Versioned Docker images, checksums, SBOM/provenance, publication pipeline and upgrades |
 | [Gateways & guardrails](docs/GATEWAYS.md) | Policy builder, quota scopes, check providers, guarded streaming, APIs and request flow |
 | [Console tour](docs/CONSOLE.md) | Model onboarding, contracts, request inspection, team reporting and gateway screenshots |
