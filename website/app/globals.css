@@ -21,3 +21,20 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 
 .client-example-note{font-size:11px;color:#c7ad85;padding:16px 20px;border-top:1px solid #51442e;line-height:1.9}.client-example-note code{color:#e0c39a}.client-code-header{border-top:1px solid #51442e}.install-code:has(.client-code) #install-panel{min-height:70px;padding-bottom:20px}.install-code .client-code{min-height:0}@media(max-width:480px){.client-example-note{font-size:11px;padding-inline:14px}}
+
+/* Concrete product decisions retain the site's orange and charcoal palette. */
+.choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.choice-card{min-width:0;padding:28px 24px 22px;border:1px solid var(--line);border-radius:var(--radius);background:#fffdfa;display:flex;flex-direction:column;align-items:flex-start}
+.choice-card-top{display:flex;align-items:center;justify-content:space-between;align-self:stretch;margin-bottom:23px;color:var(--burnt)}
+.choice-card-top .number{font-size:11px;letter-spacing:.08em;color:#8b8378}
+.choice-context{font:9px/1.7 "SFMono-Regular",Consolas,monospace;letter-spacing:.07em;color:var(--burnt);margin-bottom:10px}
+.choice-card h3{font-size:29px;line-height:1.13;max-width:290px;margin-bottom:19px}
+.choice-situation,.choice-decision>p:last-child{font-size:13px;line-height:1.85;color:#69655e}
+.choice-decision{padding:18px 0;margin-top:21px;align-self:stretch;border-block:1px solid #e8e2d8}
+.choice-decision .mini-label{font-size:9px;line-height:1.7;color:var(--burnt);letter-spacing:.06em;margin-bottom:9px}
+.choice-card .choice-outcome{font-size:13px;line-height:1.8;color:var(--ink);margin:19px 0 21px}
+.choice-card .text-link{margin-top:auto;min-height:44px;line-height:1.6}
+.choice-boundary{font-size:11px;line-height:1.9;max-width:900px;margin-top:24px;color:#7a756b}
+@media(max-width:1100px){.choice-grid{gap:15px}.choice-card{padding:24px 19px 18px}.choice-card h3{font-size:26px}}
+@media(max-width:900px){.choice-grid{grid-template-columns:1fr}.choice-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px;padding:26px}.choice-card-top,.choice-context,.choice-card h3,.choice-situation{grid-column:1}.choice-card-top{margin-bottom:18px}.choice-card h3{font-size:30px;max-width:330px}.choice-decision{grid-column:2;grid-row:2 / span 3;margin-top:0;align-self:start}.choice-card .choice-outcome{grid-column:2;margin:19px 0 14px}.choice-card .text-link{grid-column:2}.choice-boundary{max-width:650px}}
+@media(max-width:480px){.choice-card{display:flex;padding:25px 21px 17px}.choice-card h3{font-size:29px;max-width:270px}.choice-situation,.choice-decision>p:last-child,.choice-card .choice-outcome{font-size:13px}.choice-decision{margin-top:20px}.choice-card .choice-outcome{margin:18px 0 15px}.choice-card .text-link{font-size:12px}.choice-boundary{font-size:11px}}

@@ -18,6 +18,14 @@
 
 Pliqra combines a model-as-a-service catalog, inference routing, custom gateway policies and guardrails in one self-hosted application. Configure it through the responsive console or API, then connect your applications with scoped keys.
 
+## Why choose Pliqra?
+
+- **Make model changes an application decision.** Your support app relies on tool calling. An administrator changes the registered endpoint, capabilities or gateway policy: bound calls return `409 ContractChanged` until the application explicitly accepts the new contract. [Connection contracts →](docs/PROTOCOL.md)
+- **Review one policy across independent installations.** Finance needs the same limits and guardrails in three workspaces. Prepare a plan for each target, get a different administrator's approval, then inspect delivery receipts and policy drift. [Fleet governance →](docs/FLEET.md)
+- **Require evidence before a model rollout.** Send 10% of traffic to a candidate only after it meets the configured quality and regression gates. A changed dataset, judge or service invalidates the old evidence. [Controlled releases →](docs/WORKFLOWS.md)
+
+Bindings are opt-in and track registered service/policy configuration. Evaluation gates cover the selected cases and evaluator. Start with the gateway, console and SQLite in one container; add shared PostgreSQL when you need multiple active sites.
+
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
 
 ## What Pliqra brings

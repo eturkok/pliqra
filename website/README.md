@@ -16,6 +16,8 @@ The default development address is http://localhost:5173. Production output is i
 
 ## Experience
 
+The opening **Why choose Pliqra** section uses three concrete decisions: a support application accepting a changed contract, Finance reviewing policy changes across three independent workspaces, and a candidate model needing fresh evidence before a 10% rollout. The full gateway capability map and walkthrough remain available below.
+
 - Eight interactive browser-only scenarios: contracts, gateway request/token quotas, guardrails, team usage, active/active routing, reviewed fleet policy, evidence-gated canaries and identity/access.
 - Actual console screenshots use synthetic workspaces and are explicitly labelled as screenshots.
 - No model calls, API credentials, sign-up form, third-party trackers or customer data are used by the application.

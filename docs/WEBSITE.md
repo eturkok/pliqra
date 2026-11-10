@@ -29,10 +29,10 @@ Canonical metadata, Open Graph/Twitter image, structured data, sitemap and robot
 
 ## Validation
 
-The initial published source commit is `ba49d28ee8b80defe75c2aa4f78c9a18a4190d72` in the Sites source repository. The source mirror contains that exact tracked tree. TypeScript and the production build passed before publication.
+The initial publication used source commit `ba49d28ee8b80defe75c2aa4f78c9a18a4190d72`. **Version 2**, published on 10 November 2026, uses `0d1b10c3bdf3fc6b09138b2ef72b5de832ba9e92` in the Sites source repository; `website/` mirrors that exact tracked tree. The opening section now explains three concrete reasons to choose Pliqra: a support application accepting a changed contract, Finance reviewing one policy across three independent installations, and a candidate model meeting evidence gates before a 10% rollout. The ten capability areas and eight demo scenarios remain. TypeScript and the production build passed before publication. [Content and responsive checks](evidence/product-positioning.json) cover eight widths from 320 to 1280 px, including layout boundaries.
 
 [Browser evidence](evidence/product-site-browser.json) records all eight scenarios at **320, 390, 768, 1024, 1280 and 1440 px**, with no document horizontal overflow or clipped demo controls. Additional 720/721 and 900/901 px boundary checks, mobile menu dismissal/focus, tab keyboard navigation, copied SDK examples and console-image loading were checked. The live custom hostname was also opened in the browser. These checks cover the website, not a claim of real customer or external vendor acceptance.
 
-![Published desktop presentation](screenshots/product-site-desktop.png)
+![Why choose Pliqra: concrete decisions](screenshots/product-site-why.png)
 
 [Mobile screenshot](screenshots/product-site-mobile.png)
