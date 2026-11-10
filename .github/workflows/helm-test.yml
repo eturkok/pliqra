@@ -79,7 +79,7 @@ jobs:
       - name: Validate optional resources against the actual Kubernetes API
         run: |
           chart=$(find dist/helm -maxdepth 1 -name 'pliqra-*.tgz')
-          helm template check "$chart" -f charts/pliqra/examples/postgresql.yaml -f charts/pliqra/examples/ingress.yaml -f charts/pliqra/examples/multidc.yaml --set autoscaling.enabled=true --set networkPolicy.enabled=true | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
+          helm template check "$chart" -f charts/pliqra/examples/postgresql.yaml -f charts/pliqra/examples/ingress.yaml -f charts/pliqra/examples/multidc.yaml --set autoscaling.enabled=true --set networkPolicy.enabled=true --set serviceAccount.create=false | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
       - name: Exercise SQLite persistence and shared PostgreSQL installs and upgrades
         run: |
           chart=$(find dist/helm -maxdepth 1 -name 'pliqra-*.tgz')
