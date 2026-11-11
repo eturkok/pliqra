@@ -46,10 +46,15 @@ def backup(store,vault,password):
 def restore(store,vault,archive,password):
     try:
         data=json.loads(Fernet(archive_key(password,archive[9:25])).decrypt(archive[25:]))
-        if data['format']!='pliqra-logical/1' or data['schema']!=SCHEMA_VERSION or data['key'].encode()!=vault.key:
+        if data['format']!='pliqra-logical/1' or data['schema'] not in (6, SCHEMA_VERSION) or data['key'].encode()!=vault.key:
             raise ValueError()
         tables=data['tables']
         allowed=set(store.tables())-EXCLUDED
+        if data['schema'] == 6 and SCHEMA_VERSION == 7:
+            new_tables = {'behavior_schedules', 'behavior_runs'}
+            if allowed - set(tables) != new_tables:
+                raise ValueError()
+            tables.update({table: [] for table in new_tables})
         if set(tables)!=allowed or any(not re.fullmatch('[a-z_]+',t) for t in tables):raise ValueError()
         if not any(r['role']=='admin' and r['issuer']=='local' and r['active'] for r in tables['users']):raise ValueError()
         for table,column in ENCRYPTED_COLUMNS:
@@ -87,5 +92,7 @@ def restore(store,vault,archive,password):
         store.run("UPDATE evaluations SET status='interrupted',finished=?,error='Restored during execution' WHERE status IN ('queued','running')",(now(),))
         store.run("UPDATE batch_items SET status='interrupted',error='Restored during execution; no automatic replay' WHERE status='running'")
         store.run("UPDATE batches SET status='queued',node_id=NULL WHERE status='running'")
+        store.run("UPDATE behavior_runs SET status='interrupted',finished=?,error='Restored during execution; no automatic replay' WHERE status='running'", (store.clock(),))
+        store.run("UPDATE behavior_schedules SET enabled=0,last_status='paused',last_error='Re-enable scheduled checks after reviewing the restored workspace'")
         store.set_setting('maintenance',True)
     return {'restored':True,'sessions_invalidated':True}

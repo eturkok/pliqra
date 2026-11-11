@@ -6,6 +6,8 @@ Configuration, persistent data, recovery and release boundaries for a self-hoste
 
 For current prebuilt images, digest verification and release upgrades, see [distribution](DISTRIBUTION.md). Versions 2.1 and 2.2 use schema 6 and inference contract revision 5; follow [the current multi-DC upgrade procedure](MULTI_DC.md#evidence-and-upgrade) for shared deployments.
 
+**2.4 development source uses schema 7** for durable [model behavior schedules](BEHAVIOR_CHECKS.md). Back up and coordinate every writer before migrating from stable 2.3/schema 6. Portable schema-6 archives remain restorable into 7; restore pauses scheduled checks for review. Rollback to 2.3 needs the pre-upgrade schema-6 backup. These checks use real model calls: configure cadence, UTC daily limits, output-token bounds and the accounting project's prices/budget before enabling them.
+
 ## Enterprise operations review
 
 Reviewed on **2026-11-10**, following the first Helm release. The application remains **2.1.0 / schema 6**; chart **0.2.0** adds deployment and operations controls without changing the application image.

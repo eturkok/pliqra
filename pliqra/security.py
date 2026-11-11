@@ -13,7 +13,7 @@ from cryptography.fernet import Fernet
 from fastapi import HTTPException
 
 ENCRYPTED_COLUMNS=(('connections','secret'),('identity_providers','secret'),('guardrails','secret'),
-                   ('secret_providers','secret'),('quality_judges','secret'),('analytics_targets','secret'),('fleet_members','secret'),('batch_items','request'),('batch_items','result'),('cache_entries','payload'),('event_content','payload'))
+                   ('secret_providers','secret'),('quality_judges','secret'),('analytics_targets','secret'),('fleet_members','secret'),('batch_items','request'),('batch_items','result'),('cache_entries','payload'),('event_content','payload'),('behavior_schedules','config'),('behavior_runs','config'))
 
 
 def digest(value):

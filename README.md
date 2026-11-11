@@ -41,6 +41,8 @@ Both flows were exercised against **SmolLM2 running in llama.cpp**, including th
 
 Both features ship in the prebuilt **2.3.0** image. [Contract setup and impact reports →](docs/CONTRACT_CHANGES.md)
 
+**In development for 2.4: watch behavior behind an unchanged endpoint.** Schedule bounded response, streaming, JSON and tool checks. See outcome changes, recovery and the last successful test in the dashboard, with project budgets and daily limits. Available in **2.4.0-alpha.1 source**, separately from the stable image. [Model behavior checks & real-endpoint evidence →](docs/BEHAVIOR_CHECKS.md)
+
 ## What Pliqra brings
 
 | Capability | What you get |
@@ -50,6 +52,7 @@ Both features ship in the prebuilt **2.3.0** image. [Contract setup and impact r
 | **Composable guardrails** | Chain local checks, NeMo check-API providers and custom HTTP validators on input/output. Enforce or observe; apply local redaction and inspect recorded verdicts. |
 | **An explanation for every call** | Follow routing, fallback attempts, guardrail decisions, timing, tokens and estimated costs. Administrators see cumulative totals and team-level detail. |
 | **Publish with evidence** | Version prompts, queue durable batches, compare models with external judges, and gate canary releases on fresh quality evidence. |
+| **Observe behavior over time (2.4 development)** | Regularly test selected expectations at the same endpoint; retain last success, surface changes and notify on failure/recovery without changing traffic automatically. |
 | **One policy across interfaces** | Chat, embeddings, audio and native APIs through one admission/accounting boundary, with live Responses/Messages text and tool streaming. |
 | **Govern independent installations** | Pair workspaces, filter combined usage, review policy changes with a second administrator, and track delivery and drift from one console. |
 | **Start small, scale across sites** | One Docker image by default. Add PostgreSQL, isolated organizations, analytics and active/active data centers when needed. |

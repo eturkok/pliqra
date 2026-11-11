@@ -259,3 +259,56 @@ def test_postgres_publication_impact_and_existing_client_binding_across_replicas
     assert invoke(b, service['name'], protected).status_code == 409
     renewed = a.post('/protocol/v1/bindings', headers=headers, json={'service': service['name']}).json()
     assert invoke(b, service['name'], headers | {'X-Pliqra-Binding': renewed['id']}).status_code == 200
+
+
+def test_behavior_cycle_claim_is_shared_and_fenced_work_is_not_replayed(replicas):
+    from pliqra.behavior import claim, execute
+    from tests.test_behavior import schedule
+    a, b, first, second = replicas
+    connect(a)
+    deployment = a.get('/api/v1/connections').json()[0]['models'][0]
+    record = schedule(a, deployment['id'], enabled=True, checks=[{'name':'Chat','capability':'chat'}])
+    first.state.store.update('behavior_schedules', record['id'], {'next_run':first.state.store.clock()-1})
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda app:(app,claim(app)), (first,second)))
+    winners = [(app,run) for app,run in results if run]
+    assert len(winners) == 1
+    app, run = winners[0]
+    asyncio.run_coroutine_threadsafe(execute(app,run), app.state.loop).result(5)
+    report = b.get('/api/v1/behavior-checks').json()['items'][0]
+    assert report['last_status']=='passed' and report['daily_runs']==1
+    first.state.store.update('behavior_schedules', record['id'], {'next_run':first.state.store.clock()-1})
+    claimed = claim(first)
+    with second.state.store.transaction():
+        second.state.store.run('UPDATE runtime_nodes SET heartbeat=? WHERE id=?', (second.state.store.clock()-61,first.state.gateway.cluster.node))
+        second.state.gateway.cluster.reap()
+    interrupted = second.state.store.one('SELECT status FROM behavior_runs WHERE id=?', (claimed['id'],))
+    assert interrupted['status']=='interrupted'
+    assert claim(second) is None
+    assert second.state.store.one('SELECT daily_runs FROM behavior_schedules WHERE id=?', (record['id'],))['daily_runs']==2
+
+
+def test_schema_six_logical_backup_restores_into_behavior_schema(replicas):
+    from cryptography.fernet import Fernet
+    from pliqra.logical_archive import archive_key, backup, restore
+    from pliqra.db import SCHEMA_VERSION
+    from tests.test_behavior import schedule
+    a, b, first, second = replicas
+    connect(a)
+    deployment = a.get('/api/v1/connections').json()[0]['models'][0]
+    row = schedule(a, deployment['id'], enabled=True, checks=[{'name':'Chat','capability':'chat'}])
+    archive = backup(first.state.store, first.state.vault, 'logical-backup-password')
+    salt = archive[9:25]
+    cipher = Fernet(archive_key('logical-backup-password', salt))
+    data = json.loads(cipher.decrypt(archive[25:]))
+    data['schema'] = 6
+    data['tables'].pop('behavior_schedules')
+    data['tables'].pop('behavior_runs')
+    legacy = b'PLQLOGI01' + salt + cipher.encrypt(json.dumps(data).encode())
+    restore(first.state.store, first.state.vault, archive, 'logical-backup-password')
+    restored = first.state.store.one('SELECT enabled,last_status FROM behavior_schedules WHERE id=?', (row['id'],))
+    assert restored=={'enabled':0,'last_status':'paused'}
+    result = restore(first.state.store, first.state.vault, legacy, 'logical-backup-password')
+    assert result['restored']
+    assert first.state.store.one('SELECT version FROM schema_metadata')['version']==SCHEMA_VERSION
+    assert first.state.store.one('SELECT COUNT(*) AS n FROM behavior_schedules')['n']==0

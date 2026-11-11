@@ -22,9 +22,15 @@ All screenshots come from the actual running console in an isolated demonstratio
 
 ### See when an application needs to reconnect
 
-The selected service shows active application identities whose contract no longer matches. A fresh binding for the same identity clears its renewal notice. Revoked credentials, expired bindings and identities that lost access do not count as active connections. Drift detection covers service configuration and advertised model metadata; undisclosed model-weight changes behind an unchanged endpoint cannot be inferred.
+The selected service shows active application identities whose contract no longer matches. A fresh binding for the same identity clears its renewal notice. Revoked credentials, expired bindings and identities that lost access do not count as active connections. Contract drift covers service configuration and advertised model metadata; it does not identify undisclosed model-weight changes.
 
 ![Pliqra overview warning that a changed service contract requires application renewal](screenshots/contract-change.jpg)
+
+### Watch the behavior behind an unchanged endpoint (2.4 development)
+
+**Model health** schedules small chat, streaming, JSON and tool checks against a selected deployment. Filter by project, inspect the last successful test for each expectation, follow failures and recovery, or run a cycle manually. Daily cycle/token limits and project budget accounting bound its model calls. The overview links to schedules; history links to individual request evidence. Checks observe outcomes without automatically changing capabilities or routing. [Setup, API and evidence](BEHAVIOR_CHECKS.md).
+
+![Scheduled checks against a real local model](screenshots/behavior-checks.jpg)
 
 ### Follow the request all the way through
 

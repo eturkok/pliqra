@@ -308,6 +308,8 @@ class Gateway:
     def _finish_attempt(self, attempt_id, deployment, outcome, data=None, http_status=None):
         usage=usage_of(data or {})
         self.store.update('attempts',attempt_id,{'finished':now(),'outcome':outcome,'http_status':http_status,'input_tokens':usage[0],'output_tokens':usage[1],'cost_micros':cost_micros(usage,deployment)})
+        if deployment.get('_observation_only'):
+            return
         if self.cluster.topology.multi_dc:
             current=runtime_health(self.store,self.cluster.topology.site,deployment['id']) or {'failure_count':0}
             if outcome=='success':observe_deployment(self.store,self.cluster.topology.site,deployment['id'],available=1,failure_count=0,open_until=0)
@@ -549,6 +551,8 @@ class Gateway:
             if not streaming:release()
 
     def mark_verified(self, deployment, capability, *additional):
+        if deployment.get('_observation_only'):
+            return
         with self.store.transaction():
             row = self.store.one("SELECT verified FROM deployments WHERE id=?", (deployment["id"],))
             if row:

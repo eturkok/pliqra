@@ -24,6 +24,29 @@ def service_pair(a):
     return next(p for p in a.get('/api/v1/ports').json() if p['id']==created.json()['id']),west,east
 
 
+def test_behavior_checks_respect_endpoint_site_and_site_drain(replicas):
+    from fastapi import HTTPException
+    from pliqra.behavior import claim, execute
+    from tests.test_behavior import schedule
+    a,b,first,second=replicas
+    connection=connect(a,endpoint='https://west.test/v1',site='dc-west')
+    deployment=next(c for c in a.get('/api/v1/connections').json() if c['id']==connection['id'])['models'][0]
+    row=schedule(a,deployment['id'],enabled=True,checks=[{'name':'Chat','capability':'chat'}])
+    first.state.store.update('behavior_schedules',row['id'],{'next_run':first.state.store.clock()-1})
+    assert claim(second) is None
+    assert b.post('/api/v1/behavior-checks/'+row['id']+'/run',json={}).status_code==409
+    run=claim(first)
+    asyncio.run_coroutine_threadsafe(execute(first,run),first.state.loop).result(5)
+    assert b.get('/api/v1/behavior-checks').json()['items'][0]['last_status']=='passed'
+    event=first.state.store.one("SELECT ingress_site,model_site FROM events WHERE request_kind='probe'")
+    assert event=={'ingress_site':'dc-west','model_site':'dc-west'}
+    assert b.put('/api/v1/sites/dc-west/mode',json={'mode':'draining','version':1}).status_code==200
+    first.state.store.update('behavior_schedules',row['id'],{'next_run':first.state.store.clock()-1})
+    with pytest.raises(HTTPException) as blocked:
+        claim(first)
+    assert blocked.value.status_code==503 and claim(second) is None
+
+
 def test_multidc_local_preference_and_exact_global_quota(replicas,monkeypatch):
     a,b,first,second=replicas
     service,_,_=service_pair(a)

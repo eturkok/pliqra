@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .storage_schema import BASE_SCHEMA
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 
 def uid(prefix=""):
@@ -147,6 +147,10 @@ class SQLiteStore:
                 "CREATE INDEX IF NOT EXISTS events_actor_time ON events(actor_user_id,started)",
                 "CREATE TABLE IF NOT EXISTS event_content (id TEXT PRIMARY KEY REFERENCES events(id),payload TEXT NOT NULL,created REAL NOT NULL)",
                 "CREATE TABLE IF NOT EXISTS port_versions (port_id TEXT NOT NULL,version INTEGER NOT NULL,config TEXT NOT NULL,actor TEXT NOT NULL,created REAL NOT NULL,PRIMARY KEY(port_id,version))",
+                "CREATE TABLE IF NOT EXISTS behavior_schedules (id TEXT PRIMARY KEY,name TEXT NOT NULL,deployment_id TEXT NOT NULL,actor TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 0,config TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1,next_run REAL NOT NULL,created REAL NOT NULL,updated REAL NOT NULL,day_start REAL NOT NULL DEFAULT 0,daily_runs INTEGER NOT NULL DEFAULT 0,last_status TEXT NOT NULL DEFAULT 'pending',last_error TEXT,last_run_at REAL,last_success_at REAL,last_fingerprint TEXT,last_results TEXT NOT NULL DEFAULT '[]')",
+                "CREATE TABLE IF NOT EXISTS behavior_runs (id TEXT PRIMARY KEY,schedule_id TEXT NOT NULL,version INTEGER NOT NULL,node_id TEXT NOT NULL,generation INTEGER NOT NULL,status TEXT NOT NULL,created REAL NOT NULL,finished REAL,config TEXT NOT NULL,fingerprint TEXT NOT NULL,results TEXT NOT NULL DEFAULT '[]',error TEXT)",
+                "CREATE INDEX IF NOT EXISTS behavior_due ON behavior_schedules(enabled,next_run)",
+                "CREATE INDEX IF NOT EXISTS behavior_run_history ON behavior_runs(schedule_id,created)",
                 "CREATE TABLE IF NOT EXISTS probes (id TEXT PRIMARY KEY,deployment_id TEXT NOT NULL,capability TEXT NOT NULL,passed INTEGER NOT NULL,request_id TEXT,detail TEXT NOT NULL,created REAL NOT NULL)",
                 "CREATE TABLE IF NOT EXISTS evaluation_sets (id TEXT PRIMARY KEY,name TEXT NOT NULL,cases TEXT NOT NULL,created REAL NOT NULL)",
                 "CREATE TABLE IF NOT EXISTS evaluations (id TEXT PRIMARY KEY,name TEXT NOT NULL,dataset_id TEXT NOT NULL,services TEXT NOT NULL,status TEXT NOT NULL,results TEXT NOT NULL DEFAULT '[]',created REAL NOT NULL,finished REAL,actor TEXT NOT NULL,max_tokens INTEGER NOT NULL,store_outputs INTEGER NOT NULL DEFAULT 0,error TEXT)",
@@ -172,6 +176,9 @@ class SQLiteStore:
             for statement in FLEET_SCHEMA:self.run(statement)
             self.set_schema_version(SCHEMA_VERSION)
             if self.backend=='sqlite':self.run("UPDATE gateway_requests SET status='interrupted' WHERE status='pending'")
+        if self.backend == 'sqlite':
+            self.run("UPDATE behavior_schedules SET last_status='interrupted',last_error='Gateway restarted during a check' WHERE id IN (SELECT schedule_id FROM behavior_runs WHERE status='running')")
+            self.run("UPDATE behavior_runs SET status='interrupted',finished=?,error='Gateway restarted; no automatic replay' WHERE status='running'", (now(),))
         if self.backend=='sqlite':self.run("UPDATE evaluations SET status='interrupted',error='Gateway restarted during evaluation',finished=? WHERE status IN ('queued','running')", (now(),))
 
     def columns(self, table):

@@ -119,7 +119,7 @@ def restore_bytes(store, vault, archive, password):
     key = base64.urlsafe_b64encode(hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 600000))
     try:
         payload = json.loads(Fernet(key).decrypt(archive[25:]))
-        if payload["format"] not in ("pliqra-backup/1","modelport-backup/1") or payload["schema"] not in (2,3,4,5,SCHEMA_VERSION):
+        if payload["format"] not in ("pliqra-backup/1","modelport-backup/1") or payload["schema"] not in (2,3,4,5,6,SCHEMA_VERSION):
             raise ValueError()
         replacement = payload["key"].encode()
         Fernet(replacement)
@@ -134,7 +134,7 @@ def restore_bytes(store, vault, archive, password):
         path.write_bytes(raw)
         try:
             source = sqlite3.connect(path)
-            if source.execute("PRAGMA integrity_check").fetchone()[0] != "ok" or source.execute("PRAGMA user_version").fetchone()[0] not in (2,3,4,5,SCHEMA_VERSION):
+            if source.execute("PRAGMA integrity_check").fetchone()[0] != "ok" or source.execute("PRAGMA user_version").fetchone()[0] not in (2,3,4,5,6,SCHEMA_VERSION):
                 raise ValueError()
             if not source.execute("SELECT id FROM users WHERE role='admin' AND issuer='local' AND active=1").fetchone():
                 raise ValueError()
@@ -173,6 +173,8 @@ def restore_bytes(store, vault, archive, password):
                 store.run("UPDATE attempts SET outcome='interrupted',finished=? WHERE outcome='pending'",(now(),))
                 store.run("UPDATE batch_items SET status='interrupted',error='Restored during execution; no automatic replay' WHERE status='running'")
                 store.run("UPDATE batches SET status='queued',node_id=NULL WHERE status='running'")
+                store.run("UPDATE behavior_runs SET status='interrupted',finished=?,error='Restored from backup; no automatic replay' WHERE status='running'", (store.clock(),))
+                store.run("UPDATE behavior_schedules SET enabled=0,last_status='paused',last_error='Re-enable scheduled checks after reviewing the restored workspace'")
                 store.run('DELETE FROM runtime_leases')
                 store.run('DELETE FROM runtime_nodes')
                 (store.directory/'pending-restore').unlink(missing_ok=True)
@@ -288,6 +290,8 @@ async def maintain(app):
                     store.run("DELETE FROM event_content WHERE id IN (SELECT id FROM events WHERE started<? AND status!='pending' AND reserved_micros=0)",(cutoff,))
                     store.run("DELETE FROM attempts WHERE event_id IN (SELECT id FROM events WHERE started<? AND status!='pending' AND reserved_micros=0)",(cutoff,))
                     store.run("DELETE FROM events WHERE started<? AND status!='pending' AND reserved_micros=0",(cutoff,))
+                    store.run("DELETE FROM behavior_runs WHERE created<? AND status!='running'", (cutoff,))
+                    store.run("DELETE FROM probes WHERE created<?", (cutoff,))
                     store.run("DELETE FROM cache_entries WHERE expires<?",(now(),))
                     store.run("DELETE FROM gateway_requests WHERE started<? AND status!='pending'",(now()-2592000,))
                     store.run("DELETE FROM guardrail_decisions WHERE created<?",(cutoff,))
@@ -494,7 +498,7 @@ def mount(app):
         except ValueError:raise HTTPException(422,"Invalid backup encoding")
         with app.state.gateway.state_lock:
             with store.transaction():
-                if store.one('SELECT id FROM runtime_leases LIMIT 1') or app.state.gateway.maintenance or store.one("SELECT id FROM evaluations WHERE status IN ('queued','running') LIMIT 1") or store.one("SELECT id FROM batches WHERE status IN ('queued','running') LIMIT 1"):raise HTTPException(409,"Stop active requests, provider checks, evaluations and batches before restoring")
+                if store.one('SELECT id FROM runtime_leases LIMIT 1') or app.state.gateway.maintenance or store.one("SELECT id FROM evaluations WHERE status IN ('queued','running') LIMIT 1") or store.one("SELECT id FROM batches WHERE status IN ('queued','running') LIMIT 1") or store.one("SELECT id FROM behavior_runs WHERE status='running' LIMIT 1"):raise HTTPException(409,"Stop active requests, provider checks, evaluations and batches before restoring")
                 app.state.gateway.maintenance=True
         try:
             result=restore_bytes(store,vault,archive,body.password)

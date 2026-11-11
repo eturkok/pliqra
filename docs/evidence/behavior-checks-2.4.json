@@ -1,0 +1,280 @@
+{
+  "feature": "Scheduled model behavior checks",
+  "application_version": "2.4.0-alpha.1",
+  "schema": 7,
+  "recorded_at": "2026-11-11T18:25:33.825821+00:00",
+  "model": {
+    "name": "SmolLM2-135M-Instruct",
+    "format": "Q4_K_M GGUF",
+    "runtime": "official llama.cpp b12248, CPU, two threads",
+    "weights_sha256": "8030f04528538d47bda434f6f0bdf3952c40a58123e4d5e755332f23731a8684",
+    "endpoint": "http://127.0.0.1:18123/v1"
+  },
+  "configuration": {
+    "interval_seconds": 60,
+    "initial_daily_cycle_limit": 3,
+    "checks": [
+      "chat",
+      "streaming"
+    ],
+    "max_output_tokens_per_call": 32,
+    "project": "default"
+  },
+  "observations": {
+    "cycles": [
+      {
+        "id": "behavior_c89dfd26464c4bbbb3c1",
+        "version": 1,
+        "node_id": "node_8dbc53adc7a64e6e844f",
+        "status": "passed",
+        "created": 1794421106.6185641,
+        "finished": 1794421106.706086,
+        "fingerprint": "f84b8d9146e4487d527ac741e4c29fbf8a0cf99295f3c78863d833ef4f20a81f",
+        "results": [
+          {
+            "id": "probe_88834da7f6284f978939",
+            "passed": true,
+            "capability": "chat",
+            "request_id": "req_8ed7ca5cc74d41af81a8",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Chat response",
+            "tested_at": 1794421106.677081,
+            "last_success_at": 1794421106.677081,
+            "changed": false
+          },
+          {
+            "id": "probe_841b3821106542658176",
+            "passed": true,
+            "capability": "streaming",
+            "request_id": "req_c15f9c839bbd42429e3a",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Live streaming",
+            "tested_at": 1794421106.706006,
+            "last_success_at": 1794421106.706006,
+            "changed": false
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "behavior_f09a1c9065cd49e88b75",
+        "version": 1,
+        "node_id": "node_8dbc53adc7a64e6e844f",
+        "status": "passed",
+        "created": 1794421168.590781,
+        "finished": 1794421168.6502411,
+        "fingerprint": "f84b8d9146e4487d527ac741e4c29fbf8a0cf99295f3c78863d833ef4f20a81f",
+        "results": [
+          {
+            "id": "probe_11fd3778cc2046d0b489",
+            "passed": true,
+            "capability": "chat",
+            "request_id": "req_3ddc5e57401f498b95a3",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Chat response",
+            "tested_at": 1794421168.6220748,
+            "last_success_at": 1794421168.6220748,
+            "changed": false
+          },
+          {
+            "id": "probe_1e5bf09e7e074347b41f",
+            "passed": true,
+            "capability": "streaming",
+            "request_id": "req_1be65d76c2e74c3e8615",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Live streaming",
+            "tested_at": 1794421168.65016,
+            "last_success_at": 1794421168.65016,
+            "changed": false
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "behavior_63065d30611c4e9e9079",
+        "version": 1,
+        "node_id": "node_8dbc53adc7a64e6e844f",
+        "status": "passed",
+        "created": 1794421228.607886,
+        "finished": 1794421228.6767528,
+        "fingerprint": "f84b8d9146e4487d527ac741e4c29fbf8a0cf99295f3c78863d833ef4f20a81f",
+        "results": [
+          {
+            "id": "probe_bab99ae65d614ce88f7f",
+            "passed": true,
+            "capability": "chat",
+            "request_id": "req_a3f4d4abf56c4414b56d",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Chat response",
+            "tested_at": 1794421228.6455019,
+            "last_success_at": 1794421228.6455019,
+            "changed": false
+          },
+          {
+            "id": "probe_9002b26745dd4a8e8925",
+            "passed": true,
+            "capability": "streaming",
+            "request_id": "req_74232cf422074f7fa563",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Live streaming",
+            "tested_at": 1794421228.676647,
+            "last_success_at": 1794421228.676647,
+            "changed": false
+          }
+        ],
+        "error": null
+      },
+      {
+        "id": "behavior_cb942df0315346d891d3",
+        "version": 2,
+        "node_id": "node_8dbc53adc7a64e6e844f",
+        "status": "passed",
+        "created": 1794421390.822625,
+        "finished": 1794421390.886992,
+        "fingerprint": "f84b8d9146e4487d527ac741e4c29fbf8a0cf99295f3c78863d833ef4f20a81f",
+        "results": [
+          {
+            "id": "probe_bf0bba928d0d41babd12",
+            "passed": true,
+            "capability": "chat",
+            "request_id": "req_fcc74ff32c4d4e44bca1",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Chat response",
+            "tested_at": 1794421390.85802,
+            "last_success_at": 1794421390.85802,
+            "changed": false
+          },
+          {
+            "id": "probe_5d68371f41c04eed890c",
+            "passed": true,
+            "capability": "streaming",
+            "request_id": "req_20e0754fd99f48d58c2e",
+            "detail": "Probe passed",
+            "outcome": "passed",
+            "checks": [
+              {
+                "name": "Capability response",
+                "passed": true
+              }
+            ],
+            "name": "Live streaming",
+            "tested_at": 1794421390.8869,
+            "last_success_at": 1794421390.8869,
+            "changed": false
+          }
+        ],
+        "error": null
+      }
+    ],
+    "manual_cycles": 2,
+    "automatic_cycles": 2,
+    "daily_limit_rejected_additional_manual_run": true,
+    "unchanged_endpoint_fingerprint": "f84b8d9146e4487d527ac741e4c29fbf8a0cf99295f3c78863d833ef4f20a81f",
+    "last_success_at": 1794421390.886992,
+    "ui_edit": "Raised daily limit from 3 to 4, then ran the fourth cycle from the console",
+    "restart_preserved": {
+      "cycles": 4,
+      "daily_runs": 4,
+      "paused": true,
+      "last_success_at": 1794421390.886992,
+      "no_replay": true
+    }
+  },
+  "scope": "Actual local model, baseline and periodic execution only. Controlled tool regression, recovery, limits, fencing and restore are separate automated tests; model weights were not changed.",
+  "console_validation": {
+    "viewport_widths": [
+      320,
+      390,
+      1280
+    ],
+    "horizontal_overflow": false,
+    "editor_actions_reachable": true,
+    "console_errors": 0,
+    "custom_text_expectation": {
+      "id": "behavior_d5fa8d0c70ec458cba08",
+      "version": 1,
+      "node_id": "node_944f4629af9346c19164",
+      "status": "passed",
+      "created": 1794421770.7382011,
+      "finished": 1794421770.774274,
+      "fingerprint": "9086a5a306040109d5998a4df27ccbaed75ed15f10583dce0dc0f4c0db043797",
+      "results": [
+        {
+          "id": "probe_46baa19df2d342bb8467",
+          "passed": true,
+          "capability": "chat",
+          "request_id": "req_2ffd4cc25c794aaa890e",
+          "detail": "Probe passed",
+          "outcome": "passed",
+          "checks": [
+            {
+              "name": "Capability response",
+              "passed": true
+            },
+            {
+              "name": "Expected text",
+              "passed": true
+            }
+          ],
+          "name": "Chat response",
+          "tested_at": 1794421770.774178,
+          "last_success_at": 1794421770.774178,
+          "changed": false,
+          "last_change_at": null,
+          "previous_outcome": null
+        }
+      ],
+      "error": null
+    },
+    "result_appeared_without_navigation": true
+  }
+}

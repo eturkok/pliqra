@@ -8,6 +8,7 @@ window.PliqraUI={
   if(!isAdmin())return;
   if(window.PliqraFabric)await PliqraFabric.load();
   const tasks=[];
+  if(window.PliqraBehavior)tasks.push(PliqraBehavior.load());
   if(['access','identity'].includes(state.view))tasks.push(api('/api/v1/teams').then(v=>state.teams=v),api('/api/v1/memberships').then(v=>state.memberships=v));
   if(state.view==='identity')tasks.push(api('/api/v1/group-rules').then(v=>state.groupRules=v));
   if(state.view==='operations')tasks.push(api('/api/v1/operations').then(v=>state.operations=v));

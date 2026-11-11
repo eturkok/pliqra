@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from .db import encode, now, uid
-from .gateway import decoded_deployment
+from .gateway import decoded_deployment, AdmissionSnapshot
 from .schema_validation import validate_schema_definition
 
 
@@ -181,45 +181,78 @@ def mount(app):
         store.audit(p['id'],'evaluation.cancelled',record_id)
         return {'ok':True}
 
-    @app.post('/api/v1/deployments/{record_id}/probe',tags=['Evaluations'])
-    async def capability_probe(record_id:str,body:Probe,p=Depends(admin)):
-        row=store.one('SELECT d.*,c.name AS connection_name,c.endpoint,c.provider,c.secret,c.enabled AS connection_enabled,c.auth_header,c.auth_prefix FROM deployments d JOIN connections c ON c.id=d.connection_id WHERE d.id=?',(record_id,))
+    @app.post('/api/v1/deployments/{record_id}/probe', tags=['Evaluations'])
+    async def probe_endpoint(record_id: str, body: Probe, p=Depends(admin)):
+        return await capability_probe(app, record_id, body, p)
+
+
+async def capability_probe(app, record_id, body, p, *, observe_only=False, check=None, max_tokens=96, project_id=None):
+    store = app.state.store
+    with store.transaction():
+        generation = app.state.gateway.generation
+        row=store.one('SELECT d.*,c.name AS connection_name,c.endpoint,c.provider,c.secret,c.enabled AS connection_enabled,c.auth_header,c.auth_prefix,c.site,c.region FROM deployments d JOIN connections c ON c.id=d.connection_id WHERE d.id=?',(record_id,))
         if not row:raise HTTPException(404,'Deployment not found')
         if not row['enabled'] or not row['connection_enabled']:raise HTTPException(409,'Enable the connection and deployment first')
         deployment=decoded_deployment(row)
+        if observe_only:
+            deployment['_observation_only'] = True
         port={'id':'probe:'+record_id,'name':'Capability probe','version':1,'strategy':'priority','deployments':[record_id],'requirements':[],'enabled':True,'cache_ttl':0}
-        payload={'model':row['model'],'messages':[{'role':'user','content':'Reply with the single word OK.'}],'max_tokens':96,'temperature':0,'stream':body.capability=='streaming'}
-        if body.capability=='structured_output':
-            payload['messages']=[{'role':'user','content':'Return a JSON object with ok equal to true.'}]
-            payload['response_format']={'type':'json_schema','json_schema':{'name':'pliqra_probe','strict':True,'schema':{'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}}}
-        if body.capability=='tools':
-            payload['messages']=[{'role':'user','content':'Call pliqra_probe with value equal to ok.'}]
-            payload['tools']=[{'type':'function','function':{'name':'pliqra_probe','parameters':{'type':'object','properties':{'value':{'type':'string'}},'required':['value']}}}]
-            payload['tool_choice']={'type':'function','function':{'name':'pliqra_probe'}}
-        passed=False;request_id=None;response=None;detail='Endpoint did not satisfy the capability probe'
-        try:
-            response=await app.state.gateway.execute(payload,p,port,[deployment],[{'eligible':True,'reason':'Explicit administrator capability probe'}],kind='probe')
-            request_id=response.headers.get('X-Request-ID')
-            if body.capability=='streaming':
-                chunks=[]
-                async for chunk in response.body_iterator:
-                    chunks.append(chunk.decode() if isinstance(chunk,bytes) else chunk)
-                    if sum(map(len,chunks))>100000:raise ValueError('Probe response exceeded its size limit')
-                text=''.join(chunks)
-                passed='data: [DONE]' in text and 'incomplete_stream' not in text and 'upstream_stream_error' not in text
-            else:
-                data=json.loads(response.body)
-                message=data['choices'][0]['message']
-                if body.capability=='structured_output':passed=json.loads(message.get('content',''))=={'ok':True}
-                elif body.capability=='tools':
-                    calls=message.get('tool_calls') or []
-                    passed=any(call.get('function',{}).get('name')=='pliqra_probe' and json.loads(call['function'].get('arguments','{}')).get('value')=='ok' for call in calls)
-                else:passed=isinstance(message.get('content'),str) and bool(message['content'].strip())
-            detail='Probe passed' if passed else detail
-        except (HTTPException,ValueError,KeyError,TypeError):pass
-        finally:
-            if isinstance(response,StreamingResponse):
-                await response.body_iterator.aclose()
+        port['project_id'] = project_id
+        fingerprint = app.state.gateway.fingerprint(port)
+    payload={'model':row['model'],'messages':[{'role':'user','content':'Reply with the single word OK.'}],'max_tokens':max_tokens,'temperature':0,'stream':body.capability=='streaming'}
+    if body.capability=='structured_output':
+        payload['messages']=[{'role':'user','content':'Return a JSON object with ok equal to true.'}]
+        payload['response_format']={'type':'json_schema','json_schema':{'name':'pliqra_probe','strict':True,'schema':{'type':'object','properties':{'ok':{'type':'boolean'}},'required':['ok'],'additionalProperties':False}}}
+    if body.capability=='tools':
+        payload['messages']=[{'role':'user','content':'Call pliqra_probe with value equal to ok.'}]
+        payload['tools']=[{'type':'function','function':{'name':'pliqra_probe','parameters':{'type':'object','properties':{'value':{'type':'string'}},'required':['value']}}}]
+        payload['tool_choice']={'type':'function','function':{'name':'pliqra_probe'}}
+    if check and check.prompt:
+        payload['messages'] = [{'role': 'user', 'content': check.prompt}]
+    passed=False;request_id=None;response=None;detail='Endpoint did not satisfy the capability probe'
+    outcome = 'failed'
+    checks = []
+    try:
+        response=await app.state.gateway.execute(payload,p,port,[deployment],[{'eligible':True,'reason':'Scheduled behavior check' if observe_only else 'Explicit administrator capability probe'}],kind='probe',admission=AdmissionSnapshot(fingerprint, generation))
+        request_id=response.headers.get('X-Request-ID')
+        if body.capability=='streaming':
+            chunks=[]
+            async for chunk in response.body_iterator:
+                chunks.append(chunk.decode() if isinstance(chunk,bytes) else chunk)
+                if sum(map(len,chunks))>100000:raise ValueError('Probe response exceeded its size limit')
+            text=''.join(chunks)
+            passed='data: [DONE]' in text and 'incomplete_stream' not in text and 'upstream_stream_error' not in text
+        else:
+            data=json.loads(response.body)
+            message=data['choices'][0]['message']
+            if body.capability=='structured_output':passed=json.loads(message.get('content',''))=={'ok':True}
+            elif body.capability=='tools':
+                calls=message.get('tool_calls') or []
+                passed=any(call.get('function',{}).get('name')=='pliqra_probe' and json.loads(call['function'].get('arguments','{}')).get('value')=='ok' for call in calls)
+            else:passed=isinstance(message.get('content'),str) and bool(message['content'].strip())
+        checks.append({'name': 'Capability response', 'passed': passed})
+        if check and check.contains:
+            content = message.get('content') or ''
+            checks.append({'name': 'Expected text', 'passed': check.contains.casefold() in content.casefold()})
+        if check and check.max_latency_ms:
+            event = store.one('SELECT latency_ms FROM events WHERE id=?', (request_id,)) or {}
+            checks.append({'name': 'Latency expectation', 'passed': event.get('latency_ms') is not None and event['latency_ms'] <= check.max_latency_ms})
+        passed = all(item['passed'] for item in checks)
+        outcome = 'passed' if passed else 'failed'
+        detail = 'Probe passed' if passed else 'One or more response assertions failed'
+    except HTTPException as exc:
+        outcome = 'error'
+        detail = 'Request failed with HTTP ' + str(exc.status_code)
+        request_id = exc.detail.get('request_id') if isinstance(exc.detail, dict) else None
+    except (ValueError, KeyError, TypeError):
+        outcome = 'failed'
+        detail = 'Response did not satisfy the expected format'
+    finally:
+        if isinstance(response,StreamingResponse):
+            await response.body_iterator.aclose()
+    if generation != app.state.gateway.generation or app.state.gateway.cluster.fenced or fingerprint != app.state.gateway.fingerprint(port):
+        raise HTTPException(409, 'Workspace or endpoint configuration changed during the probe')
+    if not observe_only:
         if passed:
             current=store.one('SELECT capabilities FROM deployments WHERE id=?',(record_id,))
             store.update('deployments',record_id,{'capabilities':encode(sorted(set(json.loads(current['capabilities']))|{body.capability}))})
@@ -228,7 +261,7 @@ def mount(app):
             current=store.one('SELECT verified FROM deployments WHERE id=?',(record_id,))
             verified=set(json.loads(current['verified']))-{body.capability}
             store.update('deployments',record_id,{'verified':encode(sorted(verified))})
-        probe_id=uid('probe_')
-        store.insert('probes',{'id':probe_id,'deployment_id':record_id,'capability':body.capability,'passed':int(passed),'request_id':request_id,'detail':detail,'created':now()})
-        store.audit(p['id'],'capability.probed',record_id,{'capability':body.capability,'passed':passed,'request_id':request_id})
-        return {'id':probe_id,'passed':passed,'capability':body.capability,'request_id':request_id,'detail':detail}
+    probe_id=uid('probe_')
+    store.insert('probes',{'id':probe_id,'deployment_id':record_id,'capability':body.capability,'passed':int(passed),'request_id':request_id,'detail':detail,'created':now()})
+    store.audit(p['id'],'capability.probed',record_id,{'capability':body.capability,'passed':passed,'request_id':request_id})
+    return {'id':probe_id,'passed':passed,'capability':body.capability,'request_id':request_id,'detail':detail,'outcome':outcome,'checks':checks}

@@ -42,6 +42,8 @@ class Cluster:
             store.run("UPDATE batch_items SET status='interrupted',error='Replica lease expired; no automatic replay' WHERE status='running' AND batch_id IN (SELECT id FROM batches WHERE node_id=?)",(node,))
             store.run("UPDATE batches SET status='queued',node_id=NULL WHERE node_id=? AND status='running'",(node,))
             store.run("UPDATE evaluations SET status='interrupted',finished=?,error='Replica lease expired; no automatic replay' WHERE node_id=? AND status IN ('queued','running')",(now(),node))
+            store.run("UPDATE behavior_schedules SET last_status='interrupted',last_error='Replica lease expired during a check' WHERE id IN (SELECT schedule_id FROM behavior_runs WHERE node_id=? AND status='running')", (node,))
+            store.run("UPDATE behavior_runs SET status='interrupted',finished=?,error='Replica lease expired; no automatic replay' WHERE node_id=? AND status='running'", (store.clock(),node))
             store.run('DELETE FROM runtime_nodes WHERE id=?',(node,))
 
     def ensure_live(self):
