@@ -64,7 +64,7 @@ def measure(client, token, models, count, concurrency, stream=False):
                 for line in response.iter_lines():
                     if not line.startswith('data:'): continue
                     data = line[5:].strip()
-                    if data == '[DONE]': complete = True; continue
+                    if data == '[DONE]': complete = True; break
                     packet = json.loads(data)
                     if first is None and any(c.get('delta', {}).get('content') for c in packet.get('choices', [])):
                         first = (time.perf_counter() - started) * 1000
