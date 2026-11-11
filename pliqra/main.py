@@ -27,11 +27,11 @@ from starlette._utils import get_route_path
 from itsdangerous import TimestampSigner
 
 from . import __version__
-from .access import service_allowed, project_ids, require_project, sync_group_memberships
+from .access import service_allowed, project_ids, require_project, sync_group_memberships, current_principal
 from .connectors import discover, response_json
 from .db import Store, encode, now, uid
 from .gateway import CAPABILITIES, Gateway, decoded_deployment, decoded_port
-from .security import Vault, digest, endpoint_url, hash_password, verify_password
+from .security import Vault, digest, endpoint_url, hash_password, verify_password, bearer_token
 from .inference_schema import ChatInput
 from .protocol import PROTOCOL_VERSION, ProtocolVersionMiddleware, version_metadata
 
@@ -251,7 +251,7 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
             if audio_upload:allowed_types.add('multipart/form-data')
             if saml_acs:
                 allowed_types.add("application/x-www-form-urlencoded")
-            if request.method != "DELETE" and request.headers.get("content-type", "").split(";")[0] not in allowed_types:
+            if request.method != "DELETE" and request.headers.get("content-type", "").split(";")[0].strip().lower() not in allowed_types:
                 return JSONResponse({"detail": "Use application/json"}, 415)
             try:
                 content_length = int(request.headers.get("content-length", "0"))
@@ -284,7 +284,9 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
-        if path in ("/healthz","/readyz") or path.startswith(("/api/", "/auth/", "/protocol/", "/v1/", "/g/")):
+        if response.status_code==401:
+            response.headers.setdefault('WWW-Authenticate','Bearer realm="pliqra"')
+        if response.status_code==401 or path in ("/healthz","/readyz","/metrics") or path.startswith(("/api/", "/auth/", "/protocol/", "/v1/", "/g/", "/scim/")):
             response.headers["Cache-Control"] = "no-store"
         return response
 
@@ -313,8 +315,10 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         authorization = request.headers.get("authorization", "")
         if not authorization and request.url.path.endswith('/v1/messages') and request.headers.get('x-api-key'):
             authorization='Bearer '+request.headers['x-api-key']
-        if authorization.startswith("Bearer "):
-            key = store.one("SELECT * FROM api_keys WHERE token_hash=? AND active=1", (digest(authorization[7:]),))
+        if authorization:
+            token=bearer_token(authorization)
+            if token is None:raise HTTPException(401,'Use Bearer authentication')
+            key = store.one("SELECT * FROM api_keys WHERE token_hash=? AND active=1", (digest(token),))
             if not key or (key["expires"] and key["expires"] <= now()):
                 raise HTTPException(401, "Invalid or expired access key")
             return {"id": key["id"], "kind": "key", "role": "consumer", "key": key}
@@ -344,6 +348,10 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
     def session_response(account, request=None, federation_context=None):
         token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
         with store.transaction():
+            fresh=current_principal(store,{'kind':'user','id':account['id']})['user']
+            if account['issuer']=='local' and fresh['password_hash']!=account['password_hash']:
+                raise HTTPException(401,'Credentials changed during sign-in; authenticate again')
+            account=fresh
             store.run("DELETE FROM sessions WHERE expires<?", (now(),))
             store.insert("sessions", {"token_hash": digest(token), "user_id": account["id"], "csrf": csrf, "expires": now() + 43200,'federation_context':encode(federation_context or {})})
         response = RedirectResponse(base_path+'/', 303) if request else JSONResponse({"user": safe_user(account), "csrf": csrf,**session_metadata()})
@@ -398,8 +406,9 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         account = store.one("SELECT * FROM users WHERE issuer='local' AND subject=? AND active=1", (body.email.strip().lower(),))
         if not account or not verify_password(body.password, account["password_hash"]):
             raise HTTPException(401, "Email or password is incorrect")
+        response=session_response(account)
         store.audit(account["id"], "session.login", account["id"])
-        return session_response(account)
+        return response
 
     @app.post("/api/v1/logout", tags=["Authentication"])
     def logout(request: Request, p=Depends(user)):

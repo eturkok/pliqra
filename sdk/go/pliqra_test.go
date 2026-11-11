@@ -37,6 +37,44 @@ func TestStableNegotiationAndLegacyFallback(t *testing.T) {
 	}
 }
 
+func TestSSEFramingAndIncompleteTerminal(t *testing.T) {
+	for _, ending := range []string{"\n", "\r\n", "\r"} {
+		t.Run(fmt.Sprintf("framing-%q", ending), func(t *testing.T) {
+			raw := "\ufeff: keepalive" + ending + "data: {\"choices\":" + ending + "data: [{\"delta\":{\"content\":\"hello 🌍\"}}]}" + ending + ending + "data: [DONE]" + ending + ending
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				for i := range []byte(raw) {
+					w.Write([]byte(raw)[i : i+1])
+					w.(http.Flusher).Flush()
+				}
+			}))
+			defer server.Close()
+			client, _ := New(server.URL, "synthetic-key")
+			bound := Connection{Client: client, Binding: Binding{Service: "test", Invoke: "/invoke"}}
+			items := 0
+			err := bound.Stream(context.Background(), nil, nil, func(item map[string]any) error {
+				items++
+				b, _ := json.Marshal(item)
+				if !strings.Contains(string(b), "hello 🌍") {
+					t.Fatal(string(b))
+				}
+				return nil
+			})
+			if err != nil || items != 1 {
+				t.Fatalf("items=%d error=%v", items, err)
+			}
+		})
+	}
+	for _, ending := range []string{"", "\n", "\r\n", "\r"} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "data: [DONE]"+ending) }))
+		client, _ := New(server.URL, "synthetic-key")
+		bound := Connection{Client: client, Binding: Binding{Service: "test", Invoke: "/invoke"}}
+		if bound.Stream(context.Background(), nil, nil, func(map[string]any) error { return nil }) == nil {
+			t.Errorf("accepted incomplete terminal %q", ending)
+		}
+		server.Close()
+	}
+}
+
 func TestProtocolAndFragmentedUnicode(t *testing.T) {
 	changed := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -2,26 +2,7 @@
 import codecs
 import json
 
-from .connectors import MAX_RESPONSE_BYTES, MAX_STREAM_LINE_BYTES, bounded_lines, strict_json, sse
-
-
-async def sse_data(lines):
-    data = []
-    size = 0
-    async for line in lines:
-        if not line:
-            if data:
-                yield '\n'.join(data)
-            data, size = [], 0
-        elif line.startswith('data:'):
-            value = line[5:].removeprefix(' ')
-            size += len(value.encode()) + 1
-            if size > MAX_STREAM_LINE_BYTES:
-                raise ValueError('Native SSE event exceeded its size limit')
-            data.append(value)
-    # A complete final data line is valid SSE even without a final blank line.
-    if data:
-        yield '\n'.join(data)
+from .connectors import MAX_RESPONSE_BYTES, MAX_STREAM_LINE_BYTES, bounded_lines, strict_json, sse, sse_data
 
 
 def count(value):
@@ -243,7 +224,9 @@ async def upstream_chunks(response, provider, request_id, model):
 async def upstream_lines(response, provider, request_id, model):
     async for packet in upstream_chunks(response, provider, request_id, model):
         yield 'data: ' + json.dumps(packet, ensure_ascii=False, allow_nan=False)
+        yield ''
     yield 'data: [DONE]'
+    yield ''
 
 
 async def iterator_lines(source):

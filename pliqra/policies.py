@@ -80,6 +80,7 @@ PII = {
     'email': re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b', re.I),
     'phone': re.compile(r'(?<!\w)\+?\d[\d ()-]{7,}\d(?!\w)'),
 }
+MAX_CHECKED_BYTES = 4_000_000
 
 
 class PolicyEngine:
@@ -223,6 +224,22 @@ class PolicyEngine:
         tokens = known if complete else max(known, ledger['reservation'])
         self.store.update('gateway_requests', event_id, {'tokens': tokens, 'status': status})
 
+    def refresh_reservation(self, profile, event_id, body, attempts):
+        # Called inside the budget transaction; never count a second request.
+        if not profile:return
+        ledger=self.store.one('SELECT * FROM gateway_requests WHERE id=?',(event_id,))
+        reserve=sum(reservation_units(body))*attempts
+        if reserve<=ledger['reservation']:return
+        instant=self.store.clock()
+        for rule in profile['config']['limits']:
+            if rule['metric']!='tokens' or ledger['started']<=instant-rule['window_seconds']:continue
+            used=self.usage(profile,rule,ledger,instant)-ledger['tokens']
+            if used+reserve>rule['limit']:
+                raise HTTPException(429,{'code':'gateway_quota_exceeded','metric':'tokens','scope':rule['scope'],
+                    'limit':rule['limit'],'used':used,'reservation':reserve,'window_seconds':rule['window_seconds']},
+                    headers={'Retry-After':str(rule['window_seconds'])})
+        self.store.update('gateway_requests',event_id,{'tokens':reserve,'reservation':reserve})
+
     def buffered(self, profile):
         return bool(profile and any('output' in step['stages'] for step in profile['config']['guardrails']))
 
@@ -278,16 +295,24 @@ class PolicyEngine:
                 for value in values:
                     passed=await self.schemas.validate(config['json_schema'],value,config['timeout_seconds']) and passed
                 return ('passed' if passed else 'blocked'), messages
-            patterns = [re.compile(re.escape(v), re.I) for v in config['terms']] if config['rule'] == 'keywords' else [PII[t] for t in config['pii_types']]
-            matched = any(p.search(text) for p in patterns)
+            sources = [re.escape(v) for v in config['terms']] if config['rule'] == 'keywords' else [PII[t].pattern for t in config['pii_types']]
+            if not sources:return 'passed',messages
+            pattern = re.compile('|'.join('(?:'+source+')' for source in sources),re.I)
+            matched = pattern.search(text)
             if not matched:
                 return 'passed', messages
             if config['action'] == 'block':
                 return 'blocked', messages
+            remaining=MAX_CHECKED_BYTES-len(encode(messages).encode())
+            def replacement(match):
+                nonlocal remaining
+                remaining-=len('[REDACTED]')-len(match.group().encode())
+                if remaining<0:raise ValueError('Checked content exceeds its size limit')
+                return '[REDACTED]'
             def redact(value):
-                for pattern in patterns:
-                    value = pattern.sub('[REDACTED]', value)
-                return value
+                # One pass over the original text: later terms cannot match the
+                # replacement marker and expand it repeatedly.
+                return pattern.sub(replacement,value)
             return 'redacted', map_message_text(messages, redact)
         endpoint = endpoint_url(config['endpoint'])
         from .secrets import SecretResolver

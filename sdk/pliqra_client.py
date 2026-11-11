@@ -30,6 +30,41 @@ def checked_json(response):
     return json.loads(value)
 
 
+def sse_events(response):
+    """Read transport chunks without waiting to fill a buffer; frame SSE events."""
+    pending=bytearray();data=[];size=total=0;skip_lf=False;first=True
+    read=getattr(response,'read1',response.read)
+    while True:
+        chunk=read(65536)
+        if not chunk:break
+        total+=len(chunk)
+        if total>16_000_000:raise PliqraError(502,'Stream exceeded 16 MB')
+        pending.extend(chunk)
+        if skip_lf and pending:
+            if pending[0]==10:del pending[:1]
+            skip_lf=False
+        while pending:
+            endings=[n for n in (pending.find(b'\n'),pending.find(b'\r')) if n>=0]
+            if not endings:break
+            ending=min(endings)
+            if ending>1_000_000:raise PliqraError(502,'Stream line exceeded 1 MB')
+            line=bytes(pending[:ending]).decode('utf-8-sig' if first else 'utf-8');first=False
+            consumed=ending+1
+            if pending[ending]==13:
+                if consumed<len(pending) and pending[consumed]==10:consumed+=1
+                elif consumed==len(pending):skip_lf=True
+            del pending[:consumed]
+            if not line:
+                if data:yield '\n'.join(data)
+                data=[];size=0
+            elif line=='data' or line.startswith('data:'):
+                value=line[5:].removeprefix(' ');size+=len(value.encode())+1
+                if size>1_000_000:raise PliqraError(502,'Stream event exceeded 1 MB')
+                data.append(value)
+        if len(pending)>1_000_000:raise PliqraError(502,'Stream line exceeded 1 MB')
+    # Unterminated events, including a bare [DONE], are not dispatched at EOF.
+
+
 class Pliqra:
     def __init__(self,base_url,api_key,timeout=90):
         parsed=urlsplit(base_url)
@@ -45,8 +80,9 @@ class Pliqra:
         request=Request(self.base_url+path,data=data,headers={'Authorization':'Bearer '+self.api_key,'Content-Type':'application/json','Pliqra-Protocol':'pliqra/1.0'},method='POST' if data is not None else 'GET')
         try:return self.opener.open(request,timeout=self.timeout)
         except HTTPError as exc:
-            try:detail=json.loads(exc.read(200000)).get('detail','Protocol request failed')
-            except ValueError:detail='Protocol request failed'
+            with exc:
+                try:detail=json.loads(exc.read(200000)).get('detail','Protocol request failed')
+                except (ValueError,AttributeError):detail='Protocol request failed'
             cls=ContractChanged if exc.code==409 else PliqraError
             raise cls(exc.code,detail) from None
 
@@ -96,13 +132,8 @@ class Connection:
         body={**parameters,'model':self.binding['service'],'messages':messages,'stream':True}
         terminal=False
         with self.client.request(self.binding['invoke'],body) as response:
-            while True:
-                raw=response.readline(1_000_001)
-                if not raw:break
-                if len(raw)>1_000_000:raise PliqraError(502,'Stream line exceeded 1 MB')
-                line=raw.decode('utf-8').strip()
-                if not line.startswith('data:'):continue
-                data=line[5:].strip()
+            for data in sse_events(response):
+                data=data.strip()
                 if data=='[DONE]':terminal=True;break
                 if not data:continue
                 item=json.loads(data)

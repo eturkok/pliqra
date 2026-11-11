@@ -1,6 +1,6 @@
 # Pliqra Python client
 
-Dependency-free Python 3.10+ client for the stable Pliqra Connection Protocol 1.0. Stable SDK 1.0.0 accompanies the Pliqra 2.2 gateway; SDK versions have their own lifecycle.
+Dependency-free Python 3.10+ client for the stable Pliqra Connection Protocol 1.0. SDK 1.0.x accompanies the Pliqra 2.2 gateway; SDK versions have their own lifecycle.
 
 ```sh
 python -m pip install pliqra-client

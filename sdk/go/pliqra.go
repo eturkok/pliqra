@@ -56,6 +56,38 @@ type ConnectOptions struct {
 	OptionalExtensions []string
 }
 
+// SSE permits LF, CRLF and CR, even when delimiters span transport reads.
+func sseLines() bufio.SplitFunc {
+	skipLF := false
+	return func(data []byte, atEOF bool) (int, []byte, error) {
+		start := 0
+		if skipLF && len(data) > 0 {
+			if data[0] == '\n' {
+				start = 1
+			}
+			skipLF = false
+		}
+		for i := start; i < len(data); i++ {
+			if data[i] != '\n' && data[i] != '\r' {
+				continue
+			}
+			end := i + 1
+			if data[i] == '\r' {
+				if end < len(data) && data[end] == '\n' {
+					end++
+				} else if end == len(data) {
+					skipLF = true
+				}
+			}
+			return end, data[start:i], nil
+		}
+		if atEOF && len(data) > start {
+			return len(data), data[start:], nil
+		}
+		return start, nil, nil
+	}
+}
+
 func New(baseURL, apiKey string) (*Client, error) {
 	parsed, err := url.Parse(baseURL)
 	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
@@ -206,14 +238,38 @@ func (b *Connection) Stream(ctx context.Context, messages []map[string]any, para
 		return err
 	}
 	defer response.Body.Close()
-	scanner := bufio.NewScanner(io.LimitReader(response.Body, 16000001))
-	scanner.Buffer(make([]byte, 65536), 1000000)
+	scanner := bufio.NewScanner(io.LimitReader(response.Body, 16000000))
+	scanner.Buffer(make([]byte, 65536), 1000002)
+	scanner.Split(sseLines())
+	first := true
+	var fields []string
+	eventSize := 0
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if !strings.HasPrefix(line, "data:") {
+		line := scanner.Text()
+		if len(line) > 1000000 {
+			return fmt.Errorf("stream line exceeded 1 MB")
+		}
+		if first {
+			line = strings.TrimPrefix(line, "\ufeff")
+			first = false
+		}
+		if line != "" {
+			if line == "data" || strings.HasPrefix(line, "data:") {
+				value := ""
+				if len(line) >= 5 {
+					value = strings.TrimPrefix(line[5:], " ")
+				}
+				eventSize += len(value) + 1
+				if eventSize > 1000000 {
+					return fmt.Errorf("stream event exceeded 1 MB")
+				}
+				fields = append(fields, value)
+			}
 			continue
 		}
-		value := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+		value := strings.TrimSpace(strings.Join(fields, "\n"))
+		fields = nil
+		eventSize = 0
 		if value == "[DONE]" {
 			return nil
 		}
