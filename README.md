@@ -51,14 +51,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.1/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.2/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.2.1 is the stable community release**, with authentication, quota-accounting and streaming corrections. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.1)
+**2.2.2 is the stable community release**, reducing gateway database overhead while preserving quotas, accounting and connection contracts. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.2)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -73,7 +73,7 @@ helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/downloa
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
-Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+Chart 0.3.1 pins Gateway 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
 
 [Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Operations & recovery drills →](docs/OPERATIONS.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1)
 
@@ -113,7 +113,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.2.1](https://github.com/eturkok/pliqra/releases/tag/v2.2.1).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.2.2](https://github.com/eturkok/pliqra/releases/tag/v2.2.2).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 

@@ -6,8 +6,10 @@ from pathlib import Path
 import re
 try:
     from scripts.sdk_metadata import metadata as sdk_metadata
+    from scripts.fetch_sdk_release import validate_tag
 except ModuleNotFoundError:
     from sdk_metadata import metadata as sdk_metadata
+    from fetch_sdk_release import validate_tag
 
 ROOT = Path(__file__).resolve().parents[1]
 TAG = re.compile(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-(alpha|beta|rc)\.([1-9][0-9]*))?")
@@ -33,8 +35,14 @@ def metadata(tag: str, root: Path = ROOT) -> dict:
     sdk = sdk_metadata(root)
     if not match[4] and sdk['npm_tag'] != 'latest':
         raise ValueError('A stable gateway release requires a stable packaged SDK')
+    policy = root / 'release-policy.json'
+    sdk_release = json.loads(policy.read_text()).get('sdk_release', '') if policy.exists() else ''
+    if sdk_release:
+        validate_tag(sdk_release)
+        if sdk_release == tag:
+            raise ValueError('Reused SDKs must come from an already published release')
     return {"tag": tag, "version": version, "prerelease": "true" if match[4] else "false", "notes": notes,
-            "sdk_version": sdk['sdk_version']}
+            "sdk_version": sdk['sdk_version'], "sdk_release": sdk_release}
 
 
 if __name__ == "__main__":

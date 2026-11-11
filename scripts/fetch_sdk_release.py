@@ -8,6 +8,7 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
+SDK_INPUTS = ('sdk', 'packaging', 'scripts/build_sdks.py', 'LICENSE', 'NOTICE')
 
 
 def validate_tag(tag):
@@ -15,7 +16,22 @@ def validate_tag(tag):
         raise ValueError('Use a published gateway or SDK release tag')
 
 
-def fetch(tag, output, source=ROOT):
+def validate_source(tag, manifest, source, allow_unchanged_source=False):
+    revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=source, text=True).strip()
+    if manifest['sdk_version'] != (source / 'sdk/VERSION').read_text().strip():
+        raise ValueError('SDK manifest differs from the checked-out SDK version')
+    if allow_unchanged_source:
+        original = subprocess.check_output(['git', 'rev-parse', '--verify', tag + '^{commit}'], cwd=source, text=True).strip()
+        if manifest['revision'] != original:
+            raise ValueError('SDK manifest differs from the original release revision')
+        result = subprocess.run(['git', 'diff', '--quiet', original, '--', *SDK_INPUTS], cwd=source, check=False)
+        if result.returncode:
+            raise ValueError('SDK build inputs changed; publish a new SDK version instead of reusing artifacts')
+    elif manifest['revision'] != revision:
+        raise ValueError('SDK manifest differs from the checked-out release source')
+
+
+def fetch(tag, output, source=ROOT, allow_unchanged_source=False):
     validate_tag(tag)
     release = json.loads(subprocess.check_output(['gh', 'release', 'view', tag, '--repo', 'eturkok/pliqra', '--json', 'tagName,isDraft'], text=True))
     if release['isDraft'] or release['tagName'] != tag:
@@ -23,9 +39,7 @@ def fetch(tag, output, source=ROOT):
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run(['gh', 'release', 'download', tag, '--repo', 'eturkok/pliqra', '--pattern', 'SDK-MANIFEST.json', '--dir', str(output)], check=True)
     manifest = json.loads((output / 'SDK-MANIFEST.json').read_text())
-    revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=source, text=True).strip()
-    if manifest['revision'] != revision or manifest['sdk_version'] != (source / 'sdk/VERSION').read_text().strip():
-        raise ValueError('SDK manifest differs from the checked-out release source')
+    validate_source(tag, manifest, source, allow_unchanged_source)
     if tag.startswith('sdk-v') and tag[5:] != manifest['sdk_version']:
         raise ValueError('SDK release tag differs from its manifest version')
     expected = {f"pliqra_client-{manifest['python_version']}-py3-none-any.whl", f"pliqra_client-{manifest['python_version']}.tar.gz", f"eturkok-pliqra-{manifest['sdk_version']}.tgz"}
@@ -50,5 +64,6 @@ if __name__ == '__main__':
     parser.add_argument('tag')
     parser.add_argument('--output', type=Path, default=Path('dist/publish'))
     parser.add_argument('--source', type=Path, default=ROOT, help='Separate checkout of the immutable release source')
+    parser.add_argument('--allow-unchanged-source', action='store_true', help='Reuse original SDK bytes only when all SDK build inputs are unchanged')
     args = parser.parse_args()
-    print(json.dumps(fetch(args.tag, args.output, args.source)))
+    print(json.dumps(fetch(args.tag, args.output, args.source, args.allow_unchanged_source)))

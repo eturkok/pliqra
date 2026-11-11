@@ -44,7 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SDK_RUN: ${{ inputs.sdk_artifact_run_id }}
-        run: gh run download "$SDK_RUN" --name sdk-packages --dir dist/sdk
+        run: gh run download "$SDK_RUN" --name release-sdk-packages --dir dist/sdk
       - name: Build an isolated local image
         if: github.event_name == 'workflow_dispatch'
         run: docker build --build-arg REVISION="$GITHUB_SHA" -t pliqra:acceptance .

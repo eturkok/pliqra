@@ -4,13 +4,13 @@
 
 ## Install the stable release
 
-**2.2.1 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.2.1`; Docker Desktop on macOS/Windows runs the matching Linux image.
+**2.2.2 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.2.2`; Docker Desktop on macOS/Windows runs the matching Linux image.
 
 No source checkout, local build or registry login is required:
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.1/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.2/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
@@ -21,7 +21,7 @@ The named `pliqra-data` volume holds the workspace and local encryption key. To 
 
 ## Pin and verify
 
-The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.2.1) includes:
+The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.2.2) includes:
 
 - `compose.release.yaml`: installation using the exact version tag, without `build`.
 - `image.txt`: the exact multi-platform OCI digest reference.
@@ -57,14 +57,14 @@ RCs are marked **prerelease**, never GitHub's latest release and never given a D
 
 GitHub initially creates a new container package as private. Its owner must set the **pliqra package** to public once in GitHub's package settings; repository visibility alone is insufficient. The anonymous-access gate prevents a public release from advertising an inaccessible image. A failure at this gate can be retried with **Re-run failed jobs** after setting package visibility. Do not rebuild or move a published tag; correct code with a new version/RC instead. No personal registry token is stored: publishing uses the job-scoped `GITHUB_TOKEN`.
 
-Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose references, commit/push, and then create/push the matching annotated tag. The tag-triggered workflow performs publication. Do not manually publish a release ahead of its image and acceptance checks. SDK publication is separate: after the release, dispatch `sdk-publish.yml` for the original SDK asset tag. Stable SDKs publish to npm `latest`; prereleases use `next`. Registry bytes must match the release.
+Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose references, commit/push, and then create/push the matching annotated tag. The tag-triggered workflow performs publication. Do not manually publish a release ahead of its image and acceptance checks. SDK publication is separate: after the release, dispatch `sdk-publish.yml` for the original SDK asset tag. Stable SDKs publish to npm `latest`; prereleases use `next`. Registry bytes must match the original SDK release. For a gateway-only patch, set `sdk_release` in `release-policy.json` to that original release tag. Publication verifies unchanged SDK sources, packaging, builder, LICENSE and NOTICE, then reuses the original manifest and checksummed packages for acceptance and distribution. Clear this setting and bump the SDK version when any SDK build input changes; never rebuild different bytes under a published SDK version.
 
 ## Upgrade and recover
 
-Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.2.1 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged 2.1.0 bindings are preserved by 2.2.1. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
+Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.2.2 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged 2.1.0 bindings are preserved by 2.2.2. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
 
 Returning to an older image may require restoring its pre-upgrade backup: a newer database is not automatically downgraded. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. Chart 0.3.1 therefore still selects Gateway 2.2.1 after the gateway-only 2.2.2 release. To select a newer gateway, explicitly set `image.tag` to its version and `image.digest` to its published digest from `image.txt`, and validate the override in your environment. The chart's published cluster reports describe its original pinned image. [Chart source](../charts/pliqra/README.md).

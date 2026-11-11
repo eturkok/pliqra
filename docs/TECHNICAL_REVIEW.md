@@ -1,6 +1,6 @@
 # Pliqra — technical architecture review
 
-> Current release: Gateway 2.2.1 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
+> Current release: Gateway 2.2.2 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
 
 ## End-to-end review — 11 November 2026
 
@@ -51,7 +51,7 @@ Shared PostgreSQL writes intentionally serialize quota/policy decisions. Its syn
 
 ## Performance follow-through — 11 November 2026
 
-The [controlled performance comparison](PERFORMANCE.md) separates a model-fixture TCP artifact from application work. Current main reduces redundant authoritative reads and write transactions without adding cross-request policy caching, bypassing controls or changing the shared quota authority. Matched CI measurements show lower JSON p95 and single-stream first-content latency; concurrent-stream first-content latency did not materially improve. These optimizations are **unreleased source changes** and do not alter the existing 2.2.1 image or its historical evidence. The [per-round record](evidence/performance-2026-11-11.json) identifies source, baseline, controls, timing boundaries and validation.
+The [controlled performance comparison](PERFORMANCE.md) separates a model-fixture TCP artifact from application work. Current main reduces redundant authoritative reads and write transactions without adding cross-request policy caching, bypassing controls or changing the shared quota authority. Matched CI measurements show lower JSON p95 and single-stream first-content latency; concurrent-stream first-content latency did not materially improve. These optimizations are delivered in [Gateway **2.2.2**](releases/v2.2.2.md); the existing 2.2.1 image and its historical evidence remain unchanged. The [per-round record](evidence/performance-2026-11-11.json) identifies source, baseline, controls, timing boundaries and validation.
 
 ## Historical 1.2 review — 6 November 2026
 

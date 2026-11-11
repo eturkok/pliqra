@@ -4,10 +4,11 @@ import pytest
 from scripts.release_metadata import metadata
 from scripts.sdk_metadata import metadata as sdk_metadata
 from scripts.sdk_metadata import release as sdk_release
-from scripts.fetch_sdk_release import validate_tag
+from scripts.fetch_sdk_release import validate_tag, validate_source
 from scripts.customer_acceptance import validate_stable
 import copy
 import json
+import subprocess
 
 
 def release_tree(tmp_path: Path, version: str) -> Path:
@@ -92,6 +93,37 @@ def test_independent_sdk_release_requires_matching_version_and_notes(tmp_path):
 def test_sdk_fetch_rejects_non_release_refs(tag):
     with pytest.raises(ValueError, match='published gateway or SDK release tag'):
         validate_tag(tag)
+
+
+def test_reused_sdk_requires_original_revision_and_unchanged_build_inputs(tmp_path):
+    root = release_tree(tmp_path, '2.2.2')
+    def git(*args):
+        return subprocess.check_output(['git', *args], cwd=root, text=True).strip()
+    git('init', '-q')
+    git('add', '.')
+    git('-c', 'user.name=Release Test', '-c', 'user.email=release@example.invalid', 'commit', '-qm', 'Original SDK')
+    original = git('rev-parse', 'HEAD')
+    git('tag', 'v2.2.1')
+    manifest = {'sdk_version': '0.1.0', 'revision': original}
+    (root / 'pliqra/__init__.py').write_text('__version__ = "2.2.3"\n')
+    git('add', '.')
+    git('-c', 'user.name=Release Test', '-c', 'user.email=release@example.invalid', 'commit', '-qm', 'Gateway only')
+    with pytest.raises(ValueError, match='checked-out release source'):
+        validate_source('v2.2.1', manifest, root)
+    validate_source('v2.2.1', manifest, root, allow_unchanged_source=True)
+    with pytest.raises(ValueError, match='original release revision'):
+        validate_source('v2.2.1', dict(manifest, revision=git('rev-parse', 'HEAD')), root, True)
+    (root / 'packaging/javascript/package.json').write_text('{"changed": true}')
+    with pytest.raises(ValueError, match='SDK build inputs changed'):
+        validate_source('v2.2.1', manifest, root, True)
+
+
+@pytest.mark.parametrize('origin', ['main', 'v2.2.2', 'v2.2.1\nextra=true'])
+def test_reused_sdk_release_rejects_ambiguous_or_self_references(tmp_path, origin):
+    root = release_tree(tmp_path, '2.2.2')
+    (root / 'release-policy.json').write_text(json.dumps({'sdk_release': origin}))
+    with pytest.raises(ValueError):
+        metadata('v2.2.2', root)
 
 
 def stable_report():
