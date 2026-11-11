@@ -12,6 +12,8 @@ TEXT = 'Synthetic customer acceptance 🌍. This is a deterministic fixture, not
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
+    # Explicit benchmark control; keep historical acceptance behavior by default.
+    disable_nagle_algorithm = os.environ.get('SYNTHETIC_TCP_NODELAY') == '1'
 
     def log_message(self, *_):
         pass

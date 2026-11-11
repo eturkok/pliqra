@@ -1,5 +1,6 @@
 """Replica fencing and shared concurrency leases; no inference is silently replayed."""
 import asyncio
+import json
 import psycopg
 from contextlib import contextmanager
 
@@ -51,18 +52,24 @@ class Cluster:
 
     def ensure_serving(self):
         self.ensure_live()
-        site=self.store.one('SELECT mode FROM sites WHERE id=?',(self.topology.site,))
+        site=self.store.one("SELECT mode,(SELECT value FROM settings WHERE key='maintenance') AS maintenance,"
+                            "(SELECT value FROM settings WHERE key='organization_enabled') AS organization_enabled "
+                            "FROM sites WHERE id=?",(self.topology.site,))
         if not site or site['mode']!='active':raise HTTPException(503,'Site is draining or on standby; send new requests to another active site',headers={'Retry-After':'5'})
-        if self.store.setting('maintenance',False):raise HTTPException(503,'Workspace maintenance is in progress')
-        if not self.store.setting('organization_enabled',True):raise HTTPException(503,'Organization access is disabled')
+        maintenance=json.loads(site['maintenance']) if site['maintenance'] is not None else False
+        enabled=json.loads(site['organization_enabled']) if site['organization_enabled'] is not None else True
+        if maintenance:raise HTTPException(503,'Workspace maintenance is in progress')
+        if not enabled:raise HTTPException(503,'Organization access is disabled')
 
     def acquire(self,kind):
         with self.store.transaction():
-            self.ensure_live()
-            if kind=='inference':self.ensure_serving()
+            if kind=='inference':
+                self.ensure_serving()
+            else:
+                self.ensure_live()
+                if not self.store.setting('organization_enabled',True):raise HTTPException(403,'Organization access is disabled')
+                if self.store.setting('maintenance',False):raise HTTPException(503,'Workspace maintenance is in progress')
             self.reap()
-            if not self.store.setting('organization_enabled',True):raise HTTPException(403,'Organization access is disabled')
-            if self.store.setting('maintenance',False):raise HTTPException(503,'Workspace maintenance is in progress')
             management=kind=='management'
             count=self.store.one('SELECT COUNT(*) AS n FROM runtime_leases WHERE kind'+('=' if management else '!=')+"'management'")['n']
             maximum=32 if management else self.store.setting('runtime',{}).get('max_concurrency',64)

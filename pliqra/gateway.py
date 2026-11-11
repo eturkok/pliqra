@@ -175,10 +175,10 @@ class Gateway:
         candidates, decisions = self.candidates(port)
         return {"protocol": PROTOCOL_VERSION, "contract_revision":INFERENCE_CONTRACT_REVISION, "id": port["id"], "name": port["name"], "description": port["description"], "version": port["version"], "fingerprint": self.fingerprint(port), "requirements": port["requirements"],"placement":port.get("placement") or {}, "invocation": {"interface": "openai-chat-completions", "path": "/v1/chat/completions", "model": port["name"]}, "deployments": [{"model": item["model"],"site":item.get("site") or "shared","region":item.get("region") or "unspecified", "capabilities": item["capabilities"], "verified": item["verified"], "evidence": "Declared capabilities; verified lists independently tested capabilities"} for item in candidates], "readiness": "ready" if candidates else "unavailable", "decisions": decisions}
 
-    def authorize_port(self, principal, port):
+    def authorize_port(self, principal, port, gateway_id=None):
         if not service_allowed(self.store,principal,port):
             raise HTTPException(403,"You are not permitted to use this AI service")
-        self.policies.resolve(principal,port)
+        return self.policies.resolve(principal,port,gateway_id)
 
     def budget_usage(self, project_id, instant):
         month=datetime.fromtimestamp(instant,timezone.utc).replace(day=1,hour=0,minute=0,second=0,microsecond=0)
@@ -206,7 +206,7 @@ class Gateway:
             self.policies.refresh_reservation(policy,event_id,body,attempts)
 
     def begin(self, principal, port, deployment, body, decisions, reservation_prices=None, kind='inference', attempt_limit=1, policy=None, delivery=None, admission=None,candidates=None):
-        event_id, started = uid('req_'), self.store.clock()
+        event_id = uid('req_')
         with self.store.transaction():
             self.cluster.ensure_serving()
             started=self.store.clock()
@@ -219,8 +219,9 @@ class Gateway:
                     raise HTTPException(409,'Service configuration changed during admission; retry with the current contract')
                 if kind=='probe':
                     if principal['role']!='admin':raise HTTPException(403,'Administrator access is required for a probe')
+                    current_policy=self.policies.resolve(principal,latest,policy['id'] if policy else None)
                 else:
-                    self.authorize_port(principal,latest)
+                    current_policy=self.authorize_port(principal,latest,policy['id'] if policy else None)
                     effective={**latest,'verified_only':latest.get('verified_only') or bool(policy and policy['config']['require_verified'])}
                     eligible,_=self.candidates(effective,admission.required)
                     if not set(admission.deployments).issubset({d['id'] for d in eligible}):
@@ -237,7 +238,6 @@ class Gateway:
                         order={d['id']:i for i,d in enumerate(eligible)}
                         candidates.sort(key=lambda d:(d.get('rollout_lane')!=lane,order[d['id']]))
                         deployment=candidates[0]
-                current_policy=self.policies.resolve(principal,latest,policy['id'] if policy else None)
                 if (current_policy['id'] if current_policy else None)!=(policy['id'] if policy else None):
                     raise HTTPException(409,'Gateway assignment changed during admission')
             key = principal.get('key')
@@ -267,8 +267,7 @@ class Gateway:
                     spent=self.budget_usage(project_id,started)
                     if spent+reserve>project['monthly_budget']*1_000_000:raise HTTPException(402,"Project budget cannot cover this request's estimated reservation")
             self.policies.admit(policy,event_id,principal,port,body,project_id,team_id,attempt_limit)
-            self.store.insert('events',{'id':event_id,'started':started,'principal':principal['id'],'actor_user_id':key.get('created_by') if key else principal['id'],'project_id':project_id,'team_id':team_id,'key_id':key['id'] if key else None,'port_id':port['id'],'port_name':port['name'],'port_version':port['version'],'deployment_id':deployment['id'],'model':deployment['model'],'connection_name':deployment['connection_name'],'status':'pending','stream':int(bool(body.get('stream'))),'reserved_micros':reserve,'decisions':encode(decisions),'request_kind':kind,'price_snapshot':encode({'input_price':deployment['input_price'],'output_price':deployment['output_price']}),'gateway_id':policy['id'] if policy else None,'gateway_name':policy['name'] if policy else None,'gateway_fingerprint':policy['fingerprint'] if policy else None,'delivery':delivery})
-            self.store.update('events',event_id,{'node_id':self.cluster.node,'ingress_site':self.cluster.topology.site,'model_site':deployment.get('site') or 'shared'})
+            self.store.insert('events',{'id':event_id,'started':started,'principal':principal['id'],'actor_user_id':key.get('created_by') if key else principal['id'],'project_id':project_id,'team_id':team_id,'key_id':key['id'] if key else None,'port_id':port['id'],'port_name':port['name'],'port_version':port['version'],'deployment_id':deployment['id'],'model':deployment['model'],'connection_name':deployment['connection_name'],'status':'pending','stream':int(bool(body.get('stream'))),'reserved_micros':reserve,'decisions':encode(decisions),'request_kind':kind,'price_snapshot':encode({'input_price':deployment['input_price'],'output_price':deployment['output_price']}),'gateway_id':policy['id'] if policy else None,'gateway_name':policy['name'] if policy else None,'gateway_fingerprint':policy['fingerprint'] if policy else None,'delivery':delivery,'node_id':self.cluster.node,'ingress_site':self.cluster.topology.site,'model_site':deployment.get('site') or 'shared'})
             if body.get('prompt'):self.store.update('events',event_id,{'prompt_id':body['prompt']['id'],'prompt_version':body['prompt']['version']})
             if deployment.get('release_id'):
                 self.store.set_setting('release_cursor:'+deployment['release_id'],self.store.setting('release_cursor:'+deployment['release_id'],0)+1)
@@ -303,37 +302,40 @@ class Gateway:
         return attempt_id
 
     def finish_attempt(self, attempt_id, deployment, outcome, data=None, http_status=None):
-        usage=usage_of(data or {})
         with self.store.transaction():
-            self.store.update('attempts',attempt_id,{'finished':now(),'outcome':outcome,'http_status':http_status,'input_tokens':usage[0],'output_tokens':usage[1],'cost_micros':cost_micros(usage,deployment)})
-            if self.cluster.topology.multi_dc:
-                current=runtime_health(self.store,self.cluster.topology.site,deployment['id']) or {'failure_count':0}
-                if outcome=='success':observe_deployment(self.store,self.cluster.topology.site,deployment['id'],available=1,failure_count=0,open_until=0)
-                elif outcome in ('connection_error','upstream_error','error','incomplete'):
-                    count=current['failure_count']+1
-                    observe_deployment(self.store,self.cluster.topology.site,deployment['id'],failure_count=count,open_until=self.store.clock()+30 if count>=3 else 0)
-            elif outcome=='success':self.store.update('deployments',deployment['id'],{'failure_count':0,'open_until':0})
+            self._finish_attempt(attempt_id,deployment,outcome,data,http_status)
+
+    def _finish_attempt(self, attempt_id, deployment, outcome, data=None, http_status=None):
+        usage=usage_of(data or {})
+        self.store.update('attempts',attempt_id,{'finished':now(),'outcome':outcome,'http_status':http_status,'input_tokens':usage[0],'output_tokens':usage[1],'cost_micros':cost_micros(usage,deployment)})
+        if self.cluster.topology.multi_dc:
+            current=runtime_health(self.store,self.cluster.topology.site,deployment['id']) or {'failure_count':0}
+            if outcome=='success':observe_deployment(self.store,self.cluster.topology.site,deployment['id'],available=1,failure_count=0,open_until=0)
             elif outcome in ('connection_error','upstream_error','error','incomplete'):
-                current=self.store.one('SELECT failure_count FROM deployments WHERE id=?',(deployment['id'],))
-                if current:
-                    count=current['failure_count']+1
-                    self.store.update('deployments',deployment['id'],{'failure_count':count,'open_until':now()+30 if count>=3 else 0})
+                count=current['failure_count']+1
+                observe_deployment(self.store,self.cluster.topology.site,deployment['id'],failure_count=count,open_until=self.store.clock()+30 if count>=3 else 0)
+        elif outcome=='success':self.store.update('deployments',deployment['id'],{'failure_count':0,'open_until':0})
+        elif outcome in ('connection_error','upstream_error','error','incomplete'):
+            current=self.store.one('SELECT failure_count FROM deployments WHERE id=?',(deployment['id'],))
+            if current:
+                count=current['failure_count']+1
+                self.store.update('deployments',deployment['id'],{'failure_count':count,'open_until':now()+30 if count>=3 else 0})
 
     def finish(self,event_id,started,deployment,status,data=None,ttft=None,error=None):
-        pending=self.store.one("SELECT id FROM attempts WHERE event_id=? AND outcome='pending' ORDER BY started DESC LIMIT 1",(event_id,))
-        if pending:self.finish_attempt(pending['id'],deployment,status,data,200 if status=='success' else None)
-        attempts=self.store.all('SELECT * FROM attempts WHERE event_id=?',(event_id,))
-        complete=bool(attempts) and all(a['input_tokens'] is not None and a['output_tokens'] is not None for a in attempts)
-        known=bool(attempts) and any(a['input_tokens'] is not None or a['output_tokens'] is not None for a in attempts)
-        all_priced=bool(attempts) and all(a['cost_micros'] is not None for a in attempts)
-        known_cost=sum(a['cost_micros'] or 0 for a in attempts)
-        row=self.store.one('SELECT reserved_micros FROM events WHERE id=?',(event_id,))
-        fields={'status':status,'finished':now(),'latency_ms':(time.perf_counter()-started)*1000,'ttft_ms':ttft,'input_tokens':sum(a['input_tokens'] or 0 for a in attempts) if known else None,'output_tokens':sum(a['output_tokens'] or 0 for a in attempts) if known else None,'usage_source':'reported' if complete else 'partial' if known else 'unknown','cost_micros':known_cost if all_priced else None,'known_cost_micros':known_cost,'reserved_micros':0 if all_priced else max(0,(row['reserved_micros'] if row else 0)-known_cost),'error':error,'model_site':deployment.get('site') or 'shared'}
-        if not attempts:
-            fields.update(input_tokens=0,output_tokens=0,usage_source='not_invoked',cost_micros=0,reserved_micros=0,
-                          deployment_id=None,model=None,connection_name=None,model_site=None)
         with self.store.transaction():
             self.cluster.ensure_live()
+            pending=self.store.one("SELECT id FROM attempts WHERE event_id=? AND outcome='pending' ORDER BY started DESC LIMIT 1",(event_id,))
+            if pending:self._finish_attempt(pending['id'],deployment,status,data,200 if status=='success' else None)
+            attempts=self.store.all('SELECT * FROM attempts WHERE event_id=?',(event_id,))
+            complete=bool(attempts) and all(a['input_tokens'] is not None and a['output_tokens'] is not None for a in attempts)
+            known=bool(attempts) and any(a['input_tokens'] is not None or a['output_tokens'] is not None for a in attempts)
+            all_priced=bool(attempts) and all(a['cost_micros'] is not None for a in attempts)
+            known_cost=sum(a['cost_micros'] or 0 for a in attempts)
+            row=self.store.one('SELECT reserved_micros FROM events WHERE id=?',(event_id,))
+            fields={'status':status,'finished':now(),'latency_ms':(time.perf_counter()-started)*1000,'ttft_ms':ttft,'input_tokens':sum(a['input_tokens'] or 0 for a in attempts) if known else None,'output_tokens':sum(a['output_tokens'] or 0 for a in attempts) if known else None,'usage_source':'reported' if complete else 'partial' if known else 'unknown','cost_micros':known_cost if all_priced else None,'known_cost_micros':known_cost,'reserved_micros':0 if all_priced else max(0,(row['reserved_micros'] if row else 0)-known_cost),'error':error,'model_site':deployment.get('site') or 'shared'}
+            if not attempts:
+                fields.update(input_tokens=0,output_tokens=0,usage_source='not_invoked',cost_micros=0,reserved_micros=0,
+                              deployment_id=None,model=None,connection_name=None,model_site=None)
             self.store.update('events',event_id,fields)
             self.policies.settle(event_id,status,attempts)
 
@@ -362,9 +364,8 @@ class Gateway:
         if binding and (binding['principal']!=principal['id'] or binding['expires']<=now()):
             raise HTTPException(403,'Binding belongs to another identity or has expired')
         port=self.port(binding['port_id'] if binding else body['model'])
-        self.authorize_port(principal,port)
+        policy=self.authorize_port(principal,port,gateway_id or (binding or {}).get('gateway_id'))
         service_fingerprint=self.fingerprint(port)
-        policy=self.policies.resolve(principal,port,gateway_id or (binding or {}).get('gateway_id'))
         if binding and (body['model'] not in (port['id'],port['name']) or binding['fingerprint']!=service_fingerprint):
             raise HTTPException(409,'Service contract changed. Discover and bind again; no silent model substitution was performed.')
         if binding and (binding.get('gateway_id')!=(policy['id'] if policy else None) or binding.get('gateway_fingerprint')!=(policy['fingerprint'] if policy else None)):
@@ -480,11 +481,13 @@ class Gateway:
                 break
             trail=decisions+attempts+[{'deployment_id':chosen['id'],'model':chosen['model'],'selected':response is not None,'reason':'Selected the first available eligible deployment' if port['strategy']=='priority' else 'Selected by round-robin among eligible deployments'}]
             if chosen.get('release_id'):trail.append({'release_id':chosen['release_id'],'lane':chosen['rollout_lane'],'reason':'Actual release lane after pre-stream fallback'})
-            self.store.update('events',event_id,{'deployment_id':chosen['id'],'model':chosen['model'],'connection_name':chosen['connection_name'],'decisions':encode(trail),'price_snapshot':encode({'attempts':[{k:row.get(k) for k in ('id','model','input_price','output_price')} for row in candidates]})})
+            with self.store.transaction():
+                self.store.update('events',event_id,{'deployment_id':chosen['id'],'model':chosen['model'],'connection_name':chosen['connection_name'],'decisions':encode(trail),'price_snapshot':encode({'attempts':[{k:row.get(k) for k in ('id','model','input_price','output_price')} for row in candidates]})})
+                if response is not None:
+                    self.store.update('connections',chosen['connection_id'],{'status':'connected','last_checked':now(),'last_error':None})
             if response is None:
                 self.finish(event_id,started,chosen,'error',error='All eligible upstreams failed or rejected this request')
                 raise HTTPException(502,{'message':'All eligible upstreams failed or rejected this request','request_id':event_id})
-            self.store.update('connections',chosen['connection_id'],{'status':'connected','last_checked':now(),'last_error':None})
             if body.get('stream') and not buffered:
                 async def iterator():
                     chunks=self.stream(response,chosen,event_id,started)
@@ -545,11 +548,11 @@ class Gateway:
         finally:
             if not streaming:release()
 
-    def mark_verified(self, deployment, capability):
+    def mark_verified(self, deployment, capability, *additional):
         with self.store.transaction():
             row = self.store.one("SELECT verified FROM deployments WHERE id=?", (deployment["id"],))
             if row:
-                verified = set(json.loads(row["verified"])) | {capability}
+                verified = set(json.loads(row["verified"])) | {capability, *additional}
                 self.store.update("deployments", deployment["id"], {"verified": encode(sorted(verified)),"verified_at":now()})
 
     async def stream(self, response, deployment, event_id, started):
@@ -634,5 +637,4 @@ class Gateway:
             if existing and existing["status"] == "pending":
                 self.finish(event_id, started, deployment, "success" if terminal and not error else "incomplete", usage, ttft, error)
                 if terminal and not error:
-                    self.mark_verified(deployment, "chat")
-                    self.mark_verified(deployment, "streaming")
+                    self.mark_verified(deployment, "chat", "streaming")

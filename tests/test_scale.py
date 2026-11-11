@@ -97,6 +97,36 @@ def test_postgres_concurrency_and_stale_replica_fencing(replicas):
     assert not store.one('SELECT id FROM runtime_leases WHERE id=?',(lease,))
 
 
+@pytest.mark.parametrize('stream', [False, True])
+def test_postgres_attempt_and_quota_settlement_roll_back_together(replicas, monkeypatch, stream):
+    a, b, first, second = replicas
+    service = connect(a)['services'][0]
+    from tests.test_app import price, Fragments
+    price(a)
+    profile = gateway(a, [service['id']])
+    _, headers = bound_key(a, profile)
+
+    def fail(*args):
+        raise RuntimeError('Injected settlement failure')
+
+    mock = httpx.AsyncClient(transport=httpx.MockTransport(lambda _: httpx.Response(200,
+        headers={'content-type': 'text/event-stream'}, stream=Fragments(
+            'data: {"choices":[{"delta":{"content":"Synthetic"}}]}\n\n'
+            'data: {"choices":[],"usage":{"prompt_tokens":4,"completion_tokens":2}}\n\n'
+            'data: [DONE]\n\n')))) if stream else None
+    if mock: first.state.gateway.client = mock
+    monkeypatch.setattr(first.state.gateway.policies, 'settle', fail)
+    try:
+        with pytest.raises(RuntimeError, match='Injected settlement failure'):
+            invoke(a, service['name'], headers, stream=stream)
+        # The second replica must see no partial event success or freed quota.
+        for table in ('events', 'gateway_requests'):
+            assert second.state.store.one(f'SELECT status FROM {table}')['status'] == 'pending'
+        assert second.state.store.one('SELECT outcome FROM attempts')['outcome'] == ('pending' if stream else 'success')
+    finally:
+        if mock: asyncio.run(mock.aclose())
+
+
 def test_postgres_encrypted_logical_backup_rolls_back_invalid_data(replicas):
     a,b,first,second=replicas
     from pliqra.operations import backup_bytes,restore_bytes

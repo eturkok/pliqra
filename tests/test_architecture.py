@@ -134,18 +134,24 @@ def test_partial_gateway_usage_never_falls_below_known_tokens(workspace):
     asyncio.run(mock.aclose())
 
 
-def test_event_and_gateway_settlement_commit_together(workspace, monkeypatch):
+@pytest.mark.parametrize('stream', [False, True])
+def test_event_and_gateway_settlement_commit_together(workspace, monkeypatch, stream):
     client, app, _ = workspace
     service = connect(client)['services'][0]
+    from tests.test_app import price
+    price(client)
     profile = gateway(client, [service['id']])
     _, headers = bound_key(client, profile)
     def fail(*args):
         raise RuntimeError('Injected settlement failure')
     monkeypatch.setattr(app.state.gateway.policies, 'settle', fail)
     with pytest.raises(RuntimeError, match='Injected settlement failure'):
-        invoke(client, service['name'], headers)
+        invoke(client, service['name'], headers, stream=stream)
     assert app.state.store.one('SELECT status FROM events')['status'] == 'pending'
     assert app.state.store.one('SELECT status FROM gateway_requests')['status'] == 'pending'
+    # JSON usage is persisted before possible async output checks; pending streaming
+    # usage must roll back together with the event and quota ledger.
+    assert app.state.store.one('SELECT outcome FROM attempts')['outcome'] == ('pending' if stream else 'success')
 
 
 def test_admission_rechecks_service_snapshot(workspace):

@@ -1,0 +1,49 @@
+name: Gateway performance comparison
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gateway-performance
+  cancel-in-progress: false
+jobs:
+  comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_IMAGE: ghcr.io/eturkok/pliqra@sha256:ac0a44b919c5d469f90d2c1e331601c58780ad70e698e545dfd367914b7efa7f
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements-dev.txt
+      - name: Keep the exact same OS, Python and dependencies for both images
+        run: |
+          docker pull "$BASE_IMAGE"
+          docker build -f tests/performance/Dockerfile --build-arg BASE_IMAGE="$BASE_IMAGE" --build-arg REVISION="$GITHUB_SHA" -t pliqra:performance .
+      - name: Isolate the fixture transport artifact on the unchanged released image
+        run: |
+          python scripts/benchmark_gateway.py --image "$BASE_IMAGE" --state work/transport-default --output work/transport-default.json --requests 32 --rounds 1 --concurrency 1 --modes json
+          python scripts/benchmark_gateway.py --image "$BASE_IMAGE" --state work/transport-nodelay --output work/transport-nodelay.json --requests 32 --rounds 1 --concurrency 1 --modes json --model-nodelay
+      - name: Compare ordinary calls with the same fixture transport and active governance
+        run: |
+          python scripts/benchmark_gateway.py --image "$BASE_IMAGE" --state work/before --output work/before.json --requests 64 --rounds 3 --model-nodelay
+          python scripts/benchmark_gateway.py --image pliqra:performance --state work/after --output work/after.json --requests 64 --rounds 3 --model-nodelay
+      - name: Collect separately labelled SQL diagnostics, outside latency samples
+        run: |
+          python scripts/benchmark_gateway.py --image "$BASE_IMAGE" --state work/sql-before --output work/sql-before.json --requests 32 --rounds 1 --modes json --model-nodelay --profile
+          python scripts/benchmark_gateway.py --image pliqra:performance --state work/sql-after --output work/sql-after.json --requests 32 --rounds 1 --modes json --model-nodelay --profile
+      - name: Retain only public synthetic reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: gateway-performance
+          path: |
+            work/transport-default.json
+            work/transport-nodelay.json
+            work/before.json
+            work/after.json
+            work/sql-before.json
+            work/sql-after.json
+          if-no-files-found: warn
