@@ -2,7 +2,7 @@
 
 [← Pliqra](../README.md)
 
-These are **unreleased source optimizations**, compared with the immutable Gateway **2.2.1** image. No published image, SDK, schema or protocol version is moved. The historical 504.14 ms p95 soak result remains in its [original release record](evidence/patch-2.2.1.json); it is an end-to-end CI observation, not isolated gateway overhead.
+These optimizations are delivered in [Gateway **2.2.2**](releases/v2.2.2.md). The controlled comparison below measured source changes against the immutable Gateway **2.2.1** image before publication. No published image, SDK, schema or protocol version is moved. The historical 504.14 ms p95 soak result remains in its [original release record](evidence/patch-2.2.1.json); it is an end-to-end CI observation, not isolated gateway overhead.
 
 ## Verified same-runner comparison — 11 November 2026
 

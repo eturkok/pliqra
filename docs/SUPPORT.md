@@ -2,7 +2,7 @@
 
 [← Pliqra](../README.md)
 
-**2.2.1 is the stable community release of the documented self-hosted gateway.** Stable means the release passes its committed acceptance gates and maintains the compatibility policy below. It is not a capacity, availability, provider-safety or identity-vendor certification. Community issues are best-effort; no response-time, uptime, RTO or RPO commitment is bundled with Apache-2.0.
+**2.2.2 is the stable community release of the documented self-hosted gateway.** Stable means the release passes its committed acceptance gates and maintains the compatibility policy below. It is not a capacity, availability, provider-safety or identity-vendor certification. Community issues are best-effort; no response-time, uptime, RTO or RPO commitment is bundled with Apache-2.0.
 
 ## Supported deployment envelope
 
@@ -26,7 +26,7 @@ The predeclared synthetic release envelope is **eight clients, 30 seconds of bou
 ## Compatibility and upgrades
 
 - Gateway releases use `MAJOR.MINOR.PATCH`. A 2.2.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
-- Gateway **2.2.1**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **6** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
+- Gateway **2.2.2**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **6** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
 - Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. 2.1-to-2.2 uses the same schema/inference revision and tests an unchanged binding across the upgrade.
 - Stop all shared-state replicas, back up and upgrade together. Preserve one writable authority; no offline quota grants are supported. Do not use independent writable DC databases as a substitute for database HA.
 - Returning to an older image uses its **pre-upgrade backup** in separately prepared storage. Never assume an older image can downgrade a newer database. The release acceptance exercises that recovery path.

@@ -68,3 +68,14 @@ Returning to an older image may require restoring its pre-upgrade backup: a newe
 ## Kubernetes chart distribution
 
 The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. Chart 0.3.1 therefore still selects Gateway 2.2.1 after the gateway-only 2.2.2 release. To select a newer gateway, explicitly set `image.tag` to its version and `image.digest` to its published digest from `image.txt`, and validate the override in your environment. The chart's published cluster reports describe its original pinned image. [Chart source](../charts/pliqra/README.md).
+
+
+For Gateway 2.2.2 with the existing chart, explicitly select its immutable image:
+
+```sh
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
+  --set-string image.tag=2.2.2 \
+  --set-string image.digest=sha256:c739f21ba6055c3b0eb24a7ca80756bd37414b77e7828a1d1d8dbdc8c406b14a
+```
+
+Retain your installation's existing values and Secret references when upgrading. The 2.2.2 release reports cover Docker acceptance; this image override has not been separately certified by the chart's earlier cluster reports.
