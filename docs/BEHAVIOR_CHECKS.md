@@ -1,6 +1,6 @@
 # Scheduled model behavior checks
 
-Implemented in **2.4.0-alpha.1 source / schema 7**. The published stable Docker image remains **2.3.0**; it does not contain this feature yet.
+Available in **stable Gateway 2.4.0 / schema 7**, through the prebuilt image and source installation.
 
 A connection contract detects registered configuration changes. A provider can also change the model behind an unchanged URL and model name. Opt-in behavior checks repeatedly exercise selected expectations against that deployment, retaining outcomes and the last successful test. They complement contracts and release evaluations.
 

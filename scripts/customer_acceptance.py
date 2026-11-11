@@ -239,6 +239,69 @@ class Lab:
         self.mark('publication_impact_cross_replica_no_model_io_and_stale_precondition')
         self.mark('contract_change_rejected_then_explicit_renewal_and_policy_impact')
 
+    def behavior(self):
+        """Observe a controlled change at one unchanged endpoint on the exact image."""
+        connection = next(c for c in self.west.api('/api/v1/connections') if c['provider']=='openai' and c['site']=='dc-west')
+        deployment = connection['models'][0]
+        body = {'name':'Exact-image behavior checks','deployment_id':deployment['id'],'project_id':'default',
+                'enabled':True,'interval_seconds':60,'max_runs_per_day':5,'max_tokens':64,
+                'checks':[{'name':name,'capability':capability} for name,capability in
+                          [('Chat','chat'),('Stream','streaming'),('JSON','structured_output'),('Tool','tools')]]}
+        row = self.west.api('/api/v1/behavior-checks',body,status=201)
+        path = '/api/v1/behavior-checks/'+row['id']
+
+        def history():
+            return self.east.api(path+'/runs')['items']
+
+        def wait_cycle(count, timeout=25):
+            deadline=time.monotonic()+timeout
+            while time.monotonic()<deadline:
+                rows=history()
+                if len(rows)>=count and rows[0]['status']!='running':return rows[0]
+                time.sleep(.2)
+            raise AssertionError('Behavior cycle did not finish within the acceptance window')
+
+        def run(count):
+            self.west.api(path+'/run',{},status=202)
+            return wait_cycle(count)
+
+        def notifications():
+            return [n for n in self.east.api('/api/v1/operations')['notifications'] if n['kind']=='model-behavior' and n['target']==row['id']]
+
+        assert self.east.client.post(path+'/run',json={}).status_code==409
+        first=run(1)
+        assert first['status']=='passed' and len(first['results'])==4
+        automatic=wait_cycle(2,85)
+        assert automatic['status']=='passed' and automatic['created']-first['created']>=60
+        successful_tool=next(r for r in automatic['results'] if r['name']=='Tool')['last_success_at']
+        with httpx.Client(base_url='http://127.0.0.1:18095',trust_env=False) as model:
+            model.post('/fixture/behavior',json={'mode':'regression'}).raise_for_status()
+            failed=run(3)
+            assert failed['status']=='failed'
+            tool=next(r for r in failed['results'] if r['name']=='Tool')
+            assert tool['changed'] and tool['last_success_at']==successful_tool
+            assert len(notifications())==1
+            repeated=run(4)
+            assert repeated['status']=='failed' and len(notifications())==1
+            model.post('/fixture/behavior',json={'mode':'healthy'}).raise_for_status()
+        assert run(5)['status']=='passed' and len(notifications())==2
+        assert self.west.client.post(path+'/run',json={}).status_code==429
+        rows=history()
+        assert len({r['fingerprint'] for r in rows})==1
+        self.west.api(path,{**body,'enabled':False},method='PUT')
+        self.compose('restart','gateway-west',capture_output=True)
+        self.wait(self.west)
+        current=next(r for r in self.west.api('/api/v1/behavior-checks')['items'] if r['id']==row['id'])
+        assert not current['enabled'] and current['daily_runs']==5 and current['last_success_at']
+        assert len(history())==5
+        after=next(c for c in self.west.api('/api/v1/connections') if c['id']==connection['id'])['models'][0]
+        assert after['capabilities']==deployment['capabilities'] and after['verified']==deployment['verified']
+        self.report['behavior']={'cycles':5,'automatic_cycles':1,'assertions_per_cycle':4,
+                                 'statuses':[r['status'] for r in reversed(rows)],'unchanged_fingerprint':rows[0]['fingerprint'],
+                                 'notifications':2,'daily_limit_enforced':True,'restart_preserved_history':True,
+                                 'last_success_retained_on_failure':True,'observation_did_not_change_capabilities':True}
+        self.mark('scheduled_behavior_same_endpoint_regression_recovery_daily_limit_and_restart')
+
     def fleet(self):
         members=[]
         shared_token=None
@@ -370,7 +433,7 @@ if __name__=='__main__':
     lab=Lab.resume(args.state) if args.resume else Lab(args.state,args.image)
     try:
         if not args.resume:lab.setup()
-        lab.routing_and_quotas();lab.contracts();lab.fleet();lab.native()
+        lab.routing_and_quotas();lab.contracts();lab.behavior();lab.fleet();lab.native()
         if args.load_seconds:lab.report['load']=lab.measurements(args.load_seconds,args.concurrency);lab.mark('load_measurement')
         if args.soak_seconds:lab.report['soak']=lab.measurements(args.soak_seconds,args.concurrency,args.soak_rate);lab.mark('soak_measurement')
         if args.stable:

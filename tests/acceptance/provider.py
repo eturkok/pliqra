@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 LOCK = threading.Lock()
 COUNTS = {'accepted': 0, 'completed': 0, 'disconnected': 0}
+BEHAVIOR = {'mode': 'healthy'}
 TEXT = 'Synthetic customer acceptance 🌍. This is a deterministic fixture, not a real language model.'
 
 
@@ -35,6 +36,13 @@ class Handler(BaseHTTPRequestHandler):
         return self.respond(404, {'error': 'Synthetic fixture route not found'})
 
     def do_POST(self):
+        if self.path == '/fixture/behavior':
+            body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+            if body.get('mode') not in ('healthy', 'regression'):
+                return self.respond(422, {'error': 'Invalid disposable fixture mode'})
+            with LOCK:
+                BEHAVIOR['mode'] = body['mode']
+            return self.respond(200, dict(BEHAVIOR))
         if self.path not in ('/v1/chat/completions', '/v1/responses', '/v1/messages'):
             return self.respond(404, {'error': 'Synthetic fixture route not found'})
         body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
@@ -52,6 +60,13 @@ class Handler(BaseHTTPRequestHandler):
         message = {'role': 'assistant', 'content': TEXT}
         if tool:
             message = {'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'call_fixture', 'type': 'function', 'function': {'name': 'weather', 'arguments': args}}]}
+            choice = body.get('tool_choice')
+            if isinstance(choice, dict) and choice.get('function', {}).get('name') == 'pliqra_probe':
+                with LOCK:
+                    value = 'wrong' if BEHAVIOR['mode'] == 'regression' else 'ok'
+                message['tool_calls'][0]['function'] = {'name': 'pliqra_probe', 'arguments': json.dumps({'value': value})}
+        if body.get('response_format', {}).get('json_schema', {}).get('name') == 'pliqra_probe':
+            message['content'] = '{"ok":true}'
         if self.path == '/v1/responses':
             item = {'id': 'fc_fixture', 'type': 'function_call', 'call_id': 'call_fixture', 'name': 'weather', 'arguments': args, 'status': 'completed'} if tool else {'id': 'msg_fixture', 'type': 'message', 'role': 'assistant', 'status': 'completed', 'content': [{'type': 'output_text', 'text': TEXT, 'annotations': []}]}
             result = {'id': 'resp_fixture', 'object': 'response', 'status': 'completed', 'output': [item], 'usage': usage}

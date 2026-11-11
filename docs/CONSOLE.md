@@ -26,7 +26,7 @@ The selected service shows active application identities whose contract no longe
 
 ![Pliqra overview warning that a changed service contract requires application renewal](screenshots/contract-change.jpg)
 
-### Watch the behavior behind an unchanged endpoint (2.4 development)
+### Watch the behavior behind an unchanged endpoint (2.4)
 
 **Model health** schedules small chat, streaming, JSON and tool checks against a selected deployment. Filter by project, inspect the last successful test for each expectation, follow failures and recovery, or run a cycle manually. Daily cycle/token limits and project budget accounting bound its model calls. The overview links to schedules; history links to individual request evidence. Checks observe outcomes without automatically changing capabilities or routing. [Setup, API and evidence](BEHAVIOR_CHECKS.md).
 

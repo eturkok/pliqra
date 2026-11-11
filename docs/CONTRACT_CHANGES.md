@@ -1,6 +1,6 @@
 # Application impact and existing-client protection
 
-Available in stable Gateway **2.3.0**, through the prebuilt Docker image and source installation.
+Available since stable Gateway **2.3.0**, through the prebuilt Docker image and source installation.
 
 ## Review before publication
 

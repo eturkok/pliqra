@@ -31,17 +31,11 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
 
-## New in 2.3
+## New in 2.4
 
-**Review application impact before publication.** Preview a service or gateway policy change to see each active binding's application, team, project, required capabilities and next action. Distinguish contracts that can renew from blocked requirements or unavailable deployments. The console checks the preview fingerprint again when publishing.
+**Watch behavior behind an unchanged endpoint.** Schedule bounded response, streaming, JSON and tool checks. See the last successful test, outcome changes and recovery in **Model health**, with daily limits and project budget accounting. A provider can change the model behind the same URL; chosen assertions make observable regressions visible without changing traffic automatically. [Setup, APIs and real-endpoint evidence →](docs/BEHAVIOR_CHECKS.md)
 
-**Protect an existing Chat Completions client with one setting.** After accepting a binding, add `default_headers={"X-Pliqra-Binding": binding_id}` to your Python OpenAI client, or `defaultHeaders: {"X-Pliqra-Binding": bindingId}` in JavaScript. JSON and streaming calls enforce that accepted contract on standard and named gateway endpoints. Changes return 409 and require explicit renewal.
-
-Both flows were exercised against **SmolLM2 running in llama.cpp**, including the official Python and JavaScript OpenAI clients. [Examples, API and real-model evidence →](docs/CONTRACT_CHANGES.md)
-
-Both features ship in the prebuilt **2.3.0** image. [Contract setup and impact reports →](docs/CONTRACT_CHANGES.md)
-
-**In development for 2.4: watch behavior behind an unchanged endpoint.** Schedule bounded response, streaming, JSON and tool checks. See outcome changes, recovery and the last successful test in the dashboard, with project budgets and daily limits. Available in **2.4.0-alpha.1 source**, separately from the stable image. [Model behavior checks & real-endpoint evidence →](docs/BEHAVIOR_CHECKS.md)
+The 2.3 application impact reports and existing-client contract protection remain available. [Review before publication and protect an existing client →](docs/CONTRACT_CHANGES.md)
 
 ## What Pliqra brings
 
@@ -52,7 +46,7 @@ Both features ship in the prebuilt **2.3.0** image. [Contract setup and impact r
 | **Composable guardrails** | Chain local checks, NeMo check-API providers and custom HTTP validators on input/output. Enforce or observe; apply local redaction and inspect recorded verdicts. |
 | **An explanation for every call** | Follow routing, fallback attempts, guardrail decisions, timing, tokens and estimated costs. Administrators see cumulative totals and team-level detail. |
 | **Publish with evidence** | Version prompts, queue durable batches, compare models with external judges, and gate canary releases on fresh quality evidence. |
-| **Observe behavior over time (2.4 development)** | Regularly test selected expectations at the same endpoint; retain last success, surface changes and notify on failure/recovery without changing traffic automatically. |
+| **Observe behavior over time** | Regularly test selected expectations at the same endpoint; retain last success, surface changes and notify on failure/recovery without changing traffic automatically. |
 | **One policy across interfaces** | Chat, embeddings, audio and native APIs through one admission/accounting boundary, with live Responses/Messages text and tool streaming. |
 | **Govern independent installations** | Pair workspaces, filter combined usage, review policy changes with a second administrator, and track delivery and drift from one console. |
 | **Start small, scale across sites** | One Docker image by default. Add PostgreSQL, isolated organizations, analytics and active/active data centers when needed. |
@@ -64,14 +58,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.3.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.4.0/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.3.0 is the stable community release**, adding application impact reports and existing-client contract protection while retaining the 2.2.2 database optimizations. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.3.0)
+**2.4.0 is the stable community release**, adding durable model behavior monitoring alongside application impact reports and contract protection. No source checkout, local build or registry login is required. Upgrades from 2.3 migrate schema 6 → 7: back up first and upgrade all writers together. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.4.0)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -82,13 +76,14 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 Use the **official Helm chart** with the prebuilt image. Start with one SQLite pod and retained storage; use external PostgreSQL and existing Secrets for multiple replicas.
 
 ```sh
+curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.4.0/image.txt
 helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
-  --set-string image.tag=2.3.0 \
-  --set-string image.digest=sha256:302c9b4f92b4cf176c5a6019b911c60a758beb4092867860d90a5290dc828015
+  --set-string image.tag=2.4.0 \
+  --set-string image.digest="$(cut -d @ -f 2 image.txt)"
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
-The command explicitly selects Gateway 2.3.0. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+The command explicitly selects Gateway 2.4.0. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
 
 [Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Operations & recovery drills →](docs/OPERATIONS.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1)
 
@@ -128,7 +123,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.3.0](https://github.com/eturkok/pliqra/releases/tag/v2.3.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.4.0](https://github.com/eturkok/pliqra/releases/tag/v2.4.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 

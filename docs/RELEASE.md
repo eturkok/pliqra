@@ -1,4 +1,4 @@
-> Current release: **[2.3.0](releases/v2.3.0.md)** adds application impact reports and existing-client contract protection, with stable Connection Protocol 1.0 and SDK 1.0.1. [Verified delivery](evidence/patch-2.3.0.json) covers exact-image load/soak, contracts and upgrade/recovery; client reports are attached to the [release](https://github.com/eturkok/pliqra/releases/tag/v2.3.0). Earlier delivery records below remain historical.
+> Current release: **[2.4.0](releases/v2.4.0.md)** adds scheduled model behavior checks and durable last-success/change history, with Protocol 1.0 and SDK 1.0.1. The exact-image release acceptance includes same-endpoint regression/recovery, strict daily limits, restart persistence, a 30-minute soak and 2.3-to-2.4 upgrade/recovery. Schema **7** requires a coordinated migration and pre-upgrade backup. Public reports are attached to the [release](https://github.com/eturkok/pliqra/releases/tag/v2.4.0). Earlier delivery records below remain historical.
 
 # Pliqra 2.1 — validation and scope
 

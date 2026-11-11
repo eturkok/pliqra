@@ -1,8 +1,8 @@
-# Support and compatibility — 2.2
+# Support and compatibility — 2.4
 
 [← Pliqra](../README.md)
 
-**2.3.0 is the stable community release of the documented self-hosted gateway.** Stable means the release passes its committed acceptance gates and maintains the compatibility policy below. It is not a capacity, availability, provider-safety or identity-vendor certification. Community issues are best-effort; no response-time, uptime, RTO or RPO commitment is bundled with Apache-2.0.
+**2.4.0 is the stable community release of the documented self-hosted gateway.** Stable means the release passes its committed acceptance gates and maintains the compatibility policy below. It is not a capacity, availability, provider-safety or identity-vendor certification. Community issues are best-effort; no response-time, uptime, RTO or RPO commitment is bundled with Apache-2.0.
 
 ## Supported deployment envelope
 
@@ -18,16 +18,17 @@
 | Console | Responsive browser console checked at 320–1440 px, including keyboard navigation and bounded dialogs. Real-device and cross-engine certification are not claimed. |
 | Inference | The [documented Chat/native/embedding/audio subsets](MODEL_INTERFACES.md), admission, guardrails and accounting. Complete-output guardrails deliberately buffer output. |
 | Identity / guardrails | Documented OIDC/SAML/SCIM behavior, real Keycloak evidence and signed fixtures. Actual Entra/Okta/NeMo/Vault deployments need their environment-specific acceptance. |
-| Operations | Fresh install, published-image SQLite 2.1-to-2.2 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on 2.1.0 in separate storage. |
+| Operations | Fresh install, published-image SQLite 2.3-to-2.4 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on 2.3.0 in separate storage. |
+| Model behavior | Opt-in chat/text, streaming, fixed JSON/tool assertions and optional latency checks; UTC daily limits, project accounting, durable last success, transitions and history. Selected expectations do not identify weights or guarantee general model quality. |
 | Chart operations | Isolated SQLite/PostgreSQL archive recovery, configuration-revision rollout and monitoring-token authorization. Optional Prometheus Operator 0.95.1 CRD schemas and promtool 3.16.0 rule tests; actual Operator discovery, Alertmanager delivery and backup RPO/RTO need deployment acceptance. |
 
 The predeclared synthetic release envelope is **eight clients, 30 seconds of bounded load and 30 minutes at a target five calls/second**, with zero unsuccessful load/soak calls, at least 8,000 soak calls, p95 ≤2,000 ms and sampled west-gateway RSS growth ≤64 MiB. These are regression thresholds for a deterministic 5 ms fixture on a CI runner. They are **not** model token-throughput guarantees, customer sizing advice or days of endurance evidence. Full results identify the actual source/image, runner, duration and observations.
 
 ## Compatibility and upgrades
 
-- Gateway releases use `MAJOR.MINOR.PATCH`. A 2.2.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
-- Gateway **2.3.0**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **6** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
-- Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. 2.1-to-2.2 uses the same schema/inference revision and tests an unchanged binding across the upgrade.
+- Gateway releases use `MAJOR.MINOR.PATCH`. A 2.4.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
+- Gateway **2.4.0**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **7** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
+- Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. 2.3-to-2.4 migrates schema 6 to 7 while retaining inference revision 5 and unchanged bindings. Restored behavior schedules remain paused.
 - Stop all shared-state replicas, back up and upgrade together. Preserve one writable authority; no offline quota grants are supported. Do not use independent writable DC databases as a substitute for database HA.
 - Returning to an older image uses its **pre-upgrade backup** in separately prepared storage. Never assume an older image can downgrade a newer database. The release acceptance exercises that recovery path.
 

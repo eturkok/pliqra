@@ -4,13 +4,13 @@
 
 ## Install the stable release
 
-**2.3.0 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.3.0`; Docker Desktop on macOS/Windows runs the matching Linux image.
+**2.4.0 is the stable community release for the [documented support envelope](SUPPORT.md).** The version does not imply a capacity, availability or vendor certification. Docker with Compose is required. Linux AMD64 and ARM64 images are published at `ghcr.io/eturkok/pliqra:2.4.0`; Docker Desktop on macOS/Windows runs the matching Linux image.
 
 No source checkout, local build or registry login is required:
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.3.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.4.0/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
@@ -21,7 +21,7 @@ The named `pliqra-data` volume holds the workspace and local encryption key. To 
 
 ## Pin and verify
 
-The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.3.0) includes:
+The [GitHub release](https://github.com/eturkok/pliqra/releases/tag/v2.4.0) includes:
 
 - `compose.release.yaml`: installation using the exact version tag, without `build`.
 - `image.txt`: the exact multi-platform OCI digest reference.
@@ -61,21 +61,21 @@ Maintainers prepare the version, `docs/releases/vVERSION.md` and Compose referen
 
 ## Upgrade and recover
 
-Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.3.0 uses **schema 6**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged 2.1.0 bindings are preserved by 2.3.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
+Back up persistent data **and the encryption key**, stop the previous deployment, then pull/start the selected exact version. Gateway 2.4.0 uses **schema 7**, inference contract revision **5** and stable protocol **1.0** with legacy 0.1 compatibility. Version selection alone does not change existing fingerprints or bindings. Upgrade every shared-state replica together. Bindings from an earlier inference contract revision require renewal; unchanged 2.3.0 bindings are preserved by 2.4.0. See [multi-DC upgrade](MULTI_DC.md#evidence-and-upgrade).
 
-Returning to an older image may require restoring its pre-upgrade backup: a newer database is not automatically downgraded. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
+The 2.3 → 2.4 upgrade migrates schema 6 to 7. Portable schema-6 SQLite and PostgreSQL backups can restore into 7. Restored behavior schedules are paused for review. Returning to 2.3 requires its pre-upgrade schema-6 backup in separately prepared storage; an older image cannot open schema 7. Keep the old image digest and an independently tested backup. [Operating limits](RELEASE.md) and [recovery procedures](OPERATIONS.md) still apply.
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. Chart 0.3.1 therefore still selects Gateway 2.2.1 after the 2.3.0 gateway release. To select a newer gateway, explicitly set `image.tag` to its version and `image.digest` to its published digest from `image.txt`, and validate the override in your environment. The chart's published cluster reports describe its original pinned image. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. Chart 0.3.1 therefore still selects Gateway 2.2.1 after the 2.4.0 gateway release. To select a newer gateway, explicitly set `image.tag` to its version and `image.digest` to its published digest from `image.txt`, and validate the override in your environment. The chart's published cluster reports describe its original pinned image. [Chart source](../charts/pliqra/README.md).
 
 
-For Gateway 2.3.0 with the existing chart, download `image.txt` from the release and use its immutable digest:
+For Gateway 2.4.0 with the existing chart, download `image.txt` from the release and use its immutable digest:
 
 ```sh
-curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.3.0/image.txt
+curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.4.0/image.txt
 helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
-  --set-string image.tag=2.3.0 \
+  --set-string image.tag=2.4.0 \
   --set-string image.digest="$(cut -d @ -f 2 image.txt)"
 ```
 

@@ -163,6 +163,33 @@ def check(image, output):
         fixture.mark('pre_upgrade_binding_protects_existing_client_without_rebinding')
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 429
         fixture.mark('upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage')
+        deployment=restored_connection['models'][0]
+        watch=api(client,'/api/v1/behavior-checks',{'name':'Preserved model checks','deployment_id':deployment['id'],
+                  'enabled':True,'interval_seconds':3600,'max_runs_per_day':2,
+                  'checks':[{'name':'Chat','capability':'chat'}]},201).json()
+        watch_path='/api/v1/behavior-checks/'+watch['id']
+        api(client,watch_path+'/run',{},202)
+        deadline=time.monotonic()+20
+        while True:
+            runs=api(client,watch_path+'/runs').json()['items']
+            if runs and runs[0]['status']!='running':break
+            assert time.monotonic()<deadline,'Behavior check did not finish'
+            time.sleep(.1)
+        assert runs[0]['status']=='passed'
+        current_archive=api(client,'/api/v1/backups',{'password':password}).content
+        client.close()
+        client=fixture.gateway(image,volume)
+        clients.append(client)
+        authenticate(client,email,password)
+        preserved=next(r for r in api(client,'/api/v1/behavior-checks').json()['items'] if r['id']==watch['id'])
+        assert preserved['enabled'] and preserved['daily_runs']==1 and preserved['last_success_at']
+        assert api(client,watch_path+'/runs').json()['total']==1
+        api(client,'/api/v1/backups/restore',{'password':password,'archive':base64.b64encode(current_archive).decode(),'confirmation':'RESTORE'})
+        authenticate(client,email,password)
+        restored=next(r for r in api(client,'/api/v1/behavior-checks').json()['items'] if r['id']==watch['id'])
+        assert not restored['enabled'] and restored['daily_runs']==1 and restored['last_success_at']==preserved['last_success_at']
+        assert api(client,watch_path+'/runs').json()['total']==1
+        fixture.mark('schema_seven_checks_survive_restart_and_restore_paused_without_replay')
         api(client, '/api/v1/projects', {'name': 'After backup'}, 201)
         restore = {'password': 'incorrect-backup-password', 'archive': base64.b64encode(archive).decode(), 'confirmation': 'RESTORE'}
         api(client, '/api/v1/backups/restore', restore, 422)
@@ -171,6 +198,7 @@ def check(image, output):
         api(client, '/api/v1/backups/restore', restore)
         assert api(client, '/api/v1/session').json()['user'] is None
         authenticate(client, email, password)
+        assert api(client,'/api/v1/behavior-checks').json()['items']==[]
         assert not any(p['name'] == 'After backup' for p in api(client, '/api/v1/projects').json())
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 200
         fixture.mark('new_image_restores_previous_backup_rejects_wrong_password_and_revokes_sessions')
