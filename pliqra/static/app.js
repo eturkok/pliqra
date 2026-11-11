@@ -47,8 +47,8 @@ const badge = (status, label) => `<span class="badge ${esc(status)}"><i class="d
 const btn = (label, action, ico, cls="", attrs="") => `<button type="button" class="btn ${cls}" data-action="${action}" ${attrs}>${ico ? icon(ico) : ""}${esc(label)}</button>`;
 const ibtn = (label, action, ico, attrs="", cls="") => `<button type="button" class="icon-btn${cls?" "+cls:""}" aria-label="${esc(label)}" title="${esc(label)}" data-action="${action}" ${attrs}>${icon(ico)}</button>`;
 const empty = (ico, title, text, action="") => `<div class="empty"><div class="empty-icon">${icon(ico)}</div><h3>${esc(title)}</h3><p>${esc(text)}</p>${action}</div>`;
-const field = (label, name, placeholder="", type="text", value="", extra="") => `<div class="field"><label for="f-${name}">${esc(label)}</label><input id="f-${name}" name="${name}" type="${type}" placeholder="${esc(placeholder)}" value="${esc(value)}" ${extra}></div>`;
-const selectField = (label, name, options, value="") => `<div class="field"><label for="f-${name}">${esc(label)}</label><select id="f-${name}" name="${name}">${options.map(([v,l])=>`<option value="${esc(v)}" ${v===value ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>`;
+const field = (label, name, placeholder="", type="text", value="", extra="") => `<div class="field"><label for="f-${esc(name)}">${esc(label)}</label><input id="f-${esc(name)}" name="${esc(name)}" type="${type}" placeholder="${esc(placeholder)}" value="${esc(value)}" ${extra}></div>`;
+const selectField = (label, name, options, value="") => `<div class="field"><label for="f-${esc(name)}">${esc(label)}</label><select id="f-${esc(name)}" name="${esc(name)}">${options.map(([v,l])=>`<option value="${esc(v)}" ${v===value ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>`;
 let state = {reportFilters:{},view:"overview",days:7,query:"",status:"",eventOffset:0,conns:[],ports:[],projects:[],keys:[],users:[],idps:[],audit:[],usage:null,events:{items:[],total:0},session:null,chat:[],chatBusy:false,chatRequest:null,playPort:"",lastRequest:null};
 let refreshTimer, queryTimer, controller;
 const isAdmin = () => state.session?.user?.role === "admin";

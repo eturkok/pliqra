@@ -20,6 +20,11 @@ def digest(value):
     return hashlib.sha256(value.encode()).hexdigest()
 
 
+def bearer_token(authorization):
+    scheme, separator, token = authorization.partition(' ')
+    return token.strip() if separator and scheme.lower()=='bearer' and token.strip() else None
+
+
 def hash_password(password):
     salt = secrets.token_bytes(16)
     value = hashlib.scrypt(password.encode(), salt=salt, n=16384, r=8, p=1)

@@ -17,6 +17,33 @@ async function bounded(response, limit = 16_000_000) {
   for (const part of parts) { bytes.set(part,offset); offset += part.length; }
   return bytes;
 }
+async function* sseEvents(response) {
+  const reader=response.body.getReader(),decoder=new TextDecoder('utf-8',{fatal:true}),encoder=new TextEncoder();
+  let buffer='',data=[],eventSize=0,total=0,skipLF=false;
+  try {
+    while(true) {
+      const {done,value}=await reader.read();
+      if(value){total+=value.byteLength;if(total>16_000_000)throw new PliqraError(502,'Stream exceeded 16 MB');}
+      buffer+=done?decoder.decode():decoder.decode(value,{stream:true});
+      if(skipLF&&buffer){if(buffer[0]==='\n')buffer=buffer.slice(1);skipLF=false;}
+      let end;
+      while((end=buffer.search(/[\r\n]/))>=0) {
+        const line=buffer.slice(0,end),cr=buffer[end]==='\r';let consumed=end+1;
+        if(cr){if(buffer[consumed]==='\n')consumed++;else if(consumed===buffer.length)skipLF=true;}
+        buffer=buffer.slice(consumed);
+        if(encoder.encode(line).byteLength>1_000_000)throw new PliqraError(502,'Stream line exceeded 1 MB');
+        if(!line){if(data.length)yield data.join('\n');data=[];eventSize=0;}
+        else if(line==='data'||line.startsWith('data:')){
+          const text=line.slice(5).replace(/^ /,'');eventSize+=encoder.encode(text).byteLength+1;
+          if(eventSize>1_000_000)throw new PliqraError(502,'Stream event exceeded 1 MB');data.push(text);
+        }
+      }
+      if(encoder.encode(buffer).byteLength>1_000_000)throw new PliqraError(502,'Stream line exceeded 1 MB');
+      if(done)break;
+    }
+    // EOF never dispatches an event without its blank-line delimiter.
+  } finally {await reader.cancel().catch(()=>{});reader.releaseLock();}
+}
 export class Pliqra {
   constructor(baseURL, apiKey, {fetch: transport = globalThis.fetch, timeout = 90_000} = {}) {
     const url = new URL(baseURL);
@@ -61,22 +88,10 @@ export class Connection {
   }
   async *stream(messages,parameters={},options={}) {
     const response=await this.client.request(this.binding.invoke,{...parameters,model:this.binding.service,messages,stream:true},options);
-    const reader=response.body.getReader(), decoder=new TextDecoder('utf-8',{fatal:true}); let buffer='', terminal=false, total=0;
-    try {
-      outer: while (true) {
-        const {done,value}=await reader.read(); if (done) { buffer+=decoder.decode(); break; }
-        total+=value.byteLength; if(total>16_000_000) throw new PliqraError(502,'Stream exceeded 16 MB');
-        buffer+=decoder.decode(value,{stream:true}); let end;
-        while ((end=buffer.indexOf('\n'))>=0) {
-          const line=buffer.slice(0,end).trim(); buffer=buffer.slice(end+1);
-          if(line.length>1_000_000)throw new PliqraError(502,'Stream line exceeded 1 MB');
-          if(!line.startsWith('data:'))continue;
-          const text=line.slice(5).trim(); if(text==='[DONE]'){terminal=true;break outer;} if(!text)continue;
-          const data=JSON.parse(text); if(data.error)throw new PliqraError(502,data.error.message || 'Stream failed'); yield data;
-        }
-        if(buffer.length>1_000_000)throw new PliqraError(502,'Stream line exceeded 1 MB');
-      }
-      if(!terminal)throw new PliqraError(502,'Stream ended without a completion marker');
-    } finally { await reader.cancel().catch(()=>{}); reader.releaseLock(); }
+    for await(const event of sseEvents(response)) {
+      const text=event.trim();if(text==='[DONE]')return;if(!text)continue;
+      const data=JSON.parse(text);if(data.error)throw new PliqraError(502,data.error.message||'Stream failed');yield data;
+    }
+    throw new PliqraError(502,'Stream ended without a completion marker');
   }
 }

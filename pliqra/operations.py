@@ -21,7 +21,7 @@ from .access import project_ids, require_project, service_allowed
 from .connectors import discover, headers
 from .db import encode, now, uid, SCHEMA_VERSION
 from .gateway import decoded_port
-from .security import digest, endpoint_url, hash_password, verify_password, validate_encryption
+from .security import bearer_token, digest, endpoint_url, hash_password, verify_password, validate_encryption
 
 
 from .topology import SiteID,observe_connection,observe_deployment
@@ -536,7 +536,8 @@ def mount(app):
     def metrics(request:Request):
         authorization=request.headers.get("authorization","")
         configured=store.setting("metrics_token_hash","")
-        if not configured or not secrets.compare_digest(digest(authorization.removeprefix("Bearer ")),configured):raise HTTPException(401,"A monitoring token is required")
+        token=bearer_token(authorization) or ''
+        if not configured or not secrets.compare_digest(digest(token),configured):raise HTTPException(401,"A monitoring token is required")
         lines=["# TYPE pliqra_requests_total counter"]
         for row in store.all("SELECT status,COUNT(*) AS n FROM events GROUP BY status"):
             lines.append('pliqra_requests_total{status="'+row["status"]+'"} '+str(row["n"]))

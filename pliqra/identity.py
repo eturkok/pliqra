@@ -16,7 +16,7 @@ from typing import Annotated, Literal
 
 from .access import sync_group_memberships
 from .db import encode, now, uid
-from .security import digest, endpoint_url
+from .security import digest, endpoint_url, bearer_token
 
 USER_SCHEMA="urn:ietf:params:scim:schemas:core:2.0:User"
 GROUP_SCHEMA="urn:ietf:params:scim:schemas:core:2.0:Group"
@@ -337,7 +337,7 @@ def mount(app):
         return {"ok":True}
 
     def scim_auth(provider_id,request):
-        token=request.headers.get("authorization","").removeprefix("Bearer ")
+        token=bearer_token(request.headers.get("authorization","")) or ''
         row=store.one("SELECT t.id FROM scim_tokens t JOIN identity_providers i ON i.id=t.provider_id WHERE t.provider_id=? AND t.token_hash=? AND t.active=1 AND i.active=1",(provider_id,digest(token)))
         if not row:raise HTTPException(401,"Invalid SCIM provisioning token")
 

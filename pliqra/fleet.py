@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from .connectors import response_json
 from .db import encode, now, uid
 from .fabric import GatewayInput
-from .security import digest, endpoint_url
+from .security import digest, endpoint_url, bearer_token
 
 
 def fingerprint(value):
@@ -185,7 +185,7 @@ def mount(app):
         return {k: json.loads(v) if k == 'scopes' else v for k, v in row.items() if k != 'token_hash'}
 
     def trust(request, scope):
-        token = request.headers.get('authorization', '').removeprefix('Bearer ')
+        token = bearer_token(request.headers.get('authorization', '')) or ''
         row = store.one('SELECT * FROM fleet_trusts WHERE token_hash=? AND active=1', (digest(token),)) if token.startswith('plq_fleet_') else None
         if not row:
             raise HTTPException(401, 'Invalid or revoked fleet pairing')

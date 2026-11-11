@@ -53,3 +53,5 @@ Stateful tests cover binding ownership, expiry, revoked credentials, contract ch
 The CLI reports its actual negotiated `protocol` and `stability`. Against an old server it runs the legacy seven-check core (nine with inference) and reports **compatibility**, not stable 1.0. A 1.0 server runs eleven checks (thirteen with inference). Conformance does not create an ecosystem-adoption or external-vendor claim.
 
 [Published 1.0 acceptance record](evidence/protocol-1.0.json) identifies the immutable gateway/SDK source, compatibility matrix, release image and exact-image upgrade/recovery run.
+
+The architecture-review source patch also checks SSE framing with BOM, LF/CRLF/CR, multiline data and incomplete terminal events across the gateway and three current clients. An event is dispatched only after a blank line; EOF does not complete pending data. These readers do not automatically reconnect/replay inference. [Review and release boundary](TECHNICAL_REVIEW.md#end-to-end-review--11-november-2026).

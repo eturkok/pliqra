@@ -8,7 +8,7 @@ import pytest
 from pliqra.topology import RuntimeTopology
 from tests.test_scale import replicas
 from tests.test_app import connect,call
-from tests.test_fabric import gateway,bound_key,invoke
+from tests.test_fabric import gateway,bound_key,invoke,rail
 from tests.test_architecture import swap_upstream
 
 pytestmark=pytest.mark.parametrize('replicas',[(RuntimeTopology(site='dc-west',region='eu',multi_dc=True),RuntimeTopology(site='dc-east',region='eu',multi_dc=True))],indirect=True)
@@ -45,6 +45,28 @@ def test_multidc_local_preference_and_exact_global_quota(replicas,monkeypatch):
         assert sorted(f.result(timeout=20).status_code for f in replies)==[200,429]
     totals=b.get('/api/v1/usage?days=0&ingress_site=dc-east').json()['summary']
     assert totals['successful']>=1
+
+
+@pytest.mark.parametrize('limit,expected',[('tokens',429),('budget',402)])
+def test_multidc_checked_input_reservations_are_atomic(replicas,limit,expected):
+    a,b,first,second=replicas
+    service=connect(a)['services'][0]
+    deployment=a.get('/api/v1/connections').json()[0]['models'][0]
+    assert a.patch('/api/v1/deployments/'+deployment['id'],json={'capabilities':['chat','streaming'],'input_price':2,'output_price':3}).status_code==200
+    if limit=='budget':assert a.patch('/api/v1/projects/default',json={'name':'Shared budget','monthly_budget':0.15}).status_code==200
+    guard=rail(a,config={'rule':'keywords','terms':['x'],'action':'redact'})
+    profile=gateway(a,[service['id']],guardrails=[{'guardrail_id':guard['id'],'stages':['input']}],
+                    limits=[{'metric':'tokens','limit':75000}] if limit=='tokens' else [])
+    _,headers=bound_key(a,profile)
+    mocks=[swap_upstream(app,lambda _:httpx.Response(200,json={'choices':[{'message':{'role':'assistant','content':'unknown usage'}}]})) for app in (first,second)]
+    try:
+        with ThreadPoolExecutor(2) as pool:
+            futures=[pool.submit(invoke,client,service['name'],headers,content='x'*5000,max_tokens=16) for client in (a,b)]
+            assert sorted(f.result(timeout=20).status_code for f in futures)==[200,expected]
+        assert first.state.store.one('SELECT COUNT(*) AS n FROM attempts')['n']==1
+        assert second.state.store.one('SELECT SUM(tokens) AS n FROM gateway_requests')['n']<75000
+    finally:
+        for mock in mocks:asyncio.run(mock.aclose())
 
 
 def test_multidc_draining_preserves_inflight_call_and_redirects_new_admission(replicas):

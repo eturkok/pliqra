@@ -2,6 +2,55 @@
 
 > Current release: Gateway 2.2.0 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
 
+## End-to-end review — 11 November 2026
+
+**Baseline:** `a2e9db1` (published Gateway 2.2.0 / Protocol 1.0). **Status:** source corrections under review on `codex/architecture-review`; these are not yet a new container or registry release. SDK source is prepared as **1.0.1**, so published 1.0.0 artifacts remain immutable.
+
+### Architectural assessment
+
+The modular monolith, one writable PostgreSQL quota authority and independently versioned client/protocol contracts fit the endpoint-first product. The necessary corrections belong in existing authentication, admission, transport and rendering boundaries. Shared helpers now govern provider-attempt creation, checked-input reservations, bearer parsing and server SSE framing. Storage ownership, the protocol wire identifier, schema 6 and inference contract 5 are preserved.
+
+The review followed authentication → service access → binding → admission → guardrails → Secret resolution → provider IO → settlement/reporting, then checked recovery, organization isolation, SDKs, console rendering and distribution controls. Findings were reproduced with synthetic credentials/providers and isolated storage; the tests assert observable behavior rather than implementation structure. This is a scoped engineering review, not a full ASVS assessment or external certification.
+
+### Findings and corrections
+
+| ID | Priority | Reproduced issue and effect | Implemented correction / regression evidence |
+|---|---|---|---|
+| AR-01 | P1 | A password could change after verification but before session insertion. The old password then produced a new valid session after the reset had revoked existing sessions. | Session issuance revalidates active identity/provider state and the verified local-password hash inside its transaction. `test_password_change_during_login_verification_cannot_create_a_session` rejects that interleaving without inserting a session. |
+| AR-02 | P1 | A process fenced while awaiting a guardrail or external Secret could start new model work afterwards, then return 503 during settlement. | `Gateway.start_attempt` rechecks the replica lease after asynchronous preparation, immediately before provider IO, and records the attempt in the same transaction. Chat and embedding/audio paths share it. Four fault-injection cases assert 503, zero provider calls and zero attempts. A local release flag is set before fallible storage cleanup. |
+| AR-03 | P1 | Redaction could expand input after quota/budget admission, leaving reservations based on the smaller original input. | Changed checked input is validated again against input bounds. Additional project budget and token capacity are reserved in one workspace transaction, using the original admission window and budget month. Failure starts no provider call, frees unused reservations and retains one request record. Serial/concurrent chat and embedding cases cover 402/422/429; PostgreSQL tests exercise two independent site replicas. |
+| AR-04 | P2 | Sequential keyword replacements could match their own `[REDACTED]` markers, corrupting output and amplifying content repeatedly. | One combined escaped pattern scans each original value once. A four-megabyte encoded-content growth budget stops oversized redaction during replacement, before constructing an unbounded result. Tests cover overlapping/repeated terms and fail-closed growth exhaustion. |
+| AR-05 | P2 | Chat/server and SDK SSE readers treated lines as events. Valid multiline data, BOM or CR framing could fail; a terminal marker lacking its final blank line could be accepted as success. Native parsing also dispatched pending data at EOF. | Server and all three SDKs frame complete SSE events, handle LF/CRLF/CR and BOM, concatenate data fields, bound lines/events/streams and discard unfinished events. Heartbeat forwarding, incremental delivery, cancellation and no automatic inference replay are retained. Tests cover standard framing and incomplete terminal events. |
+| AR-06 | P2 | Imported deployment-reference names reached quoted form attributes without encoding and could introduce HTML elements. CSP reduced script execution exposure but did not make the rendering safe. | Existing `field`/`selectField` helpers encode names in `for`, `id` and `name`. Node tests render the actual console helpers with hostile references; no element/event-handler injection is produced and ordinary mapping names are preserved. |
+| AR-07 | P2 | Authentication-scheme matching was case-sensitive, so a valid lowercase bearer header could fall back to a browser's administrator cookie. 401 challenges were missing; SCIM/metrics lacked the project's no-store policy. JSON media-type matching was case-sensitive too. | One bearer parser handles scheme casing for inference, SCIM, metrics and fleet. An explicit unsupported Authorization header is rejected rather than falling back to a cookie. 401 responses include a challenge; protected metadata gets no-store. Valid mixed-case JSON types are accepted. Tests prove key quota/attribution with an administrator cookie present. |
+| AR-08 | P3 | Python SDK HTTP-error bodies were read without deterministically closing the response. Repeated rejected calls could retain transport resources until garbage collection. | Error parsing uses a response context; a retained fake HTTPError verifies the underlying response is closed while the typed status is preserved. |
+
+### Standards and engineering decisions
+
+| Reference | Applied scope and boundary |
+|---|---|
+| [RFC 9110 §§8.3.1, 11.1, 11.6.1](https://www.rfc-editor.org/rfc/rfc9110.html) | Case-insensitive media/auth scheme tokens and a WWW-Authenticate challenge on 401. Existing status/body contracts remain available. No-store is the project's explicit private-response policy. |
+| [WHATWG SSE §§9.2.5–9.2.6](https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream) | UTF-8/BOM, all three line endings, multiline data and blank-line dispatch. Inference clients consume framing; they intentionally do not implement EventSource automatic reconnection/replay. |
+| [OWASP authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) | Recheck credential/lifecycle state when issuing a session; preserve CSRF, cookie and federation boundaries. The review does not claim every authentication recommendation has been certified. |
+| [OWASP API4 resource consumption](https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/) and [attribute encoding](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html#output-encoding-for-html-attribute-contexts) | Bound transformations and actual checked-input reservations; encode untrusted form-attribute data. CSP remains an additional control. |
+| [Kubernetes probe semantics](https://kubernetes.io/docs/concepts/workloads/pods/probes/) | Existing independent liveness/readiness/startup checks, non-root/read-only containers, retained SQLite volume, PostgreSQL Secret references, fenced-process restart and digest-pinned chart were reviewed. Existing chart lifecycle is retained. |
+
+### Validation and release boundary
+
+Local Python 3.14 validation: **285 passed**, **35 PostgreSQL-dependent cases explicitly skipped** without a database URL. All three language runtimes were required for the HTTP compatibility matrix. JavaScript SDK assertions, Go tests/`go vet`, three console encoding tests and Helm lint/35 render checks passed. [CI for the review branch](https://github.com/eturkok/pliqra/actions/workflows/test.yml?query=branch%3Acodex%2Farchitecture-review) additionally runs Python 3.13/3.14, real PostgreSQL, packaged clients, Docker startup and the dependency audit.
+
+- `tests/test_review_boundaries.py` contains focused behavioral reproductions. Existing protocol HTTP compatibility, native first-content/cancellation, identity, recovery and accounting tests run alongside them.
+- JavaScript SDK tests include seven new framing/EOF cases; Go tests and `go vet` cover the same transport boundary. Three console encoding tests run in the clients CI job.
+- The real-PostgreSQL CI job additionally checks expanded reservations across two independent gateway sites. Local runs explicitly skip PostgreSQL cases if its URL is not configured.
+- Helm lint and 35 render/safety checks passed against the unchanged chart. Chart 0.3.0's earlier cluster evidence remains evidence for its published image, not a claim that this unreleased source patch has been installed in Kubernetes.
+- A future container/SDK release must run its normal exact-artifact publication gates. The existing 2.2.0/1.0.0 release evidence is historical and is not relabelled as evidence for these corrections.
+
+### Operational considerations
+
+Shared PostgreSQL writes intentionally serialize quota/policy decisions. Its synchronous connection and WAN latency remain capacity constraints; profile a representative workload before introducing pools or changing that authority. Local-password sign-in throttling is currently an in-process IP limit, not a global multi-replica abuse-control service; deployments exposing local login need ingress/IdP abuse controls and should test their proxy/client-address setup. Organization archives remain separate recovery units. Actual IdP/NeMo integrations, geographic failure and recovery objectives require the installation's acceptance tests.
+
+## Historical 1.2 review — 6 November 2026
+
 - **Date:** 6 November 2026
 - **Reviewed baseline:** 2f5abc6 — Pliqra 1.1
 - **Remediation release:** 1.2

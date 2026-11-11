@@ -183,3 +183,7 @@ These screenshots use an isolated synthetic workspace. The NeMo form illustrates
 ![Gateway-scoped credential creation before any secret is shown](screenshots/gateway-key.jpg)
 
 ![Per-request gateway fingerprint and guardrail decisions](screenshots/gateway-request.jpg)
+
+### Checked-input reservation safety
+
+Input redaction can expand text. Before provider IO, changed checked input must still fit the service/gateway character bounds, token window and project budget. Additional capacity is reserved atomically on the existing request; a failed increase starts no provider attempt and releases its unused reservation. Request count and original admission-window attribution are retained. Builtin redaction scans original text once and has a 4 MB encoded-content growth limit; transformation failure follows the configured guardrail error policy.

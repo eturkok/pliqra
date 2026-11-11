@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .connectors import headers, response_json
-from .db import encode, now, uid
+from .db import encode
 
 
 class Strict(BaseModel):
@@ -140,7 +140,11 @@ async def _run_operation(gateway,operation,body,principal,gateway_id=None,bindin
             prices={field:max(d[field] for d in candidates) if all(d[field] is not None for d in candidates) else None for field in ('input_price','output_price')}
             if operation!='embeddings':prices={'input_price':None,'output_price':None}
             event_id,_=gateway.begin(principal,port,chosen,normalized,decisions,prices,request_kind,len(candidates),policy,operation,admission,candidates)
-            if policy:normalized=await gateway.policies.check(policy,'input',normalized,gateway.client,event_id)
+            if policy:
+                checked=await gateway.policies.check(policy,'input',normalized,gateway.client,event_id)
+                if checked['messages']!=normalized['messages']:
+                    gateway.refresh_reservation(event_id,port,checked,prices,len(candidates),policy)
+                normalized=checked
             payload={k:v for k,v in body.items() if k not in ('pliqra','audio_base64','filename')}
             if operation!='transcription':
                 checked=normalized['messages'][-1]['content']
@@ -149,8 +153,6 @@ async def _run_operation(gateway,operation,body,principal,gateway_id=None,bindin
             for chosen in candidates:
                 if chosen['provider'] not in ('openai','ollama') or chosen['provider']=='ollama' and operation!='embeddings':
                     raise HTTPException(422,'This adapter does not support the selected operation')
-                attempt_id=uid('attempt_')
-                store.insert('attempts',{'id':attempt_id,'event_id':event_id,'deployment_id':chosen['id'],'model':chosen['model'],'model_site':chosen.get('site') or 'shared','started':store.clock(),'outcome':'pending'})
                 gateway.secrets.client=gateway.client
                 secret=await gateway.secrets.resolve(gateway.vault.decrypt(chosen['secret']))
                 auth=headers(secret,chosen['auth_header'],chosen['auth_prefix'])
@@ -162,6 +164,7 @@ async def _run_operation(gateway,operation,body,principal,gateway_id=None,bindin
                     outgoing={**payload,'model':chosen['model']}
                     if operation=='transcription':outgoing['response_format']='json'
                 options={'files':{'file':(body['filename'],audio,'application/octet-stream')},'data':{k:str(v) for k,v in outgoing.items() if v is not None}} if operation=='transcription' else {'json':outgoing}
+                attempt_id=gateway.start_attempt(event_id,chosen)
                 try:
                     async with gateway.client.stream('POST',url,headers=auth,**options) as response:
                         if response.status_code>=400:
@@ -208,7 +211,7 @@ async def _run_operation(gateway,operation,body,principal,gateway_id=None,bindin
             if operation=='transcription' and body.get('response_format')=='text':return Response(result['text'],media_type='text/plain',headers=response_headers)
             return JSONResponse(result,headers=response_headers)
         except HTTPException as exc:
-            if event_id:gateway.finish(event_id,started,chosen,'blocked' if exc.status_code==422 and isinstance(exc.detail,dict) and exc.detail.get('code')=='guardrail_blocked' else 'error',error='Model operation failed policy or provider checks')
+            if event_id and not gateway.cluster.fenced:gateway.finish(event_id,started,chosen,'blocked' if exc.status_code==422 and isinstance(exc.detail,dict) and exc.detail.get('code')=='guardrail_blocked' else 'error',error='Model operation failed policy or provider checks')
             if event_id:exc.detail={**exc.detail,'request_id':event_id} if isinstance(exc.detail,dict) else {'message':exc.detail,'request_id':event_id}
             raise
         except asyncio.CancelledError:

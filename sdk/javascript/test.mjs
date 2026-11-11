@@ -42,4 +42,20 @@ for(const protocol of ['pliqra/2.0','pliqra/0.1-draft']){
   const rejected=new Pliqra('https://gateway.test','synthetic-key',{fetch:transport});
   for(let attempt=0;attempt<2;attempt++)await assert.rejects(()=>rejected.metadata(),error=>error.status===422);
 }
-export const result={passed:11,failed:0};
+for(const ending of ['\n','\r\n','\r']){
+  const raw='\ufeff: keepalive'+ending+'data: {"choices":'+ending+'data: [{"delta":{"content":"hello 🌍"}}]}'+ending+ending+'data: [DONE]'+ending+ending;
+  const bytes=new TextEncoder().encode(raw);let offset=0;
+  const streamClient=new Pliqra('https://gateway.test','synthetic-key',{fetch:async()=>new Response(new ReadableStream({pull(c){if(offset===bytes.length)c.close();else c.enqueue(bytes.slice(offset,++offset));}}))});
+  const {Connection}=await import('./pliqra.mjs');
+  const connection=new Connection(streamClient,{service:'test',invoke:'/invoke'});
+  const items=[];for await(const item of connection.stream([]))items.push(item);
+  assert.equal(items[0].choices[0].delta.content,'hello 🌍');
+}
+for(const ending of ['','\n','\r\n','\r']){
+  const response=new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode('data: [DONE]'+ending));c.close();}}));
+  const streamClient=new Pliqra('https://gateway.test','synthetic-key',{fetch:async()=>response});
+  const {Connection}=await import('./pliqra.mjs');
+  await assert.rejects(async()=>{for await(const _ of new Connection(streamClient,{service:'test',invoke:'/invoke'}).stream([])){}},e=>e instanceof PliqraError&&e.status===502);
+  assert.equal(response.body.locked,false);
+}
+export const result={passed:18,failed:0};

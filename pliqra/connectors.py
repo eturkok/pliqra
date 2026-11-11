@@ -38,22 +38,50 @@ async def response_json(response, limit=MAX_RESPONSE_BYTES):
 
 async def bounded_lines(response):
     pending, size = bytearray(), 0
+    skip_lf, first = False, True
     # Preserve transport chunks: chunk_size buffering would delay the first SSE token.
     async for chunk in response.aiter_bytes():
         size += len(chunk)
         if size > MAX_RESPONSE_BYTES:
             raise ValueError('Stream exceeded its size limit')
         pending.extend(chunk)
-        while (ending := pending.find(b'\n')) >= 0:
+        if skip_lf and pending:
+            if pending[0]==10:del pending[:1]
+            skip_lf=False
+        while pending:
+            endings=[n for n in (pending.find(b'\n'),pending.find(b'\r')) if n>=0]
+            if not endings:break
+            ending=min(endings)
             if ending > MAX_STREAM_LINE_BYTES:
                 raise ValueError('Stream frame exceeded its size limit')
-            line = bytes(pending[:ending]).removesuffix(b'\r')
-            del pending[:ending+1]
-            yield line.decode('utf-8')
+            line = bytes(pending[:ending])
+            consumed=ending+1
+            if pending[ending]==13:
+                if consumed<len(pending) and pending[consumed]==10:consumed+=1
+                elif consumed==len(pending):skip_lf=True
+            del pending[:consumed]
+            yield line.decode('utf-8-sig' if first else 'utf-8')
+            first=False
         if len(pending) > MAX_STREAM_LINE_BYTES:
             raise ValueError('Stream frame exceeded its size limit')
     if pending:
-        yield bytes(pending).removesuffix(b'\r').decode('utf-8')
+        yield bytes(pending).decode('utf-8-sig' if first else 'utf-8')
+
+
+async def sse_data(lines, *, comments=False):
+    """Dispatch bounded SSE events only at blank lines, never at EOF."""
+    data, size = [], 0
+    async for line in lines:
+        if not line:
+            if data:yield '\n'.join(data)
+            data,size=[],0
+        elif line=='data' or line.startswith('data:'):
+            value=line[5:].removeprefix(' ')
+            size+=len(value.encode())+1
+            if size>MAX_STREAM_LINE_BYTES:raise ValueError('SSE event exceeded its size limit')
+            data.append(value)
+        elif comments and line.startswith(':'):
+            yield line
 
 
 def headers(secret, name="Authorization", prefix="Bearer"):

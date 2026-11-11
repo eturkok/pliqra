@@ -14,7 +14,7 @@ from fastapi import HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.background import BackgroundTask
 
-from .connectors import ollama_result, ollama_calls, sse, upstream_request, bounded_lines, response_json, strict_json
+from .connectors import ollama_result, ollama_calls, sse, upstream_request, bounded_lines, response_json, strict_json, sse_data
 from .inference_schema import checked_completion, requests_tools, valid_completion, validate_tool_choice, INFERENCE_CONTRACT_REVISION
 from .db import encode, now, uid
 from .access import service_allowed, require_project, current_principal
@@ -180,6 +180,31 @@ class Gateway:
             raise HTTPException(403,"You are not permitted to use this AI service")
         self.policies.resolve(principal,port)
 
+    def budget_usage(self, project_id, instant):
+        month=datetime.fromtimestamp(instant,timezone.utc).replace(day=1,hour=0,minute=0,second=0,microsecond=0)
+        end=month.replace(year=month.year+1,month=1) if month.month==12 else month.replace(month=month.month+1)
+        return self.store.one("SELECT COALESCE(SUM(CASE WHEN status='pending' THEN reserved_micros ELSE COALESCE(cost_micros,known_cost_micros+reserved_micros) END),0) AS n FROM events WHERE project_id=? AND started>=? AND started<?",(project_id,month.timestamp(),end.timestamp()))['n']
+
+    def refresh_reservation(self, event_id, port, body, prices, attempts, policy):
+        """Cover expanded checked input before provider IO; keep one admission."""
+        size=len(encode(body['messages']))
+        if size>port.get('max_input_chars',200000) or policy and size>policy['config']['max_input_chars']:
+            raise HTTPException(422,'Checked input exceeds the configured character limit')
+        with self.store.transaction():
+            self.cluster.ensure_live()
+            row=self.store.one('SELECT project_id,started,reserved_micros FROM events WHERE id=?',(event_id,))
+            project=self.store.one('SELECT monthly_budget FROM projects WHERE id=?',(row['project_id'],)) if row['project_id'] else None
+            if project and project['monthly_budget'] is not None:
+                if prices['input_price'] is None or prices['output_price'] is None:
+                    raise HTTPException(422,'Configure model pricing before using a budgeted project')
+                reserve=cost_micros(reservation_units(body),prices)*attempts
+                if reserve>row['reserved_micros']:
+                    used=self.budget_usage(row['project_id'],row['started'])-row['reserved_micros']
+                    if used+reserve>project['monthly_budget']*1_000_000:
+                        raise HTTPException(402,'Project budget cannot cover the checked input reservation')
+                    self.store.update('events',event_id,{'reserved_micros':reserve})
+            self.policies.refresh_reservation(policy,event_id,body,attempts)
+
     def begin(self, principal, port, deployment, body, decisions, reservation_prices=None, kind='inference', attempt_limit=1, policy=None, delivery=None, admission=None,candidates=None):
         event_id, started = uid('req_'), self.store.clock()
         with self.store.transaction():
@@ -239,8 +264,7 @@ class Gateway:
                     pricing=reservation_prices or deployment
                     if pricing['input_price'] is None or pricing['output_price'] is None:raise HTTPException(422,'This project has a budget. Configure input and output pricing before using this model.')
                     reserve=cost_micros(reservation_units(body),pricing)*attempt_limit
-                    month=datetime.fromtimestamp(started,timezone.utc).replace(day=1,hour=0,minute=0,second=0,microsecond=0).timestamp()
-                    spent=self.store.one("SELECT COALESCE(SUM(CASE WHEN status='pending' THEN reserved_micros ELSE COALESCE(cost_micros,known_cost_micros+reserved_micros) END),0) AS n FROM events WHERE project_id=? AND started>=?",(project_id,month))['n']
+                    spent=self.budget_usage(project_id,started)
                     if spent+reserve>project['monthly_budget']*1_000_000:raise HTTPException(402,"Project budget cannot cover this request's estimated reservation")
             self.policies.admit(policy,event_id,principal,port,body,project_id,team_id,attempt_limit)
             self.store.insert('events',{'id':event_id,'started':started,'principal':principal['id'],'actor_user_id':key.get('created_by') if key else principal['id'],'project_id':project_id,'team_id':team_id,'key_id':key['id'] if key else None,'port_id':port['id'],'port_name':port['name'],'port_version':port['version'],'deployment_id':deployment['id'],'model':deployment['model'],'connection_name':deployment['connection_name'],'status':'pending','stream':int(bool(body.get('stream'))),'reserved_micros':reserve,'decisions':encode(decisions),'request_kind':kind,'price_snapshot':encode({'input_price':deployment['input_price'],'output_price':deployment['output_price']}),'gateway_id':policy['id'] if policy else None,'gateway_name':policy['name'] if policy else None,'gateway_fingerprint':policy['fingerprint'] if policy else None,'delivery':delivery})
@@ -266,6 +290,17 @@ class Gateway:
         if len(raw.encode('utf-8'))<=64000:content['response']=value
         else:content.update(response_excerpt=raw.encode('utf-8')[:64000].decode('utf-8',errors='ignore'),response_truncated=True)
         self.store.update('event_content',event_id,{'payload':self.vault.encrypt(encode(content))})
+
+    def start_attempt(self, event_id, deployment):
+        # Guardrails and external secret resolution can outlive a replica lease.
+        # Check after those awaits, immediately before starting provider work.
+        with self.store.transaction():
+            self.cluster.ensure_live()
+            attempt_id=uid('attempt_')
+            self.store.insert('attempts',{'id':attempt_id,'event_id':event_id,'deployment_id':deployment['id'],
+                'model':deployment['model'],'model_site':deployment.get('site') or 'shared',
+                'started':self.store.clock(),'outcome':'pending'})
+        return attempt_id
 
     def finish_attempt(self, attempt_id, deployment, outcome, data=None, http_status=None):
         usage=usage_of(data or {})
@@ -370,9 +405,9 @@ class Gateway:
             nonlocal released
             with self.state_lock:
                 if not released:
+                    released=True
                     self.active-=1
                     self.cluster.release(lease)
-                    released=True
         chosen=candidates[0]
         response=None
         event_id=None
@@ -402,13 +437,15 @@ class Gateway:
             prices={field:max(item[field] for item in candidates) if all(item[field] is not None for item in candidates) else None for field in ('input_price','output_price')}
             event_id,_=self.begin(principal,port,chosen,body,decisions,prices,kind,len(candidates),policy,delivery,admission,candidates)
             chosen=candidates[0]
-            if policy:body=await self.policies.check(policy,'input',body,self.client,event_id)
+            if policy:
+                checked=await self.policies.check(policy,'input',body,self.client,event_id)
+                if checked['messages']!=body['messages']:
+                    self.refresh_reservation(event_id,port,checked,prices,len(candidates),policy)
+                body=checked
             upstream_body={**body,'stream':False} if buffered else body
             attempts=[]
             for deployment in candidates:
                 chosen=deployment
-                attempt_id=uid('attempt_')
-                self.store.insert('attempts',{'id':attempt_id,'event_id':event_id,'deployment_id':deployment['id'],'model':deployment['model'],'model_site':deployment.get('site') or 'shared','started':self.store.clock(),'outcome':'pending'})
                 self.secrets.client=self.client
                 secret=await self.secrets.resolve(self.vault.decrypt(deployment['secret']))
                 url,payload,auth=upstream_request(deployment,upstream_body,deployment['model'],secret)
@@ -416,6 +453,7 @@ class Gateway:
                 payload.pop('modelport',None)
                 payload.pop('prompt',None)
                 payload.pop('_prompt_project_id',None)
+                attempt_id=self.start_attempt(event_id,deployment)
                 try:
                     response=await self.client.send(self.client.build_request('POST',url,json=payload,headers=auth),stream=True)
                 except httpx.HTTPError:
@@ -490,10 +528,11 @@ class Gateway:
             return JSONResponse(data,headers=headers)
         except HTTPException as exc:
             if response:await response.aclose()
-            if event_id and self.store.one("SELECT id FROM events WHERE id=? AND status='pending'",(event_id,)):
+            if event_id and not self.cluster.fenced and self.store.one("SELECT id FROM events WHERE id=? AND status='pending'",(event_id,)):
                 guard=isinstance(exc.detail,dict) and str(exc.detail.get('code','')).startswith('guardrail_')
                 self.finish(event_id,started,chosen,'blocked' if guard and exc.status_code==422 else 'error',error='Guardrail blocked delivery' if guard else 'Upstream request could not be completed')
-                if guard:exc.detail['request_id']=event_id
+            if event_id:
+                exc.detail={**exc.detail,'request_id':event_id} if isinstance(exc.detail,dict) else {'message':exc.detail,'request_id':event_id}
             raise
         except asyncio.CancelledError:
             if event_id:self.finish(event_id,started,chosen,'cancelled',error='Client disconnected; upstream cancellation requested')
@@ -524,9 +563,16 @@ class Gateway:
             if deployment['provider'] in ('responses','anthropic'):
                 from .native_streaming import upstream_lines
                 lines=upstream_lines(response,deployment['provider'],event_id,deployment['model'])
+            async def observed(source):
+                nonlocal capture_size
+                async for line in source:
+                    if capture and capture_size<64000:
+                        captured.append(line.encode('utf-8')[:max(0,63999-capture_size)].decode('utf-8',errors='ignore'))
+                        capture_size+=len(line.encode('utf-8'))+1
+                    yield line
+            lines=observed(lines)
+            if deployment['provider']!='ollama':lines=sse_data(lines,comments=True)
             async for line in lines:
-                if capture and capture_size<64000:
-                    captured.append(line.encode('utf-8')[:max(0,63999-capture_size)].decode('utf-8',errors='ignore'));capture_size+=len(line.encode('utf-8'))+1
                 if not line.strip():
                     continue
                 if deployment["provider"] == "ollama":
@@ -558,9 +604,7 @@ class Gateway:
                     if line.startswith(":"):
                         yield line + "\n\n"
                         continue
-                    if not line.startswith("data:"):
-                        continue
-                    payload = line[5:].strip()
+                    payload = line.strip()
                     if payload == "[DONE]":
                         terminal = True
                         yield "data: [DONE]\n\n"
