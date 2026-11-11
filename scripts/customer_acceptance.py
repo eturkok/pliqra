@@ -193,6 +193,52 @@ class Lab:
         assert sum(r.status_code==429 for r in responses)==8
         self.mark('global_quota_exact_under_concurrency',accepted=8,rejected=8)
 
+    def contracts(self):
+        original = next(item for item in self.west.api('/api/v1/ports') if item['id'] == self.service['id'])
+        service = self.west.api('/api/v1/ports', {'name': 'contract-check-' + uuid.uuid4().hex[:8],
+                                'deployments': original['deployments']}, status=201)
+        service = next(item for item in self.west.api('/api/v1/ports') if item['id'] == service['id'])
+        profile = self.west.api('/api/v1/gateways', {'name': 'Contract acceptance', 'slug': service['name'],
+                                'config': {'services': [service['id']], 'limits': [{'metric': 'requests', 'limit': 4}]}}, status=201)
+        token = self.west.api('/api/v1/keys', {'name': 'Existing client', 'gateway_id': profile['id'],
+                              'allowed_ports': [service['id']], 'rpm': 1000}, status=201)['token']
+        auth = {'Authorization': 'Bearer ' + token}
+        binding_body = {'service': service['name'], 'requirements': ['chat', 'streaming']}
+        binding = self.west.api('/protocol/v1/bindings', binding_body, headers=auth, status=201)
+        protected = {**auth, 'X-Pliqra-Binding': binding['id']}
+        body = {'model': service['name'], 'messages': [{'role': 'user', 'content': 'Contract image acceptance'}], 'max_tokens': 64}
+        for session, stream in ((self.west, False), (self.east, True)):
+            response = session.client.post('/v1/chat/completions', headers=protected, json={**body, 'stream': stream})
+            assert response.status_code == 200, response.text
+            assert response.headers['X-Pliqra-Binding'] == binding['id']
+            if stream: assert 'data: [DONE]' in response.text
+        proposed = {key: service[key] for key in ('name', 'description', 'deployments', 'requirements', 'strategy', 'enabled')}
+        count = self.model_count()
+        blocked = self.east.api('/api/v1/ports/' + service['id'] + '/preview', {**proposed, 'requirements': ['vision']})
+        assert blocked['impact']['summary']['blocked'] == 1, blocked
+        assert blocked['impact']['items'][0]['application'] == 'Existing client'
+        preview = self.east.api('/api/v1/ports/' + service['id'] + '/preview', proposed)
+        assert preview['impact']['summary']['renew'] == 1, preview
+        expected = {'If-Match': '"' + preview['current_fingerprint'] + '"'}
+        self.west.api('/api/v1/ports/' + service['id'], proposed, method='PATCH', headers=expected)
+        stale = self.east.client.post('/v1/chat/completions', headers=protected, json=body)
+        assert stale.status_code == 409, stale.text
+        conflict = self.east.client.patch('/api/v1/ports/' + service['id'], headers=expected, json=proposed)
+        assert conflict.status_code == 412, conflict.text
+        assert self.model_count() == count
+        fresh = self.east.api('/protocol/v1/bindings', binding_body, headers=auth, status=201)
+        renewed = {**auth, 'X-Pliqra-Binding': fresh['id']}
+        assert self.west.client.post('/v1/chat/completions', headers=renewed, json=body).status_code == 200
+        path = '/g/' + profile['slug'] + '/v1/chat/completions'
+        assert self.east.client.post(path, headers=renewed, json=body).status_code == 200
+        assert self.west.client.post(path, headers=renewed, json=body).status_code == 429
+        changed_policy = {'name': profile['name'], 'slug': profile['slug'], 'config': {**profile['config'], 'enabled': False}}
+        impact = self.east.api('/api/v1/gateways/' + profile['id'] + '/impact', changed_policy)
+        assert impact['impact']['summary']['blocked'] == 2, impact
+        self.mark('contract_header_json_stream_named_gateway_and_shared_quota')
+        self.mark('publication_impact_cross_replica_no_model_io_and_stale_precondition')
+        self.mark('contract_change_rejected_then_explicit_renewal_and_policy_impact')
+
     def fleet(self):
         members=[]
         shared_token=None
@@ -324,7 +370,7 @@ if __name__=='__main__':
     lab=Lab.resume(args.state) if args.resume else Lab(args.state,args.image)
     try:
         if not args.resume:lab.setup()
-        lab.routing_and_quotas();lab.fleet();lab.native()
+        lab.routing_and_quotas();lab.contracts();lab.fleet();lab.native()
         if args.load_seconds:lab.report['load']=lab.measurements(args.load_seconds,args.concurrency);lab.mark('load_measurement')
         if args.soak_seconds:lab.report['soak']=lab.measurements(args.soak_seconds,args.concurrency,args.soak_rate);lab.mark('soak_measurement')
         if args.stable:

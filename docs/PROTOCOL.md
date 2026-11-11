@@ -2,7 +2,7 @@
 
 Pliqra Connection Protocol 1.0 is a stable, versioned application-level contract layered over HTTP and existing inference interfaces. It does not depend on Kubernetes, a particular serving runtime, or a particular provider. No ecosystem-wide standardization is claimed.
 
-The [normative 1.0 specification](protocol/1.0/SPEC.md) and [canonical JSON schemas](protocol/1.0/schema.json) define the frozen core contract and maintenance policy. SDK **1.0.1** selects 1.0 automatically; gateway **2.2.2** supports both 1.0 and the existing compatibility envelope.
+The [normative 1.0 specification](protocol/1.0/SPEC.md) and [canonical JSON schemas](protocol/1.0/schema.json) define the frozen core contract and maintenance policy. SDK **1.0.1** selects 1.0 automatically; gateway **2.3.0** supports both 1.0 and the existing compatibility envelope.
 
 ## Select 1.0; keep existing clients working
 
@@ -99,7 +99,7 @@ Requirements may additionally include `embeddings`, `audio_speech` and `audio_tr
 
 Optional `pliqra.placement/1` advertises model-location policies in the accepted service contract. Discovery includes service `placement` and deployment site/region labels; bindings return the accepted placement policy. Region/site constraints and endpoint-location changes affect the fingerprint. `X-Pliqra-Site` identifies the ingress site and `X-Pliqra-Model-Site` identifies the producing model location. Runtime site traffic mode and observed reachability do not change the contract; they affect current eligibility. The same identity may invoke a binding in another site when its contract allows the resulting model placement. See [multi-DC semantics](MULTI_DC.md).
 
-## Existing Chat Completions clients (2.3 development source)
+## Existing Chat Completions clients (Gateway 2.3.0)
 
 After creating a binding with the same principal, send its identifier in **X-Pliqra-Binding** to `/v1/chat/completions` or `/g/{slug}/v1/chat/completions`. JSON and streaming use the same authorization, accepted requirements, expiry, service/gateway fingerprints and accounting as the explicit binding invocation. Successful protected responses echo the binding identifier. The header is consumed by Pliqra and is never forwarded to the model.
 

@@ -1,6 +1,6 @@
 # Pliqra — technical architecture review
 
-> Current release: Gateway 2.2.2 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
+> Current release: Gateway 2.3.0 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
 
 ## End-to-end review — 11 November 2026
 

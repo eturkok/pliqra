@@ -129,7 +129,7 @@ def check(image, output):
         fixture.mark('new_sdk_completes_and_streams_against_previous_published_image')
         profile = api(client, '/api/v1/gateways', {'name': 'Preserved policy', 'slug': 'upgrade-check',
                       'config': {'services': [service['id']], 'limits': [
-                          {'metric': 'requests', 'scope': 'gateway', 'window_seconds': 86400, 'limit': 3}]}}, 201).json()
+                          {'metric': 'requests', 'scope': 'gateway', 'window_seconds': 86400, 'limit': 4}]}}, 201).json()
         key = api(client, '/api/v1/keys', {'name': 'Preserved key', 'project_id': project['id'],
                   'gateway_id': profile['id'], 'allowed_ports': [service['id']], 'rpm': 1000}, 201).json()['token']
         headers = {'Authorization': 'Bearer ' + key}
@@ -155,9 +155,12 @@ def check(image, output):
         assert restored_connection['has_secret']
         assert api(client, '/api/v1/events/' + event_id).json()['status'] == 'success'
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 200
-        stable=client.post(invocation, headers={**headers,'Pliqra-Protocol':'pliqra/1.0'}, json=body)
-        assert stable.status_code==200 and stable.headers['Pliqra-Protocol']=='pliqra/1.0'
+        protocol = client.post(invocation, headers={**headers, 'Pliqra-Protocol': 'pliqra/1.0'}, json=body)
+        assert protocol.status_code == 200 and protocol.headers['Pliqra-Protocol'] == 'pliqra/1.0'
         fixture.mark('pre_upgrade_binding_invokes_through_stable_protocol_without_rebinding')
+        stable=client.post('/v1/chat/completions', headers={**headers,'X-Pliqra-Binding':binding.json()['id']}, json=body)
+        assert stable.status_code==200 and stable.headers['X-Pliqra-Binding']==binding.json()['id']
+        fixture.mark('pre_upgrade_binding_protects_existing_client_without_rebinding')
         assert client.post('/v1/chat/completions', headers=headers, json=body).status_code == 429
         fixture.mark('upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage')
         api(client, '/api/v1/projects', {'name': 'After backup'}, 201)

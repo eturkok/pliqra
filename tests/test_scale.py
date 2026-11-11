@@ -237,3 +237,25 @@ def test_postgres_lost_connection_fences_only_affected_replica(replicas):
     assert a.get('/healthz').status_code==503
     assert b.get('/healthz').status_code==200
     assert b.get('/api/v1/session').json()['user']['role']=='admin'
+
+
+def test_postgres_publication_impact_and_existing_client_binding_across_replicas(replicas):
+    a, b, first, second = replicas
+    created = connect(a)['services'][0]
+    service = next(item for item in a.get('/api/v1/ports').json() if item['id'] == created['id'])
+    profile = gateway(a, [service['id']])
+    _, headers = bound_key(a, profile)
+    binding = a.post('/protocol/v1/bindings', headers=headers, json={'service': service['name']}).json()
+    protected = headers | {'X-Pliqra-Binding': binding['id']}
+    assert invoke(b, service['name'], protected).status_code == 200
+    proposed = {'name': service['name'], 'deployments': service['deployments'], 'requirements': ['tools']}
+    report = b.post('/api/v1/ports/' + service['id'] + '/preview', json=proposed)
+    assert report.status_code == 200, report.text
+    assert report.json()['impact']['summary']['blocked'] == 1
+    expected = {'If-Match': '"' + report.json()['current_fingerprint'] + '"'}
+    proposed['requirements'] = ['chat']
+    assert a.patch('/api/v1/ports/' + service['id'], headers=expected, json=proposed).status_code == 200
+    assert b.patch('/api/v1/ports/' + service['id'], headers=expected, json=proposed).status_code == 412
+    assert invoke(b, service['name'], protected).status_code == 409
+    renewed = a.post('/protocol/v1/bindings', headers=headers, json={'service': service['name']}).json()
+    assert invoke(b, service['name'], headers | {'X-Pliqra-Binding': renewed['id']}).status_code == 200

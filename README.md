@@ -31,7 +31,7 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
 
-## New in the 2.3 development source
+## New in 2.3
 
 **Review application impact before publication.** Preview a service or gateway policy change to see each active binding's application, team, project, required capabilities and next action. Distinguish contracts that can renew from blocked requirements or unavailable deployments. The console checks the preview fingerprint again when publishing.
 
@@ -39,7 +39,7 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 Both flows were exercised against **SmolLM2 running in llama.cpp**, including the official Python and JavaScript OpenAI clients. [Examples, API and real-model evidence →](docs/CONTRACT_CHANGES.md)
 
-These additions are available from `main` as **2.3.0-alpha.1**. The downloadable stable image below remains **2.2.2**.
+Both features ship in the prebuilt **2.3.0** image. [Contract setup and impact reports →](docs/CONTRACT_CHANGES.md)
 
 ## What Pliqra brings
 
@@ -61,14 +61,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.2/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.3.0/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.2.2 is the stable community release**, reducing gateway database overhead while preserving quotas, accounting and connection contracts. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.2)
+**2.3.0 is the stable community release**, adding application impact reports and existing-client contract protection while retaining the 2.2.2 database optimizations. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.3.0)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -123,7 +123,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.2.2](https://github.com/eturkok/pliqra/releases/tag/v2.2.2).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.3.0](https://github.com/eturkok/pliqra/releases/tag/v2.3.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 

@@ -1,6 +1,6 @@
 # Application impact and existing-client protection
 
-Available in the 2.3 development source (`2.3.0-alpha.1`). Published stable Docker 2.2.2 predates these additions.
+Available in stable Gateway **2.3.0**, through the prebuilt Docker image and source installation.
 
 ## Review before publication
 
@@ -67,7 +67,7 @@ The header supports **Chat Completions only**, including streaming. Empty, malfo
 
 ## Real endpoint evidence
 
-The [recorded run](evidence/contracts-2.3.json) uses the official Python and JavaScript OpenAI clients against local Pliqra and an actual **SmolLM2-135M-Instruct Q4_K_M** model served by **llama.cpp b12248** on macOS ARM64 CPU. This uses real model weights and generated text.
+The [pre-release recorded run](evidence/contracts-2.3.json) uses the official Python and JavaScript OpenAI clients against local Pliqra and an actual **SmolLM2-135M-Instruct Q4_K_M** model served by **llama.cpp b12248** on macOS ARM64 CPU. This uses real model weights and generated text.
 
 Nine scenarios passed, including JavaScript JSON/streaming and 409 rejection: JSON, incremental streaming, a named gateway, a missing-streaming publication report without inference, 409 before model execution, explicit renewal and restored inference, and a policy report showing access loss. The incompatible candidate is deliberately configured with chat-only declared capabilities. This tests the contract/configuration decision; it does not claim that this model lacks streaming or establish its general tool quality.
 
