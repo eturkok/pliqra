@@ -86,4 +86,4 @@ SDK **1.0.0** was the first stable protocol-1.0 package. Both registries served 
 
 The [earlier patch verification](https://github.com/eturkok/pliqra/actions/runs/42408692802) and [0.1 registry record](evidence/stable-sdk-registry.json) remain historical. Installer visibility retries are bounded to 300 seconds and apply only to a missing new version; trust, authentication and integrity failures stop immediately.
 
-The Go module retains its existing import path for source compatibility: `github.com/etrkk5/pliqra/sdk/go`. Protocol 1.0 sources are tagged `sdk/go/v1.0.0`; the repository itself is now hosted under eturkok.
+The Go module retains its existing import path for source compatibility: `github.com/etrkk5/pliqra/sdk/go`. The current patch is tagged `sdk/go/v1.0.1`; install it with `go get github.com/etrkk5/pliqra/sdk/go@v1.0.1`. Protocol 1.0 remains unchanged; the repository itself is now hosted under eturkok.

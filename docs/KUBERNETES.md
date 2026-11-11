@@ -13,7 +13,7 @@ Pliqra's optional Helm chart packages the same platform-independent application 
 Use Kubernetes 1.34+ and Helm. The tested Helm version is 4.3.1. A default StorageClass must exist unless you set `persistence.storageClass` or `persistence.existingClaim`.
 
 ```sh
-helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.0/pliqra-0.3.0.tgz --namespace pliqra --create-namespace --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
@@ -23,15 +23,15 @@ The default Service is cluster-internal and ingress is disabled. Initialize the 
 
 ClusterIP alone does not isolate bootstrap from other cluster tenants. In a shared cluster, restrict access with namespace/network controls **before** first setup, use an authorized port-forward for initialization, and verify untrusted pods cannot reach setup. When using the chart's NetworkPolicy, begin with explicit rules or a deny-all ingress policy and add only intended clients after initialization. Verify your CNI's port-forward behavior; do not temporarily expose public ingress to work around it.
 
-Chart **0.3.0** pins the published **2.2.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
+Chart **0.3.1** pins the published **2.2.1** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
 
 ## Verify the downloadable package
 
 ```sh
-curl -fL -o pliqra-0.3.0.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.3.0/pliqra-0.3.0.tgz
-curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.3.0/SHA256SUMS
+curl -fL -o pliqra-0.3.1.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz
+curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/SHA256SUMS
 sha256sum --check SHA256SUMS
-helm show values ./pliqra-0.3.0.tgz
+helm show values ./pliqra-0.3.1.tgz
 ```
 
 On macOS, use `shasum -a 256 -c SHA256SUMS` instead. The public GitHub release archive needs no registry login; it can also be mirrored into your own Helm/OCI repository. A checksum detects changed bytes; it is not a separate signature or third-party attestation.
@@ -71,7 +71,7 @@ host=db.example.com port=5432 dbname=pliqra user=pliqra password=YOUR_PASSWORD s
 The configured role needs schema creation/migration permissions. Supply actual credentials through your secret manager or private files with `kubectl create secret generic ... --from-file`, not committed YAML. Then use the [PostgreSQL values example](../charts/pliqra/examples/postgresql.yaml):
 
 ```sh
-helm upgrade --install pliqra ./pliqra-0.3.0.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
+helm upgrade --install pliqra ./pliqra-0.3.1.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
 ```
 
 Use this profile on a **fresh installation**. Changing `storage.mode` or an existing SQLite data claim in place is rejected. For SQLite-to-PostgreSQL migration, stop the source and follow [offline migration](PLATFORM.md#backup-and-migration), preserving its encryption key, then install a separate release against the restored database. The chart does not migrate data between backends.
@@ -91,8 +91,8 @@ After a reviewed database credential or CA update, change a non-secret `config.r
 Initialize the administrator privately, create a monitoring token in **Operations**, and deliver it through your secret manager as `pliqra-monitoring/token` in the application namespace. With an existing Prometheus Operator installation, add [monitoring values](../charts/pliqra/examples/monitoring.yaml):
 
 ```sh
-curl -fL -o monitoring.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.3.0/charts/pliqra/examples/monitoring.yaml
-helm upgrade pliqra ./pliqra-0.3.0.tgz -n pliqra -f your-values.yaml -f monitoring.yaml --wait
+curl -fL -o monitoring.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.3.1/charts/pliqra/examples/monitoring.yaml
+helm upgrade pliqra ./pliqra-0.3.1.tgz -n pliqra -f your-values.yaml -f monitoring.yaml --wait
 ```
 
 Review the downloaded example and adapt its labels/Secret reference before upgrading. No source checkout is required.
@@ -128,7 +128,7 @@ A same-image Helm rollback can restore chart configuration. An image downgrade i
 
 ## Validation and release pipeline
 
-The **Helm chart** workflow lints and renders the chart, rejects unsafe values, tests alert failure/recovery/deduplication with checksum-pinned **promtool 3.16.0**, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, a real 2.1.0-to-2.2.0 SQLite image upgrade and same-schema rollback, PostgreSQL configuration upgrades/rollback, three replicas, retained SQLite PVC and reinstall. It also creates encrypted backups, rejects incorrect passwords, restores into isolated SQLite directories/PostgreSQL schemas, verifies credentials/bindings and session revocation, and checks the source remains usable. Monitoring-token authorization, configuration-revision pod replacement and topology-spread resources are exercised too.
+The **Helm chart** workflow lints and renders the chart, rejects unsafe values, tests alert failure/recovery/deduplication with checksum-pinned **promtool 3.16.0**, packages it once, and installs that exact archive in disposable kind clusters on **Kubernetes 1.34.11 and 1.37.0**. It exercises both storage profiles: administrator setup, encrypted provider access, bound inference, shared PostgreSQL sessions/quotas with verified database TLS, a real 2.2.0-to-2.2.1 SQLite image upgrade and same-schema rollback, PostgreSQL configuration upgrades/rollback, three replicas, retained SQLite PVC and reinstall. It also creates encrypted backups, rejects incorrect passwords, restores into isolated SQLite directories/PostgreSQL schemas, verifies credentials/bindings and session revocation, and checks the source remains usable. Monitoring-token authorization, configuration-revision pod replacement and topology-spread resources are exercised too.
 
 Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernetes API. ServiceMonitor and PrometheusRule resources use the pinned **Prometheus Operator 0.95.1 CRD schemas**. The fixture does not run the Operator/controller, an ingress controller, metrics-server or a policy-enforcing CNI. Alarm expressions are tested with promtool; actual collector discovery, Alertmanager delivery and node/zone loss belong in your deployment acceptance.
 
@@ -136,4 +136,4 @@ The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-versio
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
 
-[Chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.
+Chart **0.3.1** selects Gateway **2.2.1** and runs the same packaged-chart cluster gates. Its published archive includes both cluster reports. The earlier [chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.

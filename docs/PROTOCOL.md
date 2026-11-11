@@ -2,7 +2,7 @@
 
 Pliqra Connection Protocol 1.0 is a stable, versioned application-level contract layered over HTTP and existing inference interfaces. It does not depend on Kubernetes, a particular serving runtime, or a particular provider. No ecosystem-wide standardization is claimed.
 
-The [normative 1.0 specification](protocol/1.0/SPEC.md) and [canonical JSON schemas](protocol/1.0/schema.json) define the frozen core contract and maintenance policy. SDK **1.0.0** selects 1.0 automatically; gateway **2.2.0** supports both 1.0 and the existing compatibility envelope.
+The [normative 1.0 specification](protocol/1.0/SPEC.md) and [canonical JSON schemas](protocol/1.0/schema.json) define the frozen core contract and maintenance policy. SDK **1.0.1** selects 1.0 automatically; gateway **2.2.1** supports both 1.0 and the existing compatibility envelope.
 
 ## Select 1.0; keep existing clients working
 
