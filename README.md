@@ -51,14 +51,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.2.1/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.2.0 is the stable community release.** No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.0)
+**2.2.1 is the stable community release.** No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.1)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -112,7 +112,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.2.0](https://github.com/eturkok/pliqra/releases/tag/v2.2.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.2.1](https://github.com/eturkok/pliqra/releases/tag/v2.2.1).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 

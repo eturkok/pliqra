@@ -121,7 +121,7 @@ def check(image, output):
         service = connection['services'][0]
         compatibility_key=api(client,'/api/v1/keys',{'name':'New SDK on previous image','allowed_ports':[service['id']],'rpm':1000},201).json()['token']
         consumer=Pliqra(str(client.base_url),compatibility_key)
-        assert consumer.metadata()['protocol']=='pliqra/0.1-draft'
+        assert consumer.metadata()['protocol'] == previous['protocol']
         connected=consumer.connect(service['name'],['chat','streaming'])
         messages=[{'role':'user','content':'New SDK on previous published image'}]
         assert connected.complete(messages,max_tokens=64)['choices']

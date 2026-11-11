@@ -6,7 +6,7 @@ on:
         description: 'Published gateway or SDK tag containing the original tested SDK assets'
         required: true
         type: string
-        default: v2.2.0
+        default: v2.2.1
       registry:
         description: 'Destination registry'
         required: true

@@ -1,4 +1,4 @@
-> Current release: **[2.2.0](releases/v2.2.0.md)** with stable Connection Protocol 1.0 and SDK 1.0.0. [Current delivery evidence](evidence/protocol-1.0.json). The 2.1/RC records below remain historical.
+> Current release: **[2.2.1](releases/v2.2.1.md)** with stable Connection Protocol 1.0 and SDK 1.0.1. Exact-image reports are attached to the [release](https://github.com/eturkok/pliqra/releases/tag/v2.2.1). The [protocol 1.0 delivery record](evidence/protocol-1.0.json) describes the earlier 2.2.0 release; the 2.1/RC records below remain historical.
 
 # Pliqra 2.1 — validation and scope
 
