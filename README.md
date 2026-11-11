@@ -107,6 +107,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 | [Install application SDKs](docs/SDK.md) | Python / JavaScript packages and checked release artifacts |
 | [Synthetic customer acceptance](docs/ACCEPTANCE.md) | Installed applications, load/soak measurements, interruption and recovery evidence |
 | [Clients & conformance](docs/CONFORMANCE.md) | Python, JavaScript/TypeScript, Go and an executable protocol profile |
+| [Performance comparison](docs/PERFORMANCE.md) | Direct model/TLS controls, matched before/after measurements and remaining limits |
 | [Technical architecture review](docs/TECHNICAL_REVIEW.md) | Findings, corrected designs, regression evidence and deployment boundaries |
 | [Validation & scope](docs/RELEASE.md) | Automated/runtime evidence, exercised flows and operating limits |
 

@@ -1,0 +1,1247 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-11T12:08:59.595063+00:00",
+  "status": "Unreleased source changes; original Gateway 2.2.1 distribution is unchanged.",
+  "workflow": "https://github.com/eturkok/pliqra/actions/runs/43016183872",
+  "core_ci": "https://github.com/eturkok/pliqra/actions/runs/43016174983",
+  "source_revision": "60ba2fdf16ccc07866b7a4aab09a807930857ee8",
+  "baseline": {
+    "host": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+    "machine": "x86_64",
+    "physical_hosts": 1,
+    "database": "PostgreSQL 18, one primary with verified fixture TLS",
+    "site_regions_are_synthetic": true,
+    "image": "ghcr.io/eturkok/pliqra@sha256:ac0a44b919c5d469f90d2c1e331601c58780ad70e698e545dfd367914b7efa7f",
+    "image_id": "sha256:ac0a44b919c5d469f90d2c1e331601c58780ad70e698e545dfd367914b7efa7f",
+    "source_revision": "60ba2fdf16ccc07866b7a4aab09a807930857ee8",
+    "source_dirty": false,
+    "image_revision": "4b2accc4d6d8ac6f191d986dcafd6911b034cbb9",
+    "docker_cpus": 4,
+    "docker_memory_bytes": 16758398976
+  },
+  "candidate": {
+    "host": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+    "machine": "x86_64",
+    "physical_hosts": 1,
+    "database": "PostgreSQL 18, one primary with verified fixture TLS",
+    "site_regions_are_synthetic": true,
+    "image": "pliqra:performance",
+    "image_id": "sha256:f877b0241f8b1b99a645da6be82b1e5e32a898224f7cc25d01e52f99963f107d",
+    "source_revision": "60ba2fdf16ccc07866b7a4aab09a807930857ee8",
+    "source_dirty": false,
+    "image_revision": "60ba2fdf16ccc07866b7a4aab09a807930857ee8",
+    "docker_cpus": 4,
+    "docker_memory_bytes": 16758398976
+  },
+  "method": {
+    "model_delay_ms": 5,
+    "warmup_requests_per_path": 16,
+    "rounds": 3,
+    "model_tcp_nodelay": true,
+    "order": "alternates each round",
+    "connection_policy": "reused httpx clients; default HTTP/1.1",
+    "sql_diagnostics": "explicit execute calls only; implicit BEGIN/COMMIT excluded; JSON headers only",
+    "paths": {
+      "direct_http": "client -> same HTTP model",
+      "direct_tls": "client -> verified-TLS Caddy relay -> same HTTP model",
+      "pliqra": "client -> verified-TLS gateway -> same HTTP model; shared PostgreSQL with verified TLS"
+    },
+    "boundary": "Synthetic same-host comparison; quantile differences are not per-request added latency or production capacity.",
+    "governance": "scoped key, request/token gateway quotas, project budget and concurrency; caching disabled"
+  },
+  "comparisons": [
+    {
+      "concurrency": 1,
+      "mode": "json",
+      "path": "direct_http",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 5.895,
+            "p95_ms": 6.267,
+            "p99_ms": 6.616
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 5.905,
+              "p95_ms": 6.368,
+              "p99_ms": 6.69
+            },
+            {
+              "p50_ms": 5.895,
+              "p95_ms": 6.267,
+              "p99_ms": 6.616
+            },
+            {
+              "p50_ms": 5.843,
+              "p95_ms": 5.954,
+              "p99_ms": 6.367
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 5.992,
+            "p95_ms": 6.152,
+            "p99_ms": 6.459
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 5.994,
+              "p95_ms": 6.275,
+              "p99_ms": 6.603
+            },
+            {
+              "p50_ms": 5.992,
+              "p95_ms": 6.111,
+              "p99_ms": 6.459
+            },
+            {
+              "p50_ms": 5.913,
+              "p95_ms": 6.152,
+              "p99_ms": 6.401
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 1,
+      "mode": "json",
+      "path": "direct_tls",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 6.368,
+            "p95_ms": 6.548,
+            "p99_ms": 6.888
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 6.395,
+              "p95_ms": 6.548,
+              "p99_ms": 7.777
+            },
+            {
+              "p50_ms": 6.368,
+              "p95_ms": 6.558,
+              "p99_ms": 6.827
+            },
+            {
+              "p50_ms": 6.354,
+              "p95_ms": 6.46,
+              "p99_ms": 6.888
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 6.338,
+            "p95_ms": 6.43,
+            "p99_ms": 6.997
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 6.338,
+              "p95_ms": 6.43,
+              "p99_ms": 6.997
+            },
+            {
+              "p50_ms": 6.383,
+              "p95_ms": 6.706,
+              "p99_ms": 7.021
+            },
+            {
+              "p50_ms": 6.325,
+              "p95_ms": 6.422,
+              "p99_ms": 6.678
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 1,
+      "mode": "json",
+      "path": "pliqra",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 24.813,
+            "p95_ms": 36.656,
+            "p99_ms": 44.593
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 24.913,
+              "p95_ms": 45.409,
+              "p99_ms": 48.441
+            },
+            {
+              "p50_ms": 24.813,
+              "p95_ms": 36.656,
+              "p99_ms": 44.593
+            },
+            {
+              "p50_ms": 24.637,
+              "p95_ms": 29.869,
+              "p99_ms": 32.534
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 24.479,
+            "p95_ms": 29.689,
+            "p99_ms": 30.817
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 25.21,
+              "p95_ms": 33.237,
+              "p99_ms": 34.945
+            },
+            {
+              "p50_ms": 23.319,
+              "p95_ms": 27.013,
+              "p99_ms": 27.344
+            },
+            {
+              "p50_ms": 24.479,
+              "p95_ms": 29.689,
+              "p99_ms": 30.817
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 1,
+      "mode": "stream",
+      "path": "direct_http",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 92.228,
+            "p95_ms": 92.445,
+            "p99_ms": 92.523
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 92.232,
+              "p95_ms": 92.455,
+              "p99_ms": 92.511
+            },
+            {
+              "p50_ms": 92.146,
+              "p95_ms": 92.406,
+              "p99_ms": 92.523
+            },
+            {
+              "p50_ms": 92.228,
+              "p95_ms": 92.445,
+              "p99_ms": 92.781
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 1.709,
+            "p95_ms": 1.891,
+            "p99_ms": 2.0
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 1.719,
+              "p95_ms": 1.891,
+              "p99_ms": 1.975
+            },
+            {
+              "p50_ms": 1.699,
+              "p95_ms": 1.799,
+              "p99_ms": 2.0
+            },
+            {
+              "p50_ms": 1.709,
+              "p95_ms": 2.071,
+              "p99_ms": 2.423
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 92.171,
+            "p95_ms": 92.405,
+            "p99_ms": 92.591
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 92.161,
+              "p95_ms": 92.405,
+              "p99_ms": 92.476
+            },
+            {
+              "p50_ms": 92.171,
+              "p95_ms": 92.395,
+              "p99_ms": 92.591
+            },
+            {
+              "p50_ms": 92.174,
+              "p95_ms": 92.41,
+              "p99_ms": 92.602
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 1.706,
+            "p95_ms": 1.865,
+            "p99_ms": 2.151
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 1.706,
+              "p95_ms": 1.865,
+              "p99_ms": 2.04
+            },
+            {
+              "p50_ms": 1.705,
+              "p95_ms": 1.88,
+              "p99_ms": 2.151
+            },
+            {
+              "p50_ms": 1.711,
+              "p95_ms": 1.816,
+              "p99_ms": 2.336
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 1,
+      "mode": "stream",
+      "path": "direct_tls",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 95.654,
+            "p95_ms": 96.27,
+            "p99_ms": 96.712
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 95.647,
+              "p95_ms": 96.409,
+              "p99_ms": 96.635
+            },
+            {
+              "p50_ms": 95.656,
+              "p95_ms": 96.27,
+              "p99_ms": 96.712
+            },
+            {
+              "p50_ms": 95.654,
+              "p95_ms": 96.018,
+              "p99_ms": 97.075
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 5.266,
+            "p95_ms": 5.922,
+            "p99_ms": 6.562
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 5.266,
+              "p95_ms": 5.922,
+              "p99_ms": 6.117
+            },
+            {
+              "p50_ms": 5.27,
+              "p95_ms": 6.087,
+              "p99_ms": 6.562
+            },
+            {
+              "p50_ms": 5.264,
+              "p95_ms": 5.641,
+              "p99_ms": 6.73
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 95.708,
+            "p95_ms": 96.516,
+            "p99_ms": 96.993
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 95.757,
+              "p95_ms": 96.302,
+              "p99_ms": 96.721
+            },
+            {
+              "p50_ms": 95.671,
+              "p95_ms": 96.601,
+              "p99_ms": 97.725
+            },
+            {
+              "p50_ms": 95.708,
+              "p95_ms": 96.516,
+              "p99_ms": 96.993
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 5.318,
+            "p95_ms": 5.862,
+            "p99_ms": 6.561
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 5.377,
+              "p95_ms": 5.862,
+              "p99_ms": 6.46
+            },
+            {
+              "p50_ms": 5.266,
+              "p95_ms": 6.209,
+              "p99_ms": 7.639
+            },
+            {
+              "p50_ms": 5.318,
+              "p95_ms": 5.719,
+              "p99_ms": 6.561
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 1,
+      "mode": "stream",
+      "path": "pliqra",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 115.62,
+            "p95_ms": 129.39,
+            "p99_ms": 132.043
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 113.893,
+              "p95_ms": 129.39,
+              "p99_ms": 132.043
+            },
+            {
+              "p50_ms": 116.015,
+              "p95_ms": 131.3,
+              "p99_ms": 131.882
+            },
+            {
+              "p50_ms": 115.62,
+              "p95_ms": 122.119,
+              "p99_ms": 132.646
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 28.364,
+            "p95_ms": 43.589,
+            "p99_ms": 45.862
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 25.93,
+              "p95_ms": 43.613,
+              "p99_ms": 48.493
+            },
+            {
+              "p50_ms": 28.556,
+              "p95_ms": 43.589,
+              "p99_ms": 44.365
+            },
+            {
+              "p50_ms": 28.364,
+              "p95_ms": 34.548,
+              "p99_ms": 45.862
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 112.581,
+            "p95_ms": 115.964,
+            "p99_ms": 118.031
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 112.581,
+              "p95_ms": 115.536,
+              "p99_ms": 118.031
+            },
+            {
+              "p50_ms": 112.294,
+              "p95_ms": 115.964,
+              "p99_ms": 116.9
+            },
+            {
+              "p50_ms": 113.034,
+              "p95_ms": 119.912,
+              "p99_ms": 124.97
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 24.331,
+            "p95_ms": 27.524,
+            "p99_ms": 29.855
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 24.331,
+              "p95_ms": 27.102,
+              "p99_ms": 29.855
+            },
+            {
+              "p50_ms": 23.957,
+              "p95_ms": 27.524,
+              "p99_ms": 28.418
+            },
+            {
+              "p50_ms": 24.404,
+              "p95_ms": 31.254,
+              "p99_ms": 36.06
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "json",
+      "path": "direct_http",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 7.467,
+            "p95_ms": 10.417,
+            "p99_ms": 10.7
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 7.33,
+              "p95_ms": 9.575,
+              "p99_ms": 9.902
+            },
+            {
+              "p50_ms": 8.083,
+              "p95_ms": 12.509,
+              "p99_ms": 14.655
+            },
+            {
+              "p50_ms": 7.467,
+              "p95_ms": 10.417,
+              "p99_ms": 10.7
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 7.445,
+            "p95_ms": 9.924,
+            "p99_ms": 10.766
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 7.445,
+              "p95_ms": 9.924,
+              "p99_ms": 10.766
+            },
+            {
+              "p50_ms": 7.604,
+              "p95_ms": 10.212,
+              "p99_ms": 11.641
+            },
+            {
+              "p50_ms": 7.052,
+              "p95_ms": 9.661,
+              "p99_ms": 10.17
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "json",
+      "path": "direct_tls",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 8.096,
+            "p95_ms": 10.931,
+            "p99_ms": 11.533
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 8.15,
+              "p95_ms": 10.964,
+              "p99_ms": 13.337
+            },
+            {
+              "p50_ms": 8.096,
+              "p95_ms": 10.931,
+              "p99_ms": 11.533
+            },
+            {
+              "p50_ms": 7.939,
+              "p95_ms": 9.388,
+              "p99_ms": 10.286
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 8.272,
+            "p95_ms": 11.524,
+            "p99_ms": 12.723
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 8.272,
+              "p95_ms": 11.863,
+              "p99_ms": 12.723
+            },
+            {
+              "p50_ms": 8.296,
+              "p95_ms": 11.524,
+              "p99_ms": 13.135
+            },
+            {
+              "p50_ms": 8.244,
+              "p95_ms": 10.414,
+              "p99_ms": 10.922
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "json",
+      "path": "pliqra",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 176.501,
+            "p95_ms": 203.627,
+            "p99_ms": 216.923
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 180.061,
+              "p95_ms": 203.627,
+              "p99_ms": 216.923
+            },
+            {
+              "p50_ms": 176.501,
+              "p95_ms": 263.781,
+              "p99_ms": 289.566
+            },
+            {
+              "p50_ms": 165.472,
+              "p95_ms": 194.571,
+              "p99_ms": 204.964
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 142.376,
+            "p95_ms": 173.661,
+            "p99_ms": 182.116
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 138.664,
+              "p95_ms": 173.661,
+              "p99_ms": 193.123
+            },
+            {
+              "p50_ms": 142.376,
+              "p95_ms": 164.057,
+              "p99_ms": 182.116
+            },
+            {
+              "p50_ms": 153.365,
+              "p95_ms": 175.197,
+              "p99_ms": 178.508
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "stream",
+      "path": "direct_http",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 92.62,
+            "p95_ms": 95.627,
+            "p99_ms": 96.455
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 92.62,
+              "p95_ms": 95.627,
+              "p99_ms": 96.455
+            },
+            {
+              "p50_ms": 92.575,
+              "p95_ms": 95.126,
+              "p99_ms": 95.878
+            },
+            {
+              "p50_ms": 93.13,
+              "p95_ms": 95.823,
+              "p99_ms": 96.472
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 2.195,
+            "p95_ms": 4.92,
+            "p99_ms": 5.899
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 1.977,
+              "p95_ms": 5.311,
+              "p99_ms": 5.899
+            },
+            {
+              "p50_ms": 2.195,
+              "p95_ms": 4.06,
+              "p99_ms": 4.678
+            },
+            {
+              "p50_ms": 2.373,
+              "p95_ms": 4.92,
+              "p99_ms": 6.416
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 92.915,
+            "p95_ms": 95.598,
+            "p99_ms": 97.359
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 92.915,
+              "p95_ms": 96.363,
+              "p99_ms": 97.848
+            },
+            {
+              "p50_ms": 92.639,
+              "p95_ms": 95.598,
+              "p99_ms": 96.456
+            },
+            {
+              "p50_ms": 93.534,
+              "p95_ms": 95.489,
+              "p99_ms": 97.359
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 2.277,
+            "p95_ms": 5.455,
+            "p99_ms": 7.031
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 2.277,
+              "p95_ms": 5.455,
+              "p99_ms": 6.51
+            },
+            {
+              "p50_ms": 2.164,
+              "p95_ms": 5.273,
+              "p99_ms": 7.231
+            },
+            {
+              "p50_ms": 2.878,
+              "p95_ms": 5.824,
+              "p99_ms": 7.031
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "stream",
+      "path": "direct_tls",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 98.256,
+            "p95_ms": 107.555,
+            "p99_ms": 108.93
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 99.962,
+              "p95_ms": 106.594,
+              "p99_ms": 108.56
+            },
+            {
+              "p50_ms": 98.256,
+              "p95_ms": 107.555,
+              "p99_ms": 108.93
+            },
+            {
+              "p50_ms": 97.957,
+              "p95_ms": 107.952,
+              "p99_ms": 110.961
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 8.009,
+            "p95_ms": 15.501,
+            "p99_ms": 16.91
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 9.535,
+              "p95_ms": 15.975,
+              "p99_ms": 16.91
+            },
+            {
+              "p50_ms": 8.009,
+              "p95_ms": 15.157,
+              "p99_ms": 16.29
+            },
+            {
+              "p50_ms": 7.115,
+              "p95_ms": 15.501,
+              "p99_ms": 19.424
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 100.964,
+            "p95_ms": 107.73,
+            "p99_ms": 110.189
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 100.964,
+              "p95_ms": 107.73,
+              "p99_ms": 110.189
+            },
+            {
+              "p50_ms": 101.944,
+              "p95_ms": 109.479,
+              "p99_ms": 111.224
+            },
+            {
+              "p50_ms": 98.342,
+              "p95_ms": 105.85,
+              "p99_ms": 107.224
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 10.325,
+            "p95_ms": 15.794,
+            "p99_ms": 16.655
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 10.398,
+              "p95_ms": 15.794,
+              "p99_ms": 16.655
+            },
+            {
+              "p50_ms": 10.325,
+              "p95_ms": 16.562,
+              "p99_ms": 17.887
+            },
+            {
+              "p50_ms": 7.878,
+              "p95_ms": 14.112,
+              "p99_ms": 15.078
+            }
+          ]
+        }
+      }
+    },
+    {
+      "concurrency": 8,
+      "mode": "stream",
+      "path": "pliqra",
+      "requests_per_round": 64,
+      "rounds": 3,
+      "before": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 260.284,
+            "p95_ms": 305.854,
+            "p99_ms": 315.509
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 275.51,
+              "p95_ms": 305.854,
+              "p99_ms": 315.509
+            },
+            {
+              "p50_ms": 260.284,
+              "p95_ms": 324.079,
+              "p99_ms": 336.18
+            },
+            {
+              "p50_ms": 247.947,
+              "p95_ms": 286.401,
+              "p99_ms": 295.027
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 187.199,
+            "p95_ms": 215.324,
+            "p99_ms": 218.318
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 197.264,
+              "p95_ms": 248.416,
+              "p99_ms": 255.108
+            },
+            {
+              "p50_ms": 187.199,
+              "p95_ms": 215.324,
+              "p99_ms": 218.318
+            },
+            {
+              "p50_ms": 166.165,
+              "p95_ms": 191.414,
+              "p99_ms": 195.996
+            }
+          ]
+        }
+      },
+      "after": {
+        "completion": {
+          "median_of_round_quantiles": {
+            "p50_ms": 232.441,
+            "p95_ms": 301.537,
+            "p99_ms": 337.804
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 228.632,
+              "p95_ms": 301.537,
+              "p99_ms": 337.804
+            },
+            {
+              "p50_ms": 239.972,
+              "p95_ms": 325.106,
+              "p99_ms": 345.612
+            },
+            {
+              "p50_ms": 232.441,
+              "p95_ms": 251.745,
+              "p99_ms": 262.691
+            }
+          ]
+        },
+        "first_content": {
+          "median_of_round_quantiles": {
+            "p50_ms": 148.184,
+            "p95_ms": 214.127,
+            "p99_ms": 222.906
+          },
+          "per_round_quantiles": [
+            {
+              "p50_ms": 143.371,
+              "p95_ms": 214.127,
+              "p99_ms": 222.906
+            },
+            {
+              "p50_ms": 154.858,
+              "p95_ms": 227.689,
+              "p99_ms": 231.685
+            },
+            {
+              "p50_ms": 148.184,
+              "p95_ms": 171.275,
+              "p99_ms": 173.659
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sql_diagnostics": {
+    "sql-before": [
+      {
+        "concurrency": 1,
+        "sql_mean_per_request": {
+          "calls": 97.0,
+          "ms": 10.218,
+          "clock": 18.0,
+          "lock": 9.0,
+          "settings": 13.0,
+          "other": 57.0
+        }
+      },
+      {
+        "concurrency": 8,
+        "sql_mean_per_request": {
+          "calls": 97.0,
+          "ms": 10.638,
+          "clock": 18.0,
+          "lock": 9.0,
+          "settings": 13.0,
+          "other": 57.0
+        }
+      }
+    ],
+    "sql-after": [
+      {
+        "concurrency": 1,
+        "sql_mean_per_request": {
+          "calls": 83.0,
+          "ms": 9.145,
+          "clock": 15.0,
+          "lock": 8.0,
+          "settings": 9.0,
+          "other": 51.0
+        }
+      },
+      {
+        "concurrency": 8,
+        "sql_mean_per_request": {
+          "calls": 83.0,
+          "ms": 9.307,
+          "clock": 15.0,
+          "lock": 8.0,
+          "settings": 9.0,
+          "other": 51.0
+        }
+      }
+    ]
+  },
+  "transport_control": {
+    "transport-default": [
+      {
+        "round": 1,
+        "path": "direct_http",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 1.504,
+        "requests_per_second": 21.278,
+        "completion": {
+          "p50_ms": 46.976,
+          "p95_ms": 47.095,
+          "p99_ms": 47.12
+        }
+      },
+      {
+        "round": 1,
+        "path": "direct_tls",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 1.527,
+        "requests_per_second": 20.952,
+        "completion": {
+          "p50_ms": 47.907,
+          "p95_ms": 48.036,
+          "p99_ms": 48.126
+        }
+      },
+      {
+        "round": 1,
+        "path": "pliqra",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 2.118,
+        "requests_per_second": 15.106,
+        "completion": {
+          "p50_ms": 64.545,
+          "p95_ms": 75.983,
+          "p99_ms": 79.122
+        }
+      }
+    ],
+    "transport-nodelay": [
+      {
+        "round": 1,
+        "path": "direct_http",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 0.195,
+        "requests_per_second": 164.296,
+        "completion": {
+          "p50_ms": 5.992,
+          "p95_ms": 6.457,
+          "p99_ms": 6.464
+        }
+      },
+      {
+        "round": 1,
+        "path": "direct_tls",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 0.208,
+        "requests_per_second": 153.645,
+        "completion": {
+          "p50_ms": 6.428,
+          "p95_ms": 6.73,
+          "p99_ms": 6.952
+        }
+      },
+      {
+        "round": 1,
+        "path": "pliqra",
+        "mode": "json",
+        "requests": 32,
+        "concurrency": 1,
+        "duration_seconds": 0.92,
+        "requests_per_second": 34.799,
+        "completion": {
+          "p50_ms": 24.113,
+          "p95_ms": 43.016,
+          "p99_ms": 44.46
+        }
+      }
+    ]
+  },
+  "checks": {
+    "python_3_13": {
+      "passed": 287,
+      "postgres_cases_skipped_here": 37
+    },
+    "python_3_14": {
+      "passed": 287,
+      "postgres_cases_skipped_here": 37
+    },
+    "dedicated_postgresql_passed": 47,
+    "all_three_sdk_runtimes_required": true,
+    "same_synthetic_workload_and_governance": true,
+    "all_benchmark_runs_successful": true,
+    "cross_site_global_quota_checks": [
+      [
+        {
+          "check": "onboarding_endpoint_discovery_pricing_and_scoped_key",
+          "passed": true
+        },
+        {
+          "check": "two_site_local_routing",
+          "passed": true
+        },
+        {
+          "check": "global_quota_exact_under_concurrency",
+          "passed": true,
+          "accepted": 8,
+          "rejected": 8
+        }
+      ],
+      [
+        {
+          "check": "onboarding_endpoint_discovery_pricing_and_scoped_key",
+          "passed": true
+        },
+        {
+          "check": "two_site_local_routing",
+          "passed": true
+        },
+        {
+          "check": "global_quota_exact_under_concurrency",
+          "passed": true,
+          "accepted": 8,
+          "rejected": 8
+        }
+      ]
+    ]
+  },
+  "raw_report_sha256": {
+    "after.json": "4273feb3932e8f29208ed9ab94244a2c67a681f7b4ab64cd800f63a48f972043",
+    "before.json": "af73aa101ece7efa3aa77573b7806d416e87ec1b542553bd8ab504c80aa40a43",
+    "sql-after.json": "a5784f6323c8ccd5d48c6dd48fa72b54fbb68964622aa806a53aaec42b561ce3",
+    "sql-before.json": "93d5435646379a39d851efc7abba46961eecbd799ae60136fd7679df27dd8db6",
+    "transport-default.json": "5b2746cf5eefcc233ba3c8e5356f3bf6631a3c5c577764097e35905e0a1e0e6a",
+    "transport-nodelay.json": "6224c7ac97e45c96a581f01d97a2403d8f33ef1b43fea59c46fb98682ef559aa"
+  },
+  "boundary": "Same-host synthetic closed-loop comparison with active request/token quotas and project budgets. Profiled timings excluded. Quantile differences are not per-request overhead; no production capacity, geographic latency or availability guarantee. No material concurrent-stream first-content improvement was established."
+}

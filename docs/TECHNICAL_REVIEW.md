@@ -49,6 +49,10 @@ Local Python 3.14 validation: **285 passed**, **35 PostgreSQL-dependent cases ex
 
 Shared PostgreSQL writes intentionally serialize quota/policy decisions. Its synchronous connection and WAN latency remain capacity constraints; profile a representative workload before introducing pools or changing that authority. Local-password sign-in throttling is currently an in-process IP limit, not a global multi-replica abuse-control service; deployments exposing local login need ingress/IdP abuse controls and should test their proxy/client-address setup. Organization archives remain separate recovery units. Actual IdP/NeMo integrations, geographic failure and recovery objectives require the installation's acceptance tests.
 
+## Performance follow-through — 11 November 2026
+
+The [controlled performance comparison](PERFORMANCE.md) separates a model-fixture TCP artifact from application work. Current main reduces redundant authoritative reads and write transactions without adding cross-request policy caching, bypassing controls or changing the shared quota authority. Matched CI measurements show lower JSON p95 and single-stream first-content latency; concurrent-stream first-content latency did not materially improve. These optimizations are **unreleased source changes** and do not alter the existing 2.2.1 image or its historical evidence. The [per-round record](evidence/performance-2026-11-11.json) identifies source, baseline, controls, timing boundaries and validation.
+
 ## Historical 1.2 review — 6 November 2026
 
 - **Date:** 6 November 2026
