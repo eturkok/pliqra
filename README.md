@@ -58,7 +58,7 @@ docker compose -f compose.release.yaml up -d
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.2.1 is the stable community release.** No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.1)
+**2.2.1 is the stable community release**, with authentication, quota-accounting and streaming corrections. No source checkout, local build or registry login is required. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.2.1)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 

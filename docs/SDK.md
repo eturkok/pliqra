@@ -43,7 +43,7 @@ for await (const packet of connection.stream([{role: 'user', content: 'Hello'}])
 
 ES modules, Node 22+ and modern browser Fetch; TypeScript declarations are included. Browser applications must protect their scoped key and satisfy the gateway's origin policy. A browser bundle does not make a privileged key safe to disclose. Node private-CA trust uses `NODE_EXTRA_CA_CERTS`.
 
-Stable packages: [PyPI `pliqra-client`](https://pypi.org/project/pliqra-client/1.0.1/) · [npm `@eturkok/pliqra`](https://www.npmjs.com/package/@eturkok/pliqra/v/1.0.1). The publication workflow verifies anonymous downloads against the release artifact hashes; the [stable delivery record](STABLE_2_1.md) links the actual results.
+Stable packages: [PyPI `pliqra-client`](https://pypi.org/project/pliqra-client/1.0.1/) · [npm `@eturkok/pliqra`](https://www.npmjs.com/package/@eturkok/pliqra/v/1.0.1). The publication workflow verifies anonymous downloads against the release artifact hashes; the [1.0.1 publication workflow](https://github.com/eturkok/pliqra/actions/runs/42982325847) records successful uploads, byte verification and clean canonical-index installs.
 
 ## Without package registries
 
@@ -81,6 +81,8 @@ gh workflow run sdk-publish.yml --ref main -f release_tag=v2.2.1 -f registry=bot
 The corrected retry workflow completed successfully for both npm and PyPI, verifying existing release bytes and public downloads while skipping redundant uploads. [Successful run](https://github.com/eturkok/pliqra/actions/runs/42402749716) · [Machine-readable retry evidence](evidence/sdk-publication-retry.json).
 
 Registry publication also verifies the canonical PyPI installer index links and their SHA-256 values before a clean `pip install`. Version JSON, file downloads and the installer index can propagate at different times; a bounded wait handles that delay without weakening integrity checks. Both registry jobs then install the exact version from the official registry into an independent consumer environment. Four index regression cases reject stale/incomplete listings, changed hashes and unexpected download hosts.
+
+SDK **1.0.1** is the current stable patch. Python/npm public files match the original `v2.2.1` artifacts; clean registry installs passed in the [patch publication workflow](https://github.com/eturkok/pliqra/actions/runs/42982325847). The [patch delivery record](evidence/patch-2.2.1.json) also identifies Go 1.0.1 and exact-image acceptance.
 
 SDK **1.0.0** was the first stable protocol-1.0 package. Both registries served the original `v2.2.0` artifacts byte for byte; canonical clean installs passed in the [1.0 publication workflow](https://github.com/eturkok/pliqra/actions/runs/42909387104). The [1.0 delivery record](evidence/protocol-1.0.json) also identifies the public Go module and cross-version HTTP evidence.
 

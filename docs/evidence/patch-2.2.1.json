@@ -1,0 +1,199 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-11T07:55:32.379804+00:00",
+  "pull_request": "https://github.com/eturkok/pliqra/pull/1",
+  "merge_revision": "bf8900e232b1572848ac24f13f6853fa793a80e3",
+  "release": {
+    "tag": "v2.2.1",
+    "version": "2.2.1",
+    "revision": "4b2accc4d6d8ac6f191d986dcafd6911b034cbb9",
+    "image": "ghcr.io/eturkok/pliqra",
+    "digest": "sha256:ac0a44b919c5d469f90d2c1e331601c58780ad70e698e545dfd367914b7efa7f",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "prerelease": false,
+    "schema": 6,
+    "inference_contract": 5,
+    "protocol": "pliqra/1.0",
+    "legacy_protocol": "pliqra/0.1-draft",
+    "specification": "1.0.0"
+  },
+  "release_url": "https://github.com/eturkok/pliqra/releases/tag/v2.2.1",
+  "release_workflow": "https://github.com/eturkok/pliqra/actions/runs/42977738742",
+  "registry_workflow": "https://github.com/eturkok/pliqra/actions/runs/42982325847",
+  "all_distribution_checksums_verified": true,
+  "anonymous_image_access": true,
+  "ci": {
+    "python_3_13": {
+      "passed": 285,
+      "postgres_cases_skipped_here": 35
+    },
+    "python_3_14": {
+      "passed": 285,
+      "postgres_cases_skipped_here": 35
+    },
+    "real_postgresql_tests_passed": 45,
+    "all_three_sdk_languages_required": true,
+    "native_amd64_arm64_smoke": "passed",
+    "dependency_audit": "passed"
+  },
+  "sdk": {
+    "manifest": {
+      "sdk_version": "1.0.1",
+      "python_version": "1.0.1",
+      "revision": "4b2accc4d6d8ac6f191d986dcafd6911b034cbb9",
+      "artifacts": [
+        {
+          "file": "eturkok-pliqra-1.0.1.tgz",
+          "sha256": "e0ccb3dbf0fd3e444836a15dd0f58475e594fa3343132435d708ea9d3aa31f6e"
+        },
+        {
+          "file": "pliqra_client-1.0.1-py3-none-any.whl",
+          "sha256": "1858f7df363a1fef66ede17edd74bf9d9552eb7ac7386910b50a4a791a0c1284"
+        },
+        {
+          "file": "pliqra_client-1.0.1.tar.gz",
+          "sha256": "a5899347a35fd74e99c30889cf17a993fc6dff1414aee2399060e42fa58f9778"
+        }
+      ]
+    },
+    "public_registry_bytes_match_release": true,
+    "canonical_clean_installs": "passed",
+    "pypi": "https://pypi.org/project/pliqra-client/1.0.1/",
+    "npm": "https://www.npmjs.com/package/@eturkok/pliqra/v/1.0.1",
+    "go": {
+      "module": "github.com/etrkk5/pliqra/sdk/go",
+      "version": "v1.0.1",
+      "tag": "sdk/go/v1.0.1",
+      "public_proxy_and_checksum_database": "passed",
+      "revision": "4b2accc4d6d8ac6f191d986dcafd6911b034cbb9",
+      "sum": "h1:oWQBdFyqOUyQRvLI5YSGvhja5s5Mdh4zFCb2Y8Tnna4=",
+      "go_mod_sum": "h1:jZiWLhKLNKjIRUm/6hXLy1Cug0niCvtwpWVAcRk4S3A="
+    }
+  },
+  "exact_image_acceptance": {
+    "artifact": "https://github.com/eturkok/pliqra/releases/download/v2.2.1/acceptance-evidence.tar.gz",
+    "sha256": "c61276eebc7e8900759faaa9735a05668e3853ca06dad68663db59fb1160ac9a",
+    "load": {
+      "duration_seconds": 30.07,
+      "concurrency": 8,
+      "target_requests_per_second": null,
+      "requests": 1296,
+      "statuses": {
+        "200": 1296
+      },
+      "observed_requests_per_second": 43.1,
+      "p50_ms": 135.81,
+      "p95_ms": 353.86,
+      "p99_ms": 459.48,
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true
+    },
+    "soak": {
+      "duration_seconds": 1800.12,
+      "concurrency": 8,
+      "target_requests_per_second": 5,
+      "requests": 9000,
+      "statuses": {
+        "200": 9000
+      },
+      "observed_requests_per_second": 5.0,
+      "p50_ms": 166.43,
+      "p95_ms": 504.14,
+      "p99_ms": 718.07,
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true,
+      "rss_start_kib": 110564,
+      "rss_final_kib": 113964,
+      "rss_growth_kib": 3400
+    },
+    "upgrade_recovery": {
+      "synthetic": true,
+      "passed": true,
+      "previous": {
+        "version": "2.2.0",
+        "image": "ghcr.io/eturkok/pliqra@sha256:d2e5d0ef4b0f8a215e5289c8b2c81f85039c2e09a5b653423a8cf03ce17b7a67",
+        "protocol": "pliqra/1.0"
+      },
+      "target_image": "ghcr.io/eturkok/pliqra@sha256:ac0a44b919c5d469f90d2c1e331601c58780ad70e698e545dfd367914b7efa7f",
+      "checks": [
+        {
+          "check": "new_sdk_completes_and_streams_against_previous_published_image",
+          "passed": true
+        },
+        {
+          "check": "previous_digest_verified_initialized_and_encrypted_backup_created",
+          "passed": true
+        },
+        {
+          "check": "pre_upgrade_binding_invokes_through_stable_protocol_without_rebinding",
+          "passed": true
+        },
+        {
+          "check": "upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage",
+          "passed": true
+        },
+        {
+          "check": "new_image_restores_previous_backup_rejects_wrong_password_and_revokes_sessions",
+          "passed": true
+        },
+        {
+          "check": "rollback_to_previous_image_restores_pre_upgrade_backup_in_a_separate_volume",
+          "passed": true
+        }
+      ],
+      "target_version": "2.2.1",
+      "owned_containers_volumes_network_removed": true
+    },
+    "installed_clients": "passed",
+    "official_native_client_scenarios": 6,
+    "human_customer_feedback_collected": false
+  },
+  "helm": {
+    "version": "0.3.1",
+    "application": "2.2.1",
+    "release": "https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1",
+    "workflow": "https://github.com/eturkok/pliqra/actions/runs/42982348653",
+    "source_revision": "ccc3e33b4b10c5ec7b209da151702f1071b5e38d",
+    "package": "pliqra-0.3.1.tgz",
+    "sha256": "c210e912fdacf5801797f22f104d9ca17dbfe30ae7c8b7fbbd277f73e1759fa5",
+    "render_safety_checks": 35,
+    "cluster_reports": [
+      {
+        "report": "kubernetes-v1.34.11.json",
+        "sha256": "4d10debe19fa8ba60dc49caf22dd03552e23395ea4ee72b7af78bc2fdc476e8e",
+        "passed": true,
+        "profiles": [
+          {
+            "name": "sqlite",
+            "checks": 8
+          },
+          {
+            "name": "postgresql",
+            "checks": 8
+          }
+        ],
+        "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite 2.2.0-to-2.2.1 upgrade/rollback on schema 6, stable protocol negotiation with retained legacy bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+      },
+      {
+        "report": "kubernetes-v1.37.0.json",
+        "sha256": "1390fa3572928be5a2c16d73be803d6084d7ebe97de122da0fc3d62b7711f911",
+        "passed": true,
+        "profiles": [
+          {
+            "name": "sqlite",
+            "checks": 8
+          },
+          {
+            "name": "postgresql",
+            "checks": 8
+          }
+        ],
+        "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite 2.2.0-to-2.2.1 upgrade/rollback on schema 6, stable protocol negotiation with retained legacy bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+      }
+    ]
+  },
+  "boundary": "Synthetic CI and project-maintained interoperability evidence; no production capacity, geographic-failure, real customer, vendor certification, RTO/RPO or availability commitment."
+}

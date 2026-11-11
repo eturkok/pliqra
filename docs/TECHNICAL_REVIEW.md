@@ -4,7 +4,7 @@
 
 ## End-to-end review — 11 November 2026
 
-**Baseline:** `a2e9db1` (published Gateway 2.2.0 / Protocol 1.0). **Status:** corrections merged through [PR #1](https://github.com/eturkok/pliqra/pull/1) for Gateway **2.2.1** and SDK **1.0.1**. Publication requires the normal exact-artifact release gates; published 2.2.0/1.0.0 artifacts remain immutable.
+**Baseline:** `a2e9db1` (published Gateway 2.2.0 / Protocol 1.0). **Status:** corrections merged through [PR #1](https://github.com/eturkok/pliqra/pull/1) and delivered in [Gateway **2.2.1** / SDK **1.0.1**](releases/v2.2.1.md). The normal exact-image release gates passed; published 2.2.0/1.0.0 artifacts remain immutable.
 
 ### Architectural assessment
 
@@ -37,13 +37,13 @@ The review followed authentication → service access → binding → admission 
 
 ### Validation and release boundary
 
-Local Python 3.14 validation: **285 passed**, **35 PostgreSQL-dependent cases explicitly skipped** without a database URL. All three language runtimes were required for the HTTP compatibility matrix. JavaScript SDK assertions, Go tests/`go vet`, three console encoding tests and Helm lint/35 render checks passed. [CI for the review branch](https://github.com/eturkok/pliqra/actions/workflows/test.yml?query=branch%3Acodex%2Farchitecture-review) additionally runs Python 3.13/3.14, real PostgreSQL, packaged clients, Docker startup and the dependency audit.
+Local Python 3.14 validation: **285 passed**, **35 PostgreSQL-dependent cases explicitly skipped** without a database URL. All three language runtimes were required for the HTTP compatibility matrix. JavaScript SDK assertions, Go tests/`go vet`, three console encoding tests and Helm lint/35 render checks passed. [Exact-release CI](https://github.com/eturkok/pliqra/actions/runs/42977738742) also passed Python 3.13/3.14, all **45 real-PostgreSQL cases**, packaged clients, native AMD64/ARM64 Docker startup and the dependency audit. The 2.2.1 image passed the committed 30-minute synthetic soak (9,000 calls, zero errors), installed/official clients, upgrade and encrypted recovery gates.
 
 - `tests/test_review_boundaries.py` contains focused behavioral reproductions. Existing protocol HTTP compatibility, native first-content/cancellation, identity, recovery and accounting tests run alongside them.
 - JavaScript SDK tests include seven new framing/EOF cases; Go tests and `go vet` cover the same transport boundary. Three console encoding tests run in the clients CI job.
 - The real-PostgreSQL CI job additionally checks expanded reservations across two independent gateway sites. Local runs explicitly skip PostgreSQL cases if its URL is not configured.
-- Helm lint and 35 render/safety checks passed against the unchanged chart. Chart 0.3.0's earlier cluster evidence remains evidence for its published image, not a claim that this unreleased source patch has been installed in Kubernetes.
-- A future container/SDK release must run its normal exact-artifact publication gates. The existing 2.2.0/1.0.0 release evidence is historical and is not relabelled as evidence for these corrections.
+- Helm lint and 35 render/safety checks passed against the unchanged chart. Chart 0.3.0's earlier cluster evidence remains evidence for its published image, not evidence for the 2.2.1 image. Chart 0.3.1 selects the corrected image and passed its own 32 packaged-chart cluster checks; the [patch delivery record](evidence/patch-2.2.1.json) records its exact package and reports.
+- Gateway 2.2.1 ran its normal exact-artifact gates; its own [release reports](https://github.com/eturkok/pliqra/releases/tag/v2.2.1) identify the corrected image and SDK files. Existing 2.2.0/1.0.0 evidence remains historical.
 
 ### Operational considerations
 
