@@ -9,7 +9,7 @@
 | Area | Supported scope and evidence |
 |---|---|
 | Distribution | One non-root Linux container, AMD64 or ARM64; native architecture startup checks. Docker Desktop uses the matching Linux image. |
-| Kubernetes | Official chart 0.3.0; Helm 4.3.1, Kubernetes 1.34.11/1.37.0 and both storage profiles tested in disposable single-node kind clusters. No vendor, storage-driver or multi-zone availability certification. [Installation and test scope](KUBERNETES.md). |
+| Kubernetes | Official chart 0.3.1; Helm 4.3.1, Kubernetes 1.34.11/1.37.0 and both storage profiles tested in disposable single-node kind clusters. No vendor, storage-driver or multi-zone availability certification. [Installation and test scope](KUBERNETES.md). |
 | Default storage | One SQLite/WAL process per persistent volume. Preserve the entire volume and its encryption key. |
 | Shared storage | PostgreSQL 18 is the tested baseline. Replicas share a schema and master key; one writable database authority owns policies and exact admission. |
 | Active/active sites | Local-preference/placement routing, global admission, site drain and fenced-process recovery. The container exercise runs on one host; geographic WAN and database primary promotion remain operator acceptance. |

@@ -79,11 +79,13 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 Use the **official Helm chart** with the prebuilt image. Start with one SQLite pod and retained storage; use external PostgreSQL and existing Secrets for multiple replicas.
 
 ```sh
-helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
+  --set-string image.tag=2.3.0 \
+  --set-string image.digest=sha256:302c9b4f92b4cf176c5a6019b911c60a758beb4092867860d90a5290dc828015
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
-Chart 0.3.1 pins Gateway 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+The command explicitly selects Gateway 2.3.0. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
 
 [Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Operations & recovery drills →](docs/OPERATIONS.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1)
 
