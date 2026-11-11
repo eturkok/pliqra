@@ -50,12 +50,12 @@ window.PliqraJourney = {
    await refreshData();renderView();
    const operation=request.requirements.includes('embeddings')?'embeddings':request.requirements.includes('audio_speech')?'speech':request.requirements.includes('audio_transcription')?'transcription':null;
    const example=operation==='embeddings'?{input:'Hello'}:operation==='speech'?{input:'Hello',voice:'alloy'}:operation==='transcription'?{audio_base64:'BASE64_AUDIO',filename:'recording.wav'}:{messages:[{role:'user',content:'Hello'}],stream:request.requirements.includes('streaming')};
-   const invocationPath=operation?binding.operation_invocations[operation]:binding.invoke;
+   const invocationPath=operation?binding.operation_invocations[operation]:'/v1/chat/completions';
    const command=`curl ${location.origin}${BASE}${invocationPath} \\
   -H "Authorization: Bearer $PLIQRA_API_KEY" \\
-  -H "Content-Type: application/json" \\
+${operation?'':'  -H "X-Pliqra-Binding: '+binding.id+'" \\\n'}  -H "Content-Type: application/json" \\
   -d '${JSON.stringify({model:p.name,...example})}'`;
-   modal('Your application is connected',p.name+' · v'+binding.version+' · contract expires '+date(binding.expires),`${key?`<div class="notice">${icon('key')} Save this key now. It is shown once and expires ${date(keyExpires)}.</div><div class="key-box mono">${esc(key.token)}</div>`:''}<p class="journey-copy">Set PLIQRA_API_KEY to ${key?'the key above':'the same application key'}, then invoke this connection.</p><pre>${esc(command)}</pre><p class="muted">Accepted contract fingerprint</p><div class="key-box mono">${esc(binding.fingerprint)}</div>`,'Copy invocation',async()=>{await copy(command);toast('Invocation copied.');},key?btn('Copy access key','j-copy-key','key','',`data-key="${esc(key.token)}"`):'');
+   modal('Your application is connected',p.name+' · v'+binding.version+' · contract expires '+date(binding.expires),`${key?`<div class="notice">${icon('key')} Save this key now. It is shown once and expires ${date(keyExpires)}.</div><div class="key-box mono">${esc(key.token)}</div>`:''}<p class="journey-copy">Set PLIQRA_API_KEY to ${key?'the key above':'the same application key'}, then invoke this connection.</p><pre>${esc(command)}</pre>${operation?'':`<p>Keep your existing OpenAI client. Add this setting when creating the client.</p><pre>${esc('default_headers={"X-Pliqra-Binding": "'+binding.id+'"}')}</pre><p>JavaScript / TypeScript</p><pre>${esc('defaultHeaders: {"X-Pliqra-Binding": "'+binding.id+'"}')}</pre><p class="muted">Use this service name as model. Renew explicitly when the contract changes or expires.</p>`}<p class="muted">Accepted contract fingerprint</p><div class="key-box mono">${esc(binding.fingerprint)}</div>`,'Copy invocation',async()=>{await copy(command);toast('Invocation copied.');},key?btn('Copy access key','j-copy-key','key','',`data-key="${esc(key.token)}"`):'');
   });
  }
 };

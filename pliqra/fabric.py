@@ -3,7 +3,7 @@ import json
 import sqlite3
 from typing import Annotated, Literal
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request, Query
 from pydantic import Field, StringConstraints
 
 from .db import encode, now, uid
@@ -75,7 +75,7 @@ def mount(app):
 
     app.state.validate_gateway = validate_gateway
 
-    def save_gateway(body, p, record_id=None):
+    def save_gateway(body, p, record_id=None, request=None):
         config = validate_gateway(body)
         previous = engine.profile(record_id) if record_id else None
         record_id, instant = record_id or uid('gw_'), now()
@@ -84,6 +84,11 @@ def mount(app):
         try:
             with store.transaction():
                 if previous:
+                    previous = engine.profile(record_id)
+                    fields['version'] = previous['version'] + 1
+                    if request:
+                        from .contracts import check_publication
+                        check_publication(request, engine.fingerprint(previous))
                     store.update('gateway_profiles', record_id, fields)
                 else:
                     store.insert('gateway_profiles', {'id': record_id, **fields, 'created': instant})
@@ -103,8 +108,19 @@ def mount(app):
         return save_gateway(body, p)
 
     @app.put('/api/v1/gateways/{record_id}', tags=['Gateways'])
-    def update_gateway(record_id: str, body: GatewayInput, p=Depends(admin)):
-        return save_gateway(body, p, record_id)
+    def update_gateway(record_id: str, body: GatewayInput, request: Request, p=Depends(admin)):
+        return save_gateway(body, p, record_id, request)
+
+    @app.post('/api/v1/gateways/{record_id}/impact', tags=['Gateways'])
+    def impact(record_id: str, body: GatewayInput, limit: int = Query(100, ge=1, le=200), offset: int = Query(0, ge=0), p=Depends(admin)):
+        from .contracts import publication_impact
+        with store.transaction():
+            previous = engine.profile(record_id)
+            proposed = {**previous, 'version': previous['version'] + 1, 'config': validate_gateway(body)}
+            return {'current_version': previous['version'], 'proposed_version': proposed['version'],
+                    'current_fingerprint': engine.fingerprint(previous),
+                    'impact': publication_impact(app.state.gateway, previous, proposed, proposed_policy=proposed,
+                                                 limit=limit, offset=offset)}
 
     @app.get('/api/v1/gateways/{record_id}/versions', tags=['Gateways'])
     def versions(record_id: str, p=Depends(admin)):
@@ -228,5 +244,10 @@ def mount(app):
         return {'gateway':engine.contract(engine.resolve(p,explicit=gateway_id or None))}
 
     @app.post('/g/{slug}/v1/chat/completions', tags=['Gateway inference'])
-    async def gateway_chat(slug: str, body: ctx['ChatInput'], p=Depends(ctx['principal'])):
-        return await app.state.gateway.chat(body.model_dump(exclude_none=True), p, gateway_id=slug)
+    async def gateway_chat(slug: str, body: ctx['ChatInput'], request: Request, p=Depends(ctx['principal'])):
+        from .contracts import header_binding, BINDING_HEADER
+        binding = header_binding(store, request)
+        response = await app.state.gateway.chat(body.model_dump(exclude_none=True), p, binding, gateway_id=slug)
+        if binding:
+            response.headers[BINDING_HEADER] = binding['id']
+        return response

@@ -156,3 +156,8 @@ dialog::backdrop{background:#17121766}
 .modal-content audio{width:100%;margin:20px 0}
 @media(max-width:900px){.enterprise-status{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.enterprise-status{grid-template-columns:1fr}.enterprise-tabs{width:100%}}
+
+.impact-contracts{max-height:360px;overflow:auto;min-width:0}
+.impact-contract{padding:12px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
+.impact-contract p{margin:6px 0;line-height:1.6}
+.impact-contract small{overflow-wrap:anywhere}

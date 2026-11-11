@@ -31,6 +31,16 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
 
+## New in the 2.3 development source
+
+**Review application impact before publication.** Preview a service or gateway policy change to see each active binding's application, team, project, required capabilities and next action. Distinguish contracts that can renew from blocked requirements or unavailable deployments. The console checks the preview fingerprint again when publishing.
+
+**Protect an existing Chat Completions client with one setting.** After accepting a binding, add `default_headers={"X-Pliqra-Binding": binding_id}` to your Python OpenAI client, or `defaultHeaders: {"X-Pliqra-Binding": bindingId}` in JavaScript. JSON and streaming calls enforce that accepted contract on standard and named gateway endpoints. Changes return 409 and require explicit renewal.
+
+Both flows were exercised against **SmolLM2 running in llama.cpp**, including the official Python and JavaScript OpenAI clients. [Examples, API and real-model evidence →](docs/CONTRACT_CHANGES.md)
+
+These additions are available from `main` as **2.3.0-alpha.1**. The downloadable stable image below remains **2.2.2**.
+
 ## What Pliqra brings
 
 | Capability | What you get |

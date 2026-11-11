@@ -53,11 +53,21 @@ window.PliqraFabric = {
   html+='<div class="fabric-editor-head"><h3>Request & token quotas</h3>'+btn('Add quota','gw-add-quota','plus')+'</div><p class="muted">Combine rolling windows and scopes. All rules, key limits and project budgets apply together.</p><div id="quota-rows">'+(c.limits||[{metric:'requests',scope:'gateway',window_seconds:60,limit:120},{metric:'tokens',scope:'key',window_seconds:60,limit:100000}]).map(f.quotaRow).join('')+'</div>';
   html+='<div class="fabric-editor-head"><h3>Guardrail chain</h3>'+btn('Add check','gw-add-step','plus')+'</div><p class="muted">Checks run in order at each stage. Output checks buffer the full answer before delivery, including SSE clients.</p><div id="rail-rows">'+(c.guardrails||[]).map(f.stepRow).join('')+'</div>';
   html+='<details class="journey-advanced"><summary>Inference controls</summary><div class="field-inline">'+field('Concurrent requests','max_concurrency','','number',c.max_concurrency??20,'required min="1" max="200"')+field('Maximum output tokens','max_output_tokens','','number',c.max_output_tokens??4096,'required min="1" max="131072"')+'</div>'+field('Maximum input characters','max_input_chars','','number',c.max_input_chars??200000,'required min="1" max="1000000"')+f.check('require_verified','Route only to verified capabilities','on',c.require_verified)+f.check('allow_tools','Allow tool calling','on',c.allow_tools??true)+f.check('allow_vision','Allow image inputs','on',c.allow_vision??true)+f.check('enabled','Gateway enabled','on',c.enabled??true)+'</details><div class="notice">'+icon('info')+'Token admission reserves UTF-8 input bytes plus requested output for every possible attempt. Reported usage settles it. Unknown usage stays reserved. This is an estimate, not a model tokenizer.</div>';
-  modal(id&&!clone?'Edit gateway policy':'Create gateway','A new version requires bound applications to accept the new policy.',html,id&&!clone?'Publish policy':'Create gateway',async form=>{
+  let impactPreview=null;
+  modal(id&&!clone?'Edit gateway policy':'Create gateway','A new version requires bound applications to accept the new policy.',html,id&&!clone?'Preview impact':'Create gateway',async(form,dialog)=>{
    const metrics=form.getAll('quota_metric'),scopes=form.getAll('quota_scope'),windows=form.getAll('quota_window'),limits=form.getAll('quota_limit'),rails=form.getAll('rail_id'),stages=form.getAll('rail_stage'),modes=form.getAll('rail_mode'),errors=form.getAll('rail_error');
    if(rails.some(v=>!v))throw new Error('Select a local check for every guardrail step.');
    const config={services:form.getAll('services'),project_id:form.get('project_id')||null,team_ids:form.getAll('team_ids'),limits:metrics.map((metric,i)=>({metric,scope:scopes[i],window_seconds:Number(windows[i]),limit:Number(limits[i])})),guardrails:rails.map((guardrail_id,i)=>({guardrail_id,stages:stages[i]==='both'?['input','output']:[stages[i]],mode:modes[i],on_error:errors[i]})),max_concurrency:Number(form.get('max_concurrency')),max_input_chars:Number(form.get('max_input_chars')),max_output_tokens:Number(form.get('max_output_tokens')),require_verified:form.has('require_verified'),allow_tools:form.has('allow_tools'),allow_vision:form.has('allow_vision'),enabled:form.has('enabled')};
-   await api(id&&!clone?'/api/v1/gateways/'+id:'/api/v1/gateways',{method:id&&!clone?'PUT':'POST',body:JSON.stringify({name:form.get('name'),slug:form.get('slug'),config})});state.reportChoices=null;await changed('Gateway policy published.');
+   const document=JSON.stringify({name:form.get('name'),slug:form.get('slug'),config});
+   if(id&&!clone&&impactPreview?.body!==document){
+    const result=await api('/api/v1/gateways/'+id+'/impact',{method:'POST',body:document});
+    impactPreview={body:document,fingerprint:result.current_fingerprint};
+    let target=dialog.querySelector('[data-impact]');if(!target){target=window.document.createElement('div');target.dataset.impact='';dialog.querySelector('.modal-content').append(target);}
+    mountPublicationImpact(target,result,offset=>api(`/api/v1/gateways/${id}/impact?offset=${offset}`,{method:'POST',body:document}));setTimeout(()=>{dialog.querySelector('#modal-submit').textContent='Publish policy';},0);return;
+   }
+   try {await api(id&&!clone?'/api/v1/gateways/'+id:'/api/v1/gateways',{method:id&&!clone?'PUT':'POST',headers:impactPreview?{'If-Match':'"'+impactPreview.fingerprint+'"'}:{},body:document});}
+   catch(error){impactPreview=null;throw error;}
+   state.reportChoices=null;await changed('Gateway policy published.');
   });
  },
  railModal(id){

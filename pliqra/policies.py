@@ -103,9 +103,9 @@ class PolicyEngine:
                  'contract_revision':INFERENCE_CONTRACT_REVISION}
         return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
-    def resolve(self, principal, port=None, explicit=None):
+    def resolve(self, principal, port=None, explicit=None, profile_override=None):
         assigned = (principal.get('key') or {}).get('gateway_id')
-        profile = self.profile(explicit or assigned) if explicit or assigned else None
+        profile = profile_override or (self.profile(explicit or assigned) if explicit or assigned else None)
         if not profile:
             return None
         if assigned and assigned != profile['id']:

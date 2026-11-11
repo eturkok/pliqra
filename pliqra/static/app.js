@@ -229,8 +229,10 @@ function serviceModal(id){
  let previewSignature=null;
  modal(p?"Edit AI service":"Create an AI service","A stable name for one model or a group of compatible deployments.",`${field("Service name","name","e.g. document-assistant","text",p?.name||"",'required maxlength="100"')}${field("Description","description","What will your applications use this service for?","text",p?.description||"")}<div class="field"><label>Deployments · priority follows the order shown</label><div class="check-list">${models.map(m=>`<div class="check-row"><input id="dep-${esc(m.id)}" type="checkbox" name="deployments" value="${esc(m.id)}" ${p?.deployments.includes(m.id)?"checked":""}><label for="dep-${esc(m.id)}" style="flex:1;margin:0;font-size:11px">${esc(m.model)}<small style="display:block;margin:3px 0 0">${esc(m.connection)}</small></label>${ibtn("Move deployment up","deployment-up","arrow",'style="transform:rotate(-90deg)"')}${ibtn("Move deployment down","deployment-down","arrow",'style="transform:rotate(90deg)"')}</div>`).join("")}</div></div>${selectField("Routing","strategy",[["priority","Priority with fallback before streaming"],["round_robin","Round-robin across eligible deployments"]],p?.strategy||"priority")}<div class="field"><label>Required capabilities</label><div class="model-list">${["chat","streaming","tools","structured_output","vision","embeddings","audio_speech","audio_transcription"].map(c=>`<label class="check-row" style="border:0;padding:5px"><input name="requirements" type="checkbox" value="${c}" ${p?.requirements.includes(c)?"checked":""}>${c.replaceAll("_"," ")}</label>`).join("")}</div></div><label class="check-row"><input type="checkbox" name="enabled" ${!p||p.enabled?"checked":""}>Service enabled</label><div id="preview-result"></div>`,p?"Preview changes":"Create service",async(form,dialog)=>{
   const body={name:form.get("name"),description:form.get("description"),deployments:form.getAll("deployments"),requirements:form.getAll("requirements"),strategy:form.get("strategy"),enabled:form.has("enabled"),...(window.PliqraUI?PliqraUI.serviceFields(p):{})};if(!body.deployments.length)throw new Error("Select at least one deployment.");const signature=JSON.stringify(body);
-  if(p&&previewSignature!==signature){const result=await api(`/api/v1/ports/${p.id}/preview`,{method:"POST",body:signature});previewSignature=signature;dialog.querySelector("#preview-result").innerHTML=`<div class="discovered"><strong>Version ${result.current_version} → ${result.proposed_version} · ${result.ready?"Ready":"No eligible deployments"}</strong><p style="font-size:11px;line-height:1.8;margin-top:8px;color:var(--text-secondary)">${result.added_deployments.length} added · ${result.removed_deployments.length} removed · ${result.active_bindings_invalidated} active bindings will require re-binding.</p>${result.decisions.map(d=>`<p style="font-size:10px;margin-top:7px;color:${d.eligible?"#a76942":"#ae7262"}">${esc(d.model||d.deployment_id)}: ${esc(d.reason)}</p>`).join("")}</div>`;setTimeout(()=>{dialog.querySelector("#modal-submit").textContent="Publish service version";},0);return;}
-  await api(p?`/api/v1/ports/${p.id}`:"/api/v1/ports",{method:p?"PATCH":"POST",body:signature});await changed(p?"New service version published.":"AI service created.");
+  if(p&&previewSignature?.body!==signature){const result=await api(`/api/v1/ports/${p.id}/preview`,{method:"POST",body:signature});previewSignature={body:signature,fingerprint:result.current_fingerprint};mountPublicationImpact(dialog.querySelector("#preview-result"),result,offset=>api(`/api/v1/ports/${p.id}/preview?offset=${offset}`,{method:"POST",body:signature}));setTimeout(()=>{dialog.querySelector("#modal-submit").textContent="Publish service version";},0);return;}
+  try {await api(p?`/api/v1/ports/${p.id}`:"/api/v1/ports",{method:p?"PATCH":"POST",headers:p?{'If-Match':'"'+previewSignature.fingerprint+'"'}:{},body:signature});}
+  catch(error){previewSignature=null;throw error;}
+  await changed(p?"New service version published.":"AI service created.");
  });
 }
 
@@ -349,3 +351,42 @@ async function init(){try{state.session=await api("/api/v1/session");if(!state.s
 init();
 function dataSignature(){return JSON.stringify([state.conns,state.ports,state.usage?.summary,state.events.items.map(r=>[r.id,r.status,r.finished]),state.evaluations,state.operations,state.journey,state.gateways,state.guardrails,state.guardDecisions]);}
 refreshTimer=setInterval(async()=>{if(!state.session?.user||state.chatBusy||document.getElementById("modal").open||document.querySelector(".drawer")||["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName))return;try{const before=dataSignature();await refreshData();if(before!==dataSignature()&&["overview","requests","usage","connections","operations","evaluations","gateways","guardrails"].includes(state.view))renderView();}catch(_){}},15000);
+
+function publicationImpact(result) {
+ const report = result.impact;
+ const labels = {renew:'Renew after publication', blocked:'Requires a configuration change', unavailable:'Currently unavailable'};
+ const rows = report.items.map(item => `
+  <article class="impact-contract">
+   <strong>${esc(item.application)}</strong>
+   <p>${esc(item.service)} · ${esc(item.team?.name || 'No team')} · ${esc(item.project?.name || 'No project')}</p>
+   <p>${esc(item.requirements.join(', ') || 'Service requirements')} · ${labels[item.status]}${item.already_stale ? ' · Already needs renewal' : ''}</p>
+   ${item.reasons.map(reason => `<p>${esc(reason)}</p>`).join('')}
+   <p>${esc(item.action)}</p>
+   <small class="mono">${esc(item.binding_id)}</small>
+  </article>`).join('');
+ return `<section class="discovered" aria-label="Publication impact report">
+  <strong>Version ${result.current_version} → ${result.proposed_version}</strong>
+  <p>${report.summary.renew} ready to renew · ${report.summary.blocked} blocked · ${report.summary.unavailable} unavailable</p>
+  <p class="muted">${esc(report.note)}</p>
+  <div class="impact-contracts" tabindex="0" aria-label="Affected application contracts">${rows || '<p>No active application contracts are affected.</p>'}</div>
+  ${report.total > report.limit ? `<p>Contracts ${report.offset+1}–${Math.min(report.offset+report.limit,report.total)} of ${report.total}</p><div class="actions">${report.offset?`<button type="button" class="btn" data-impact-offset="${Math.max(0,report.offset-report.limit)}">Previous</button>`:''}${report.offset+report.limit<report.total?`<button type="button" class="btn" data-impact-offset="${report.offset+report.limit}">Next</button>`:''}</div>` : ''}
+  <p class="muted">${report.excluded_inactive_or_unauthorized} inactive or unauthorized bindings excluded. No model call was made.</p>
+ </section>`;
+}
+
+function mountPublicationImpact(target, result, loadPage) {
+ target.innerHTML = publicationImpact(result);
+ target.onclick = async event => {
+  const button = event.target.closest('[data-impact-offset]');
+  if (!button) return;
+  button.disabled = true;
+  try {
+   const page = await loadPage(Number(button.dataset.impactOffset));
+   mountPublicationImpact(target, page, loadPage);
+   target.querySelector('.impact-contracts').focus();
+  } catch (error) {
+   toast(error.message);
+   button.disabled = false;
+  }
+ };
+}

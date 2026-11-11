@@ -17,7 +17,7 @@ from urllib.parse import urlsplit
 
 import httpx
 from authlib.integrations.starlette_client import OAuth
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -530,21 +530,27 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         return {"id": record_id}
 
     @app.post("/api/v1/ports/{record_id}/preview", tags=["AI services"])
-    def preview_port(record_id: str, body: PortInput, p=Depends(admin)):
-        before = app.state.gateway.port(record_id)
-        fields = port_fields(body)
-        after = decoded_port({**before, **fields, "version": before["version"] + 1})
-        candidates, decisions = app.state.gateway.candidates(after)
-        return {"current_version": before["version"], "proposed_version": after["version"], "ready": bool(candidates), "decisions": decisions, "removed_deployments": sorted(set(before["deployments"]) - set(after["deployments"])), "added_deployments": sorted(set(after["deployments"]) - set(before["deployments"])), "active_bindings_invalidated": store.one("SELECT COUNT(*) AS n FROM bindings WHERE port_id=? AND expires>?", (record_id, now()))["n"], "note": "Existing bindings will require a new handshake after publishing."}
+    def preview_port(record_id: str, body: PortInput, limit: int = Query(100, ge=1, le=200), offset: int = Query(0, ge=0), p=Depends(admin)):
+        from .contracts import publication_impact
+        with store.transaction():
+            before = app.state.gateway.port(record_id)
+            fields = port_fields(body)
+            after = decoded_port({**before, **fields, "version": before["version"] + 1})
+            candidates, decisions = app.state.gateway.candidates(after)
+            impact = publication_impact(app.state.gateway, before, after, limit=limit, offset=offset)
+            return {"current_version": before["version"], "proposed_version": after["version"], "ready": bool(candidates), "decisions": decisions, "removed_deployments": sorted(set(before["deployments"]) - set(after["deployments"])), "added_deployments": sorted(set(after["deployments"]) - set(before["deployments"])), "active_bindings_invalidated": impact['total'], "impact": impact, "current_fingerprint": app.state.gateway.fingerprint(before), "note": "Existing bindings will require a new handshake after publishing."}
 
     @app.patch("/api/v1/ports/{record_id}", tags=["AI services"])
-    def update_port(record_id: str, body: PortInput, p=Depends(admin)):
+    def update_port(record_id: str, body: PortInput, request: Request, p=Depends(admin)):
         existing = app.state.gateway.port(record_id)
         fields = port_fields(body)
         if store.one("SELECT id FROM ports WHERE name=? AND id!=?", (body.name, record_id)):
             raise HTTPException(409, "An AI service with this name already exists")
         from .operations import snapshot_port
+        from .contracts import check_publication
         with store.transaction():
+            existing = app.state.gateway.port(record_id)
+            check_publication(request, app.state.gateway.fingerprint(existing))
             snapshot_port(store, existing, p['id'])
             store.update("ports", record_id, {**fields, "version": existing["version"] + 1})
             snapshot_port(store, app.state.gateway.port(record_id), p['id'])
@@ -784,8 +790,13 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         return {"object": "list", "data": data}
 
     @app.post("/v1/chat/completions", tags=["Inference"])
-    async def chat(body: ChatInput, p=Depends(principal)):
-        return await app.state.gateway.chat(body.model_dump(exclude_none=True), p)
+    async def chat(body: ChatInput, request: Request, p=Depends(principal)):
+        from .contracts import header_binding, BINDING_HEADER
+        binding = header_binding(store, request)
+        response = await app.state.gateway.chat(body.model_dump(exclude_none=True), p, binding)
+        if binding:
+            response.headers[BINDING_HEADER] = binding['id']
+        return response
 
     app.state.context = {"store":store,"vault":vault,"principal":principal,"user":user,"admin":admin,"session_response":session_response,"public_url":public_url,"secure_cookies":secure_cookies,"oauth":oauth,"PortInput":PortInput,"port_fields":port_fields,"create_key":create_key,"KeyInput":KeyInput,"bind":bind,"BindingInput":BindingInput,"ChatInput":ChatInput,'base_path':base_path,'cookie_name':cookie_name,'organization':organization}
     from .operations import mount as mount_operations
@@ -853,4 +864,6 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         return HTMLResponse(html.replace('<meta charset="UTF-8">','<meta charset="UTF-8"><meta name="pliqra-base" content="'+base_path+'">'))
 
     app.add_middleware(ProtocolVersionMiddleware)
+    from .contracts import BindingHeaderMiddleware
+    app.add_middleware(BindingHeaderMiddleware)
     return app

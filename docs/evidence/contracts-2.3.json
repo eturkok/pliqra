@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "synthetic_provider": false,
+  "model": "smollm2-135m-instruct",
+  "runtime": "llama.cpp b12248 (CPU)",
+  "client": {
+    "openai_python": "3.46.0",
+    "openai_javascript": "7.55.0"
+  },
+  "checks": [
+    "official_python_json",
+    "official_python_stream",
+    "named_gateway_header",
+    "official_javascript_json_and_stream",
+    "publication_report_blocks_missing_streaming_without_inference",
+    "official_javascript_changed_contract_409",
+    "changed_contract_409_before_model",
+    "explicit_renewal_restores_existing_client",
+    "policy_impact_reports_access_loss"
+  ],
+  "scope": "Real local text inference. Capability rejection uses explicitly restricted candidate metadata; model tool quality and geographic HA were not assessed.",
+  "date": "2026-11-11",
+  "gateway_version": "2.3.0-alpha.1",
+  "model_source": "https://huggingface.co/QuantFactory/SmolLM2-135M-Instruct-GGUF",
+  "model_file": "SmolLM2-135M-Instruct.Q4_K_M.gguf",
+  "model_sha256": "8030f04528538d47bda434f6f0bdf3952c40a58123e4d5e755332f23731a8684",
+  "runtime_archive_sha256": "7f643b4d35803ccc69270302f3368d9e8a40f56f74ef5a266e6f686d9dc7d3c6",
+  "hardware": "macOS ARM64, CPU, two inference threads",
+  "automated_regression": {
+    "passed": 283,
+    "skipped": 49,
+    "reason": "Optional PostgreSQL/toolchain cases run in their dedicated CI jobs."
+  }
+}

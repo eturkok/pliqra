@@ -98,3 +98,11 @@ Requirements may additionally include `embeddings`, `audio_speech` and `audio_tr
 ## Site-aware placement extension
 
 Optional `pliqra.placement/1` advertises model-location policies in the accepted service contract. Discovery includes service `placement` and deployment site/region labels; bindings return the accepted placement policy. Region/site constraints and endpoint-location changes affect the fingerprint. `X-Pliqra-Site` identifies the ingress site and `X-Pliqra-Model-Site` identifies the producing model location. Runtime site traffic mode and observed reachability do not change the contract; they affect current eligibility. The same identity may invoke a binding in another site when its contract allows the resulting model placement. See [multi-DC semantics](MULTI_DC.md).
+
+## Existing Chat Completions clients (2.3 development source)
+
+After creating a binding with the same principal, send its identifier in **X-Pliqra-Binding** to `/v1/chat/completions` or `/g/{slug}/v1/chat/completions`. JSON and streaming use the same authorization, accepted requirements, expiry, service/gateway fingerprints and accounting as the explicit binding invocation. Successful protected responses echo the binding identifier. The header is consumed by Pliqra and is never forwarded to the model.
+
+A missing stored binding, wrong owner or expired binding returns 403. A changed contract returns 409 before model execution. Reconnect explicitly after review. A malformed, empty or duplicated header returns 422. Supplying it on another interface returns 422, preventing unsupported calls from appearing protected. Calls without the header follow their existing behavior.
+
+This is an optional gateway HTTP integration, outside the frozen protocol core. It adds no binding fields, schema migration or SDK requirement. [Client configuration and publication impact](CONTRACT_CHANGES.md).
