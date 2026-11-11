@@ -94,7 +94,7 @@ def test_service_impact_reports_requirements_teams_access_and_pagination(workspa
     # A preview cannot overwrite a service changed by another administrator.
     assert client.patch('/api/v1/ports/' + service['id'], json=proposed).status_code == 200
     stale = client.patch('/api/v1/ports/' + service['id'], headers={'If-Match': '"' + report['current_fingerprint'] + '"'}, json=proposed)
-    assert stale.status_code == 409
+    assert stale.status_code == 412
 
 
 def test_policy_impact_and_header_detect_guardrail_changes(workspace):
@@ -112,5 +112,5 @@ def test_policy_impact_and_header_detect_guardrail_changes(workspace):
     assert len(captured) == before
     app.state.store.update('guardrails', check['id'], {'version': 2})
     assert invoke(client, service['name'], headers).status_code == 409
-    assert client.put('/api/v1/gateways/' + profile['id'], headers={'If-Match': '"' + report['current_fingerprint'] + '"'}, json=document).status_code == 409
+    assert client.put('/api/v1/gateways/' + profile['id'], headers={'If-Match': '"' + report['current_fingerprint'] + '"'}, json=document).status_code == 412
     assert len(captured) == before

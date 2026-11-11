@@ -21,7 +21,7 @@ API entry points are administrator-only and scoped to the current workspace.
 - Both accept `limit` (1–200, default 100) and `offset` query parameters. Summary counts cover every included binding; `items` contains the requested page.
 - `impact.summary` contains `renew`, `blocked` and `unavailable` counts. Each item includes human-readable reasons, the next action and deployment decisions.
 
-The console sends the report's `current_fingerprint` as a quoted `If-Match` header when publishing. A conflicting service/policy change returns 409 and requires another preview. API clients can use the same optional header. Reports are snapshots; inference still applies current identity, contract and quota checks at admission. The impact report adds no approval workflow.
+The console sends the report's `current_fingerprint` as a quoted `If-Match` header when publishing. A conflicting service/policy change returns 412 (Precondition Failed) and requires another preview. API clients can use the same optional header. Reports are snapshots; inference still applies current identity, contract and quota checks at admission. The impact report adds no approval workflow.
 
 ![Publication impact in the real-model acceptance workspace](screenshots/contracts-impact.jpg)
 

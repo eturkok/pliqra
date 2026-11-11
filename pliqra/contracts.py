@@ -16,7 +16,7 @@ BINDING_HEADER = 'X-Pliqra-Binding'
 def check_publication(request, fingerprint):
     expected = request.headers.getlist('If-Match')
     if expected and expected != ['"' + fingerprint + '"']:
-        raise HTTPException(409, 'Publication preview is stale. Review the current impact report again.')
+        raise HTTPException(412, 'Publication preview is stale. Review the current impact report again.')
 
 
 class BindingHeaderMiddleware:
