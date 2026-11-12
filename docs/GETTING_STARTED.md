@@ -27,13 +27,13 @@ Follow the three cards on **Overview**. Progress comes from retained successful 
 Prefer a single Docker command sequence?
 
 ```sh
-docker build -t pliqra:2.4.0 .
+docker build -t pliqra:2.4.1 .
 docker run -d --name pliqra \
   -p 127.0.0.1:8088:8080 \
   -v pliqra-data:/data \
   --add-host host.docker.internal:host-gateway \
   --restart unless-stopped \
-  pliqra:2.4.0
+  pliqra:2.4.1
 ```
 
 Open http://localhost:8088, create your administrator, then **Connect model**. Supply a running OpenAI-compatible or Ollama endpoint. Models become stable named AI services automatically. A manual model name handles servers without model-list discovery. No accounts, credentials, or sample traffic are seeded.

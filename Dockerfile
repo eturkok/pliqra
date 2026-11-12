@@ -1,6 +1,6 @@
 FROM python:3.13-slim
 
-ARG VERSION=2.2.2
+ARG VERSION=2.4.1
 ARG REVISION=unknown
 LABEL org.opencontainers.image.title="Pliqra" \
     org.opencontainers.image.description="Endpoint-first AI services, governed gateways and explicit model contracts" \

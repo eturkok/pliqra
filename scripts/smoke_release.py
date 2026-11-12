@@ -34,7 +34,13 @@ def smoke(base: str, version: str) -> None:
     session = json.loads(read("/api/v1/session"))
     assert session["setup_required"] and session["user"] is None, session
     assert session["version"] == version, session
-    assert b"Pliqra" in read("/")
+    console = read("/")
+    assert b"Pliqra" in console
+    theme_boot = console.index(b'<script src="/static/theme.js"></script>')
+    assert theme_boot < console.index(b'rel="stylesheet"'), 'Theme must initialize before styles'
+    assert b'data-theme-select' in read('/static/theme.js'), 'Published image is missing theme controls'
+    assert b'pliqra.appearance' in read('/static/theme.js'), 'Published image is missing saved appearance'
+    assert b'[data-theme="dark"]' in read('/static/theme.css'), 'Published image is missing the dark palette'
     try:
         read("/api/v1/settings")
     except HTTPError as error:
@@ -42,7 +48,8 @@ def smoke(base: str, version: str) -> None:
     else:
         raise AssertionError("Anonymous management access must be rejected")
     print(json.dumps({"version": version, "health": "ok", "fresh_workspace": True,
-                      "anonymous_management": "rejected", "protocol": discovery["protocol"]}))
+                      "anonymous_management": "rejected", "protocol": discovery["protocol"],
+                      "console_theme_assets": "verified"}))
 
 
 if __name__ == "__main__":

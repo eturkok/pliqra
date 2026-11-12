@@ -60,14 +60,14 @@ With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64
 
 ```sh
 mkdir pliqra && cd pliqra
-curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.4.0/compose.release.yaml
+curl -fL -o compose.release.yaml https://github.com/eturkok/pliqra/releases/download/v2.4.1/compose.release.yaml
 docker compose -f compose.release.yaml pull
 docker compose -f compose.release.yaml up -d
 ```
 
 Open **http://localhost:8088**, create your administrator, then follow **connect endpoint → make a real call → connect application**. Your workspace starts empty; the model endpoint must be reachable from inside the container.
 
-**2.4.0 is the stable community release**, adding durable model behavior monitoring alongside application impact reports and contract protection. No source checkout, local build or registry login is required. Upgrades from 2.3 migrate schema 6 → 7: back up first and upgrade all writers together. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.4.0)
+**2.4.1 is the stable community release**, adding Light / Dark / System appearance alongside durable model behavior monitoring, application impact reports and contract protection. No source checkout, local build or registry login is required. The 2.4.0 → 2.4.1 update keeps schema 7 and existing contracts; upgrades from 2.3 migrate schema 6 → 7. Back up first and upgrade all writers together. [Release notes & downloads →](https://github.com/eturkok/pliqra/releases/tag/v2.4.1)
 
 [Python SDK](https://pypi.org/project/pliqra-client/) · [JavaScript / TypeScript SDK](https://www.npmjs.com/package/@eturkok/pliqra) · [Install clients →](docs/SDK.md)
 
@@ -78,14 +78,14 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 Use the **official Helm chart** with the prebuilt image. Start with one SQLite pod and retained storage; use external PostgreSQL and existing Secrets for multiple replicas.
 
 ```sh
-curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.4.0/image.txt
+curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.4.1/image.txt
 helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
-  --set-string image.tag=2.4.0 \
+  --set-string image.tag=2.4.1 \
   --set-string image.digest="$(cut -d @ -f 2 image.txt)"
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
-The command explicitly selects Gateway 2.4.0. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+The command explicitly selects Gateway 2.4.1. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
 
 [Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Operations & recovery drills →](docs/OPERATIONS.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1)
 
@@ -125,7 +125,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.4.0](https://github.com/eturkok/pliqra/releases/tag/v2.4.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.4.1](https://github.com/eturkok/pliqra/releases/tag/v2.4.1).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 
