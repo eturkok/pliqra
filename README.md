@@ -54,6 +54,8 @@ The 2.3 application impact reports and existing-client contract protection remai
 
 ## Quick start
 
+**Want to try your own endpoints locally?** Start Docker, then run `./scripts/local-demo.sh start` from this checkout. The real product uses a separate persistent demo workspace. [Local demo, endpoint addresses and stop/start →](docs/LOCAL_DEMO.md)
+
 With Docker Compose and a running model endpoint, use the **prebuilt AMD64/ARM64 image**:
 
 ```sh

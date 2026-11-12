@@ -6,7 +6,7 @@ Run commands from the repository root. Bring an already running OpenAI-compatibl
 
 ## Run a prebuilt image
 
-For the published AMD64/ARM64 release candidate, follow [the prebuilt-image installation](DISTRIBUTION.md#install-the-release-candidate). It requires no source checkout or local build. The commands below build from source instead.
+For the published AMD64/ARM64 stable release, follow [the prebuilt-image installation](DISTRIBUTION.md#install-the-stable-release). It requires no source checkout or local build. From this checkout, [the local demo launcher](LOCAL_DEMO.md) provides a separate persistent workspace for your own endpoints. The commands below build from source instead.
 
 ## Build with Docker
 

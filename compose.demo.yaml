@@ -1,0 +1,20 @@
+# Real local workspace: bring your own model endpoints. No fixtures or seeded users.
+name: pliqra-demo
+services:
+  pliqra:
+    image: ghcr.io/eturkok/pliqra:2.4.0@sha256:b8d710ac3617fe21032272d74275f1c16231e370a58d85abb8f948751b79cae5
+    ports:
+      - "127.0.0.1:${PLIQRA_DEMO_PORT:-8088}:8080"
+    environment:
+      PLIQRA_PUBLIC_URL: ""
+      PLIQRA_SECURE_COOKIES: "0"
+    volumes:
+      - demo-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cpus: 1.0
+    mem_limit: 512m
+    restart: "no"
+volumes:
+  demo-data:
+    name: pliqra-demo-data
