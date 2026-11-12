@@ -1,0 +1,111 @@
+/* Semantic colors are shared by every console view, including dialogs and drawers. */
+:root {
+  color-scheme: light;
+  --canvas: #f7f7f8;
+  --surface: #ffffff;
+  --surface-muted: #f5f3f2;
+  --surface-hover: #f0edeb;
+  --ink: #26242a;
+  --text: var(--ink);
+  --muted: #6d656c;
+  --text-secondary: var(--muted);
+  --line: #e3deda;
+  --border: var(--line);
+  --accent: #bd4315;
+  --accent-strong: #a5360f;
+  --on-accent: #ffffff;
+  --accent-soft: #fff0e7;
+  --accent-border: #dfbda8;
+  --focus: #c65a27;
+  --focus-ring: #c65a2733;
+  --hero-background: linear-gradient(115deg, #fff5ec, #fff0e4 60%, #faeee7);
+  --notice-bg: #fbf5ed;
+  --notice-ink: #795c43;
+  --notice-border: #e5d5c2;
+  --info-bg: #edf3ff;
+  --info-ink: #395f96;
+  --error-bg: #fcece8;
+  --error-ink: #a33f30;
+  --error-border: #e5b8b0;
+  --warning-bg: #fff5df;
+  --warning-ink: #805c16;
+  --warning-border: #e3cd9d;
+  --chart-primary: #cc571f;
+  --chart-error: #b84c66;
+  --chart-grid: #e9e3df;
+  --diagram-dot: #ecd4c5;
+  --diagram-line: #d7ac91;
+  --diagram-surface: #fffaf6;
+  --diagram-border: #e5bfaa;
+  --diagram-ink: #89553a;
+  --diagram-highlight: #f4b38c;
+  --sidebar: #18181c;
+  --radius: 14px;
+  --auth-diagram-line: #654236;
+  --auth-diagram-surface: #2b282b;
+  --auth-diagram-border: #624337;
+  --auth-diagram-text: #eab89a;
+  --auth-diagram-accent: #f58a51;
+  --auth-diagram-ink: #281d19;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #16161a;
+  --surface: #202025;
+  --surface-muted: #28272e;
+  --surface-hover: #333038;
+  --ink: #f2edf0;
+  --muted: #b8adb8;
+  --line: #403941;
+  --accent: #ff9c69;
+  --accent-strong: #ffb48e;
+  --on-accent: #2c180f;
+  --accent-soft: #38271f;
+  --accent-border: #79503a;
+  --focus: #ffac7b;
+  --focus-ring: #ffac7b40;
+  --hero-background: linear-gradient(115deg, #33261f, #2d2221 60%, #272127);
+  --notice-bg: #302820;
+  --notice-ink: #dfbd99;
+  --notice-border: #5e4935;
+  --info-bg: #243349;
+  --info-ink: #a9c9fa;
+  --error-bg: #402625;
+  --error-ink: #ffb0a2;
+  --error-border: #7e4b44;
+  --warning-bg: #382e1d;
+  --warning-ink: #edcd8e;
+  --warning-border: #715a2d;
+  --chart-primary: #ff9c69;
+  --chart-error: #f59cb0;
+  --chart-grid: #403941;
+  --diagram-dot: #79503a;
+  --diagram-line: #a27050;
+  --diagram-surface: #30251f;
+  --diagram-border: #8e6145;
+  --diagram-ink: #efbc9a;
+  --diagram-highlight: #b7653c;
+}
+
+/* Visible at sign-in and in the workspace; the native select supports keyboard and touch. */
+.theme-control { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; flex-shrink: 0; }
+.theme-control select { min-height: 36px; max-width: 110px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.auth-form-wrap { position: relative; }
+.auth-appearance { position: absolute; top: 22px; right: 24px; }
+.appearance-panel .settings-list { padding-bottom: 8px; }
+.appearance-panel .setting-row { gap: 16px; flex-wrap: wrap; }
+.appearance-panel .setting-row p { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+::selection { background: var(--accent); color: var(--on-accent); }
+
+@media (max-width: 1100px) {
+  .topbar .theme-control > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
+@media (max-width: 680px) {
+  .topbar { gap: 8px; }
+  .topbar .theme-control select { max-width: 84px; min-height: 36px; }
+  .auth-form-wrap { padding-top: 88px; }
+  .auth-appearance { top: 22px; right: 24px; }
+}

@@ -20,6 +20,8 @@ docker compose up --build -d
 
 Open **http://localhost:8088**, create your administrator account, and connect a model endpoint. No default password, demo account or sample traffic is shipped.
 
+Choose **Light**, **Dark** or **System** from **Appearance** at sign-in or in the workspace header and **Settings & API**. The console remembers the choice in this browser; System follows your device, including changes while the console is open. This preference does not change other members' workspaces.
+
 Follow the three cards on **Overview**. Progress comes from retained successful inference records and current, unexpired bindings, independently of reporting filters. The contract panel separates declared capabilities from observed verification. No inference or paid probe runs automatically during onboarding.
 
 Prefer a single Docker command sequence?

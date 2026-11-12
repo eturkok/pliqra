@@ -86,8 +86,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: JavaScript client boundaries and streaming
         run: node sdk/javascript/test.mjs
-      - name: Console untrusted-metadata encoding
-        run: node --test tests/console.test.mjs
+      - name: Console metadata encoding and appearance preferences
+        run: node --test tests/console.test.mjs tests/theme.test.mjs
       - name: Go client boundaries and streaming
         working-directory: sdk/go
         run: go test ./...
