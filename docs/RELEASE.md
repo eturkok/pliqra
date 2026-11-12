@@ -1,4 +1,4 @@
-> Current release: **[2.4.1](releases/v2.4.1.md)** adds persistent Light / Dark / System console appearance and retains schema **7**, inference contract **5**, Protocol **1.0** and SDK **1.0.1**. The exact-image release pipeline checks native architectures, theme assets, a 30-minute synthetic soak and upgrade/backup recovery from 2.4.0. Public reports are attached to the [release](https://github.com/eturkok/pliqra/releases/tag/v2.4.1). [2.4.0 delivery](evidence/patch-2.4.0.json) and the earlier records below remain historical.
+> Current release: **[2.4.1](releases/v2.4.1.md)** adds persistent Light / Dark / System console appearance and retains schema **7**, inference contract **5**, Protocol **1.0** and SDK **1.0.1**. [Verified delivery](evidence/patch-2.4.1.json) records native theme smoke checks, a 30-minute synthetic soak and upgrade/backup recovery from 2.4.0. Public reports are attached to the [release](https://github.com/eturkok/pliqra/releases/tag/v2.4.1). Earlier delivery records below remain historical.
 
 # Pliqra 2.1 — validation and scope
 

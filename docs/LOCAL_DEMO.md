@@ -1,6 +1,6 @@
 # Local demo with your own models
 
-Run the real **Pliqra 2.4.0** product locally, backed by a separate persistent workspace. This is not the website simulation or the synthetic acceptance lab. Bring a running model endpoint; Pliqra does not download or run model weights.
+Run the real **Pliqra 2.4.1** product locally, backed by a separate persistent workspace. This is not the website simulation or the synthetic acceptance lab. Bring a running model endpoint; Pliqra does not download or run model weights.
 
 ## Start and stop
 

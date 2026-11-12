@@ -1,0 +1,507 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-12T19:28:00.185921+00:00",
+  "release": {
+    "tag": "v2.4.1",
+    "version": "2.4.1",
+    "revision": "e9ccc1e36731df0af76945d886b9749e6fb6cf25",
+    "image": "ghcr.io/eturkok/pliqra",
+    "digest": "sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+    "platforms": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "sdk_version": "1.0.1",
+    "sdk_revision": "4b2accc4d6d8ac6f191d986dcafd6911b034cbb9",
+    "sdk_release": "v2.2.1",
+    "prerelease": false,
+    "schema": 7,
+    "inference_contract": 5,
+    "protocol": "pliqra/1.0",
+    "legacy_protocol": "pliqra/0.1-draft",
+    "specification": "1.0.0"
+  },
+  "release_url": "https://github.com/eturkok/pliqra/releases/tag/v2.4.1",
+  "release_workflow": "https://github.com/eturkok/pliqra/actions/runs/43283768798",
+  "all_distribution_checksums_verified": true,
+  "checksums_verified": 10,
+  "anonymous_image_access": true,
+  "per_platform_attestation_manifests": 2,
+  "local_image_verification": {
+    "passed": true,
+    "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+    "platform": "linux/arm64",
+    "revision": "e9ccc1e36731df0af76945d886b9749e6fb6cf25",
+    "version": "2.4.1",
+    "non_root": true,
+    "fresh_workspace": true,
+    "real_user_data_touched": false,
+    "theme_assets_identical_to_tested_source": true,
+    "static_files": [
+      {
+        "file": "app.css",
+        "sha256": "6f112c62b5f0160f1872b88dfdbd7953ba991780631d83f52e20a78335de7975"
+      },
+      {
+        "file": "app.js",
+        "sha256": "7f876fc1203bd78344a1a95445c52f2f25cfd9b7031f21bea1c9b6993fb7ba38"
+      },
+      {
+        "file": "behavior.js",
+        "sha256": "14a4042d8149008566fb2df83d5317a5a3d17140f950d760d5b971065cab1d80"
+      },
+      {
+        "file": "enterprise.js",
+        "sha256": "0b75de325be2cdee05ef26410f8325cac9e782534a6c74b3244ab59ecd30078a"
+      },
+      {
+        "file": "fabric.js",
+        "sha256": "4a9ec5e194314de5ee611d33e641da970f60078fec4afacfb5acf4a34d71e69a"
+      },
+      {
+        "file": "favicon.svg",
+        "sha256": "f521df086951749680c6d6fdba7458484508f95fe0d2885db0911de17643c783"
+      },
+      {
+        "file": "fleet.js",
+        "sha256": "dda5917cb4ae155a00df1b4c27667822ecad256fcb6616bb3199a0244b998298"
+      },
+      {
+        "file": "journey.js",
+        "sha256": "28a1ed3d32d197083357f7ff51f2da1f50a9417c2327418b1aaa95c9bc3d58a0"
+      },
+      {
+        "file": "layout.js",
+        "sha256": "034792c81330dddf7682ab961a3293c6a380dad20713b94809597f02b8b17422"
+      },
+      {
+        "file": "product.js",
+        "sha256": "ff5531e88a6670c581ebfa261e531c9338a01e25aed7e865763d24fab08a514c"
+      },
+      {
+        "file": "responsive.css",
+        "sha256": "247e9298f0d04224862f10ddcfb98523a0ff233de3d7af6026616cf292836f73"
+      },
+      {
+        "file": "theme.css",
+        "sha256": "cb5224d23bd9458ef71ebf3e5de060ce7bd6dae96aae5e6f87ab801abc9f142b"
+      },
+      {
+        "file": "theme.js",
+        "sha256": "3a8337d09c42334b0db1980c88573a8caaa9da53077201769ca00b57bcafb28a"
+      }
+    ],
+    "owned_container_removed": true
+  },
+  "console_appearance": {
+    "native_smoke_assets_verified": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "preferences": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "preference_tests": 7,
+    "responsive_checks": 48
+  },
+  "ci": {
+    "all_jobs_passed": true,
+    "jobs": [
+      {
+        "name": "metadata",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / python (3.13)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / python (3.14)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / clients",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / dependency-audit",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / docker",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / sdk-packages",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / postgres",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / sdk-compatibility (3.14, 24)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests / sdk-compatibility (3.10, 22)",
+        "conclusion": "success"
+      },
+      {
+        "name": "release-sdks",
+        "conclusion": "success"
+      },
+      {
+        "name": "image",
+        "conclusion": "success"
+      },
+      {
+        "name": "smoke (ubuntu-24.04, linux/amd64)",
+        "conclusion": "success"
+      },
+      {
+        "name": "smoke (ubuntu-24.04-arm, linux/arm64)",
+        "conclusion": "success"
+      },
+      {
+        "name": "acceptance / acceptance",
+        "conclusion": "success"
+      },
+      {
+        "name": "publish",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "sdk": {
+    "version": "1.0.1",
+    "original_release": "v2.2.1",
+    "original_manifest_and_package_bytes_reused": true,
+    "equal_to_previous_verified_gateway_assets": true,
+    "registries_republished": false
+  },
+  "exact_image_acceptance": {
+    "artifact": "https://github.com/eturkok/pliqra/releases/download/v2.4.1/acceptance-evidence.tar.gz",
+    "sha256": "ae43daea54e46e4a9437b7b621e8e2677725f1c2deea6ee2091e02c129610028",
+    "environment": {
+      "host": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+      "machine": "x86_64",
+      "physical_hosts": 1,
+      "database": "PostgreSQL 18, one primary with verified fixture TLS",
+      "site_regions_are_synthetic": true,
+      "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+      "image_id": "sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+      "source_revision": "e9ccc1e36731df0af76945d886b9749e6fb6cf25",
+      "source_dirty": false,
+      "image_revision": "e9ccc1e36731df0af76945d886b9749e6fb6cf25",
+      "docker_cpus": 4,
+      "docker_memory_bytes": 16759435264
+    },
+    "load": {
+      "duration_seconds": 30.07,
+      "concurrency": 8,
+      "target_requests_per_second": null,
+      "requests": 2808,
+      "statuses": {
+        "200": 2808
+      },
+      "observed_requests_per_second": 93.38,
+      "p50_ms": 73.97,
+      "p95_ms": 99.07,
+      "p99_ms": 113.26,
+      "gateway_west_rss_kib": [
+        108596
+      ],
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true
+    },
+    "soak": {
+      "duration_seconds": 1800.12,
+      "concurrency": 8,
+      "target_requests_per_second": 5,
+      "requests": 9000,
+      "statuses": {
+        "200": 9000
+      },
+      "observed_requests_per_second": 5.0,
+      "p50_ms": 85.92,
+      "p95_ms": 110.26,
+      "p99_ms": 131.31,
+      "gateway_west_rss_kib": [
+        109088,
+        109192,
+        109480,
+        109792,
+        109868,
+        109940,
+        110224,
+        110484,
+        110520,
+        110576,
+        110852,
+        110884,
+        111156,
+        111180,
+        111460,
+        111752,
+        111764,
+        112040,
+        112084,
+        112364,
+        112656,
+        112676,
+        112928,
+        112932,
+        112936,
+        112936,
+        112940,
+        112940,
+        112940,
+        112940
+      ],
+      "synthetic_model_delay_ms": 5,
+      "not_a_production_capacity_claim": true
+    },
+    "behavior": {
+      "cycles": 5,
+      "automatic_cycles": 1,
+      "assertions_per_cycle": 4,
+      "statuses": [
+        "passed",
+        "passed",
+        "failed",
+        "failed",
+        "passed"
+      ],
+      "unchanged_fingerprint": "834c7c0536e220bbeb550d17a446c77753e4d96aebbaea5e9420507f30b324fa",
+      "notifications": 2,
+      "daily_limit_enforced": true,
+      "restart_preserved_history": true,
+      "last_success_retained_on_failure": true,
+      "observation_did_not_change_capabilities": true
+    },
+    "checks": [
+      {
+        "check": "onboarding_endpoint_discovery_pricing_and_scoped_key",
+        "passed": true
+      },
+      {
+        "check": "two_site_local_routing",
+        "passed": true
+      },
+      {
+        "check": "global_quota_exact_under_concurrency",
+        "passed": true,
+        "accepted": 8,
+        "rejected": 8
+      },
+      {
+        "check": "contract_header_json_stream_named_gateway_and_shared_quota",
+        "passed": true
+      },
+      {
+        "check": "publication_impact_cross_replica_no_model_io_and_stale_precondition",
+        "passed": true
+      },
+      {
+        "check": "contract_change_rejected_then_explicit_renewal_and_policy_impact",
+        "passed": true
+      },
+      {
+        "check": "scheduled_behavior_same_endpoint_regression_recovery_daily_limit_and_restart",
+        "passed": true
+      },
+      {
+        "check": "independent_fleet_pairing_separate_approval_and_delivery",
+        "passed": true,
+        "members": 2
+      },
+      {
+        "check": "native_incremental_delivery_and_incomplete_stream_rejection",
+        "passed": true,
+        "cases": [
+          {
+            "service": "synthetic-responses",
+            "interface": "responses",
+            "first_delta_ms": 76.2,
+            "complete_ms": 172.0
+          },
+          {
+            "service": "synthetic-responses",
+            "interface": "messages",
+            "first_delta_ms": 70.83,
+            "complete_ms": 166.25
+          },
+          {
+            "service": "synthetic-messages",
+            "interface": "responses",
+            "first_delta_ms": 69.98,
+            "complete_ms": 195.16
+          },
+          {
+            "service": "synthetic-messages",
+            "interface": "messages",
+            "first_delta_ms": 70.23,
+            "complete_ms": 194.89
+          },
+          {
+            "service": "customer-chat",
+            "interface": "responses",
+            "first_delta_ms": 12.1,
+            "complete_ms": 104.63
+          },
+          {
+            "service": "customer-chat",
+            "interface": "messages",
+            "first_delta_ms": 12.18,
+            "complete_ms": 105.0
+          }
+        ]
+      },
+      {
+        "check": "load_measurement",
+        "passed": true
+      },
+      {
+        "check": "soak_measurement",
+        "passed": true
+      },
+      {
+        "check": "stable_synthetic_envelope",
+        "passed": true,
+        "policy": {
+          "soak_seconds": 1800,
+          "minimum_soak_requests": 8000,
+          "maximum_p95_ms": 2000,
+          "maximum_rss_growth_kib": 65536
+        }
+      },
+      {
+        "check": "pre_stream_model_failure_falls_back_to_allowed_remote_site",
+        "passed": true
+      },
+      {
+        "check": "database_restart_fail_closed_no_new_model_calls_and_fresh_process_rejoin",
+        "passed": true,
+        "primary_promotion_tested": false
+      }
+    ],
+    "upgrade_recovery": {
+      "synthetic": true,
+      "passed": true,
+      "previous": {
+        "version": "2.4.0",
+        "image": "ghcr.io/eturkok/pliqra@sha256:b8d710ac3617fe21032272d74275f1c16231e370a58d85abb8f948751b79cae5",
+        "protocol": "pliqra/1.0"
+      },
+      "target_image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+      "checks": [
+        {
+          "check": "new_sdk_completes_and_streams_against_previous_published_image",
+          "passed": true
+        },
+        {
+          "check": "previous_digest_verified_initialized_and_encrypted_backup_created",
+          "passed": true
+        },
+        {
+          "check": "pre_upgrade_binding_invokes_through_stable_protocol_without_rebinding",
+          "passed": true
+        },
+        {
+          "check": "pre_upgrade_binding_protects_existing_client_without_rebinding",
+          "passed": true
+        },
+        {
+          "check": "upgrade_preserves_accounts_models_encrypted_credentials_keys_events_bindings_and_quota_usage",
+          "passed": true
+        },
+        {
+          "check": "schema_seven_checks_survive_restart_and_restore_paused_without_replay",
+          "passed": true
+        },
+        {
+          "check": "new_image_restores_previous_backup_rejects_wrong_password_and_revokes_sessions",
+          "passed": true
+        },
+        {
+          "check": "rollback_to_previous_image_restores_pre_upgrade_backup_in_a_separate_volume",
+          "passed": true
+        }
+      ],
+      "target_version": "2.4.1",
+      "owned_containers_volumes_network_removed": true
+    },
+    "installed_clients": {
+      "synthetic": true,
+      "human_feedback_collected": false,
+      "passed": true,
+      "applications": [
+        {
+          "application": "installed-python-sdk",
+          "core_checks": 13,
+          "streaming": "passed",
+          "gateway_imported": false,
+          "synthetic": true
+        },
+        {
+          "application": "installed-npm-sdk",
+          "streaming": "passed",
+          "gatewayImported": false,
+          "synthetic": true
+        }
+      ],
+      "artifacts": [
+        {
+          "file": "pliqra_client-1.0.1-py3-none-any.whl",
+          "sha256": "1858f7df363a1fef66ede17edd74bf9d9552eb7ac7386910b50a4a791a0c1284"
+        },
+        {
+          "file": "eturkok-pliqra-1.0.1.tgz",
+          "sha256": "e0ccb3dbf0fd3e444836a15dd0f58475e594fa3343132435d708ea9d3aa31f6e"
+        }
+      ]
+    },
+    "official_clients": {
+      "synthetic": true,
+      "real_vendor_model_called": false,
+      "official_clients": {
+        "openai": "3.46.0",
+        "anthropic": "2.6.0"
+      },
+      "results": [
+        {
+          "client": "openai",
+          "service": "synthetic-responses",
+          "live_text": "passed"
+        },
+        {
+          "client": "openai",
+          "service": "synthetic-messages",
+          "live_text": "passed"
+        },
+        {
+          "client": "openai",
+          "tool_call": "passed"
+        },
+        {
+          "client": "anthropic",
+          "service": "synthetic-responses",
+          "live_text": "passed"
+        },
+        {
+          "client": "anthropic",
+          "service": "synthetic-messages",
+          "live_text": "passed"
+        },
+        {
+          "client": "anthropic",
+          "tool_call": "passed"
+        }
+      ],
+      "passed": true
+    }
+  }
+}
