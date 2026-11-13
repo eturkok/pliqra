@@ -18,7 +18,7 @@
 | Console | Responsive browser console checked at 320–1440 px, including keyboard navigation and bounded dialogs. Real-device and cross-engine certification are not claimed. |
 | Inference | The [documented Chat/native/embedding/audio subsets](MODEL_INTERFACES.md), admission, guardrails and accounting. Complete-output guardrails deliberately buffer output. |
 | Identity / guardrails | Documented OIDC/SAML/SCIM behavior, real Keycloak evidence and signed fixtures. Actual Entra/Okta/NeMo/Vault deployments need their environment-specific acceptance. |
-| Operations | Fresh install, published-image SQLite 2.3-to-2.4 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on 2.3.0 in separate storage. |
+| Operations | Fresh install, published-image SQLite 2.4.1-to-2.5.0 upgrade with persistent credentials/policies/quotas, encrypted backup import, session revocation and recovery of the pre-upgrade backup on 2.4.1 in separate storage. |
 | Model behavior | Opt-in chat/text, streaming, fixed JSON/tool assertions and optional latency checks; UTC daily limits, project accounting, durable last success, transitions and history. Selected expectations do not identify weights or guarantee general model quality. |
 | Chart operations | Isolated SQLite/PostgreSQL archive recovery, configuration-revision rollout and monitoring-token authorization. Optional Prometheus Operator 0.95.1 CRD schemas and promtool 3.16.0 rule tests; actual Operator discovery, Alertmanager delivery and backup RPO/RTO need deployment acceptance. |
 

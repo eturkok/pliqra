@@ -1,4 +1,4 @@
-> Current release: **[2.5.0](releases/v2.5.0.md)** adds diagnosis, behavior-to-application impact, optional OTLP tracing, shared sign-in protection and reviewed policy files. Schema **7**, inference contract **5**, Protocol **1.0** and SDK **1.0.1** are unchanged. The release publishes exact-image operational, soak, native-platform and 2.4.1 upgrade/recovery reports. Earlier records below remain historical.
+> Current release: **[2.5.0](releases/v2.5.0.md)** adds diagnosis, behavior-to-application impact, optional OTLP tracing, shared sign-in protection and reviewed policy files. Schema **7**, inference contract **5**, Protocol **1.0** and SDK **1.0.1** are unchanged. [Verified delivery](evidence/stable-2.5.0.json) records 16 successful jobs, exact-image operational checks, the 30-minute soak, native platforms and 2.4.1 upgrade/recovery. Earlier records below remain historical.
 
 # Pliqra 2.1 — validation and scope
 

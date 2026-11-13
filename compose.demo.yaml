@@ -2,7 +2,7 @@
 name: pliqra-demo
 services:
   pliqra:
-    image: ghcr.io/eturkok/pliqra:2.5.0
+    image: ghcr.io/eturkok/pliqra:2.5.0@sha256:10a490c90000261635ba29b69864128f6936ba9112b35dfb0ca1216e462a64f1
     ports:
       - "127.0.0.1:${PLIQRA_DEMO_PORT:-8088}:8080"
     environment:

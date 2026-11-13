@@ -31,12 +31,6 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 ![Evidence-gated model publication in Pliqra](docs/screenshots/workflows-quality.png)
 
-## New in 2.4
-
-**Watch behavior behind an unchanged endpoint.** Schedule bounded response, streaming, JSON and tool checks. See the last successful test, outcome changes and recovery in **Model health**, with daily limits and project budget accounting. A provider can change the model behind the same URL; chosen assertions make observable regressions visible without changing traffic automatically. [Setup, APIs and real-endpoint evidence →](docs/BEHAVIOR_CHECKS.md)
-
-The 2.3 application impact reports and existing-client contract protection remain available. [Review before publication and protect an existing client →](docs/CONTRACT_CHANGES.md)
-
 ## New in 2.5
 
 **Explain the problem. Review the change. Keep the control.** Explain a denied connection without a model call; connect behavior failures to application contracts and eligible alternatives; export content-free OpenTelemetry traces; share sign-in limits across replicas; and review/apply Git-managed gateway policies atomically. Available through the administrator console and APIs, with a small policy CLI. [Workflows, configuration and limits →](docs/OPERATIONS_TOOLS.md)
@@ -129,7 +123,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 [Stable readiness & support →](docs/STABLE_2_1.md) · [Compatibility & limits →](docs/SUPPORT.md)
 
-**Stable release: [2.5.0](https://github.com/eturkok/pliqra/releases/tag/v2.5.0).** The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
+**Stable release: [2.5.0](https://github.com/eturkok/pliqra/releases/tag/v2.5.0).** [Verified delivery](docs/evidence/stable-2.5.0.json): 9,000 successful calls in a 30-minute synthetic soak, native AMD64/ARM64 checks and upgrade/recovery from 2.4.1. The default remains a single container. Protocol 1.0 with legacy 0.1 compatibility; native APIs are documented subsets. [Roadmap delivery](docs/ROADMAP.md) separates implemented scope from external vendor acceptance and ecosystem adoption.
 
 ## License
 
