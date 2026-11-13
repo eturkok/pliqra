@@ -27,7 +27,7 @@ The predeclared synthetic release envelope is **eight clients, 30 seconds of bou
 ## Compatibility and upgrades
 
 - Gateway releases use `MAJOR.MINOR.PATCH`. A 2.4.x patch preserves documented management/inference contracts and storage compatibility; intentional breaks require a new minor/major release with an upgrade guide. Undocumented implementation details are not a compatibility promise.
-- Gateway **2.4.1**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **7** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
+- Gateway **2.5.0**, SDK **1.0.1**, protocol **pliqra/1.0** (specification **1.0.0**), database schema **7** and inference contract **5** are independently versioned. [The protocol lifecycle](protocol/1.0/SPEC.md#8-compatibility-and-maintenance-policy) preserves the 0.1 compatibility envelope throughout gateway 2.x. Stable is a project compatibility commitment, without an industry-standard or independent-certification claim.
 - Service fingerprints still change when their declared model, gateway, placement or capability contract changes. HTTP 409 and explicit binding renewal are expected product behavior, not a patch compatibility failure. 2.3-to-2.4 migrates schema 6 to 7 while retaining inference revision 5 and unchanged bindings. Restored behavior schedules remain paused.
 - Stop all shared-state replicas, back up and upgrade together. Preserve one writable authority; no offline quota grants are supported. Do not use independent writable DC databases as a substitute for database HA.
 - Returning to an older image uses its **pre-upgrade backup** in separately prepared storage. Never assume an older image can downgrade a newer database. The release acceptance exercises that recovery path.
@@ -40,6 +40,6 @@ Global ingress, verified TLS, PostgreSQL replication/promotion/durability, host 
 
 [Protocol 1.0 and release evidence](evidence/protocol-1.0.json) · [Previous 2.1 baseline](STABLE_2_1.md) · [Security policy](../SECURITY.md) · [Issue tracker](https://github.com/eturkok/pliqra/issues)
 
-## Unreleased source additions
+## Operational decision tools — 2.5.0
 
-Diagnosis, behavior-to-binding impact, optional OTLP tracing, shared sign-in throttling and policy files are implemented on main, separately from the stable 2.4.1 image. [Scope and operational limits](OPERATIONS_TOOLS.md). Protocol 1.0, SDK 1.0.1, schema 7 and inference revision 5 remain unchanged. Source tests do not replace the next release's exact-image acceptance or customer-environment evidence.
+Diagnosis, behavior-to-binding impact, optional OTLP tracing, shared sign-in throttling and policy files ship in the stable 2.5.0 image. [Scope and operational limits](OPERATIONS_TOOLS.md). Protocol 1.0, SDK 1.0.1, schema 7 and inference revision 5 remain unchanged. Source checks, exact-image release acceptance and customer-environment evidence remain separately scoped.

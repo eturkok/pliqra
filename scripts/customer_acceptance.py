@@ -239,6 +239,78 @@ class Lab:
         self.mark('publication_impact_cross_replica_no_model_io_and_stale_precondition')
         self.mark('contract_change_rejected_then_explicit_renewal_and_policy_impact')
 
+    def operational_tools(self):
+        """Exercise 2.5 administration against two real gateways, model and OTLP receiver."""
+        key = next(k for k in self.west.api('/api/v1/keys') if k['name']=='Synthetic customer application')
+        before = self.model_count()
+        diagnosis = self.east.api('/api/v1/diagnostics', {'service':'customer-chat','key_id':key['id'],'stream':False,'max_tokens':64})
+        assert diagnosis['ready'] and diagnosis['model_calls']==0 and not diagnosis['endpoint_checked'], diagnosis
+        assert self.model_count()==before
+        self.mark('read_only_diagnosis_no_model_call_or_quota_admission')
+        slug='policy-file-'+uuid.uuid4().hex[:8]
+        document={'format':'pliqra/policies/1','gateways':[{'name':'Exact-image policy file','slug':slug,'config':{'services':['chat'],'max_concurrency':12}}],
+                  'mapping':{'services':{'chat':self.service['id']}}}
+        plan=self.west.api('/api/v1/policies/plan',document)
+        assert plan['has_changes'] and plan['changes'][0]['action']=='create'
+        assert not any(g['slug']==slug for g in self.east.api('/api/v1/gateways'))
+        self.east.api('/api/v1/policies/apply',{'plan':plan['plan'],'approve':True})
+        assert self.west.client.post('/api/v1/policies/apply',json={'plan':plan['plan'],'approve':True}).status_code==412
+        assert not self.west.api('/api/v1/policies/plan',document)['has_changes']
+        document['gateways'][0]['config']['max_concurrency']=13
+        change=self.west.api('/api/v1/policies/plan',document)
+        assert change['changes'][0]['action']=='update' and change['changes'][0]['impact'] is not None
+        self.east.api('/api/v1/policies/apply',{'plan':change['plan'],'approve':True})
+        assert not self.west.api('/api/v1/policies/plan',document)['has_changes']
+        self.mark('policy_files_cross_replica_reviewed_apply_replay_rejection_and_no_drift')
+        # Password travels only through hidden process stdin, never argv or a fixture report.
+        cli_code="""import json,os,sys,contextlib,io
+from pliqra.policy_cli import main
+value=json.load(sys.stdin);os.environ['PLIQRA_ADMIN_EMAIL']='operator@example.test';os.environ['PLIQRA_ADMIN_PASSWORD']=value['password']
+output=io.StringIO()
+with contextlib.redirect_stdout(output):code=main(['export','--url','https://gateway-west:8080','--slug',value['slug']])
+result=json.loads(output.getvalue());assert code==0 and result['gateways'][0]['slug']==value['slug']
+print(json.dumps({'exported':True,'credentials_included':False}))
+"""
+        cli=self.compose('exec','-T','gateway-west','python','-c',cli_code,input=json.dumps({'password':self.secrets['password'],'slug':slug}),capture_output=True,text=True)
+        assert json.loads(cli.stdout)['exported']
+        self.mark('exact_image_policy_cli_export_over_verified_tls')
+        login_code="""import json,ssl,httpx
+from concurrent.futures import ThreadPoolExecutor
+verify=ssl.create_default_context(cafile='/fixture/pki/ca.pem')
+with httpx.Client(verify=verify,trust_env=False,timeout=15) as client:
+ def attempt(i):
+  host='gateway-west' if i%2 else 'gateway-east'
+  return client.post('https://'+host+':8080/api/v1/login',json={'email':'absent@example.test','password':'invalid-synthetic-password'},headers={'X-Forwarded-For':'198.51.100.'+str(i)}).status_code
+ with ThreadPoolExecutor(max_workers=16) as pool:codes=list(pool.map(attempt,range(30)))
+assert codes.count(401)==15 and codes.count(429)==15,codes
+print(json.dumps({'attempts':30,'admitted':15,'rate_limited':15,'spoofed_forwarded_headers_ignored':True}))
+"""
+        result=self.compose('exec','-T','collector','python','-c',login_code,capture_output=True,text=True)
+        login=json.loads(result.stdout)
+        self.mark('shared_login_limit_and_untrusted_proxy_headers_on_exact_image',**login)
+        assert self.east.api('/api/v1/diagnostics/runtime')['telemetry']['enabled']
+        assert not self.west.api('/api/v1/diagnostics/runtime')['telemetry']['enabled']
+        trace_id=uuid.uuid4().hex
+        response=self.east.client.post('/v1/chat/completions',headers={'Authorization':'Bearer '+self.key,'traceparent':'00-'+trace_id+'-'+'a'*16+'-01'},
+                   json={'model':'customer-chat','messages':[{'role':'user','content':'PRIVATE_OTLP_ACCEPTANCE'}],'max_tokens':64})
+        assert response.status_code==200 and response.headers['X-Pliqra-Trace-ID']==trace_id
+        request_id=response.headers['X-Request-ID']
+        with httpx.Client(trust_env=False,timeout=5) as collector:
+            deadline=time.monotonic()+20
+            while True:
+                observed=collector.get('http://127.0.0.1:18097/traces/'+trace_id).json()
+                names={s['name'] for s in observed['spans']}
+                if {'pliqra.request','upstream.http','database.query','secret.resolve'}<=names:break
+                assert time.monotonic()<deadline,'OTLP trace export did not complete'
+                time.sleep(.2)
+            assert not observed['content_leak']
+            assert any(s['request_id']==request_id for s in observed['spans'] if s['name']=='pliqra.request')
+            parents=collector.get('http://127.0.0.1:18096/fixture/trace-parents').json()['parents']
+            assert any(value.split('-')[1]==trace_id for value in parents if value)
+        self.report['operational_tools']={'diagnosis_model_calls':0,'policy_file_drift_after_apply':False,'shared_login':login,
+                                         'otlp_trace_parent_preserved':True,'otlp_model_parent_propagated':True,'otlp_content_excluded':True}
+        self.mark('real_model_otlp_trace_correlation_propagation_and_content_exclusion')
+
     def behavior(self):
         """Observe a controlled change at one unchanged endpoint on the exact image."""
         connection = next(c for c in self.west.api('/api/v1/connections') if c['provider']=='openai' and c['site']=='dc-west')
@@ -249,6 +321,7 @@ class Lab:
                           [('Chat','chat'),('Stream','streaming'),('JSON','structured_output'),('Tool','tools')]]}
         row = self.west.api('/api/v1/behavior-checks',body,status=201)
         path = '/api/v1/behavior-checks/'+row['id']
+        binding=self.west.api('/protocol/v1/bindings',{'service':'customer-chat','requirements':['tools']},headers={'Authorization':'Bearer '+self.key},status=201)
 
         def history():
             return self.east.api(path+'/runs')['items']
@@ -281,6 +354,12 @@ class Lab:
             tool=next(r for r in failed['results'] if r['name']=='Tool')
             assert tool['changed'] and tool['last_success_at']==successful_tool
             assert len(notifications())==1
+            count=self.model_count()
+            impact=self.east.api(path+'/impact')
+            affected=next(item for item in impact['items'] if item['binding_id']==binding['id'])
+            assert affected['status']=='alternative_available' and affected['alternatives']
+            assert self.model_count()==count
+            self.mark('behavior_failure_to_binding_impact_and_configuration_eligible_alternative')
             repeated=run(4)
             assert repeated['status']=='failed' and len(notifications())==1
             model.post('/fixture/behavior',json={'mode':'healthy'}).raise_for_status()
@@ -433,7 +512,7 @@ if __name__=='__main__':
     lab=Lab.resume(args.state) if args.resume else Lab(args.state,args.image)
     try:
         if not args.resume:lab.setup()
-        lab.routing_and_quotas();lab.contracts();lab.behavior();lab.fleet();lab.native()
+        lab.routing_and_quotas();lab.contracts();lab.operational_tools();lab.behavior();lab.fleet();lab.native()
         if args.load_seconds:lab.report['load']=lab.measurements(args.load_seconds,args.concurrency);lab.mark('load_measurement')
         if args.soak_seconds:lab.report['soak']=lab.measurements(args.soak_seconds,args.concurrency,args.soak_rate);lab.mark('soak_measurement')
         if args.stable:

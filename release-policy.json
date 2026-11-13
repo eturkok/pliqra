@@ -1,7 +1,7 @@
 {
   "previous_release": {
-    "version": "2.4.0",
-    "image": "ghcr.io/eturkok/pliqra@sha256:b8d710ac3617fe21032272d74275f1c16231e370a58d85abb8f948751b79cae5",
+    "version": "2.4.1",
+    "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
     "protocol": "pliqra/1.0"
   },
   "sdk_release": "v2.2.1",

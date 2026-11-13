@@ -88,6 +88,6 @@ The [real-endpoint record](evidence/behavior-checks-2.4.json) captures four succ
 
 Separate automated tests change a tool response at the same endpoint, verify failure/recovery transitions and retained last success, reject over-budget calls, stop remaining checks after edits, distinguish timeouts/provider errors, and cover atomic claims, revoked owners and backup migration. PostgreSQL tests exercise shared claims and expired-replica interruption. The local real-model run did not change model weights or establish broad JSON/tool quality.
 
-## Advisory application impact — unreleased source
+## Advisory application impact — 2.5.0
 
 **Model health → Application impact** relates failed assertions/execution errors to retained, authorized live bindings and configuration-eligible alternatives. It reports stale observations, existing contract staleness and scan limits without making a model call or changing traffic. `GET /api/v1/behavior-checks/{id}/impact` provides the same paginated assessment. [Interpretation and API limits](OPERATIONS_TOOLS.md#from-behavior-failures-to-application-impact).

@@ -1,5 +1,6 @@
 """Standalone synthetic model server. No Pliqra imports, external models or real billing."""
 import json
+from collections import deque
 import os
 import threading
 import time
@@ -8,6 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 LOCK = threading.Lock()
 COUNTS = {'accepted': 0, 'completed': 0, 'disconnected': 0}
 BEHAVIOR = {'mode': 'healthy'}
+TRACE_PARENTS = deque(maxlen=256)
 TEXT = 'Synthetic customer acceptance 🌍. This is a deterministic fixture, not a real language model.'
 
 
@@ -30,6 +32,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/v1/models':
             return self.respond(200, {'data': [{'id': 'synthetic-chat'}]})
+        if self.path == '/fixture/trace-parents':
+            with LOCK:
+                return self.respond(200, {'parents': list(TRACE_PARENTS)})
         if self.path == '/fixture/counts':
             with LOCK:
                 return self.respond(200, dict(COUNTS))
@@ -51,6 +56,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.respond(401, {'error': 'Synthetic credential mismatch'})
         with LOCK:
             COUNTS['accepted'] += 1
+            TRACE_PARENTS.append(self.headers.get('traceparent', '')[:55])
         tool = bool(body.get('tools'))
         args = '{"city":"Izmir"}'
         truncated = 'fixture:truncate' in json.dumps(body)

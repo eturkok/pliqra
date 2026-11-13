@@ -1,6 +1,6 @@
 # Operational decision tools
 
-**Source delivery, unreleased.** These additive management features are on `main`; the published **2.4.1** image and SDK **1.0.1** remain unchanged. Build the current source to use them. No protocol, inference-contract or database-schema migration is required (Protocol 1.0, revision 5, schema 7).
+Available in **stable Gateway 2.5.0**, through the prebuilt image and source installation. SDK 1.0.1, Protocol 1.0, inference revision 5 and schema 7 remain unchanged; no client or storage migration is required from 2.4.1.
 
 ## Diagnose before making a model call
 
@@ -40,7 +40,7 @@ This is advisory. Reading the report never invokes a model, changes capabilities
 
 ## Content-free OpenTelemetry traces
 
-Tracing is disabled by default. The source-built image includes the SDK and HTTP/protobuf OTLP exporter; no separate gateway build or tracing server is needed unless tracing is enabled. Configure a collector reachable from the gateway:
+Tracing is disabled by default. The prebuilt and source-built images include the SDK and HTTP/protobuf OTLP exporter; no separate gateway build or tracing server is needed unless tracing is enabled. Configure a collector reachable from the gateway:
 
 ```sh
 PLIQRA_OTEL_ENABLED=1
@@ -69,7 +69,7 @@ PLIQRA_TRUSTED_PROXIES=10.42.4.0/24,2001:db8:42::/64
 
 The immediate socket peer must be trusted. A single, bounded `X-Forwarded-For` chain is walked from right to left, removing trusted hops until the first untrusted address. Invalid or duplicate forwarded headers from trusted peers are rejected. The proxy must append the actual peer or replace untrusted input. Do not trust every address, a whole shared cluster, or the public internet. If a load balancer removes the client chain, its address conservatively shares one bucket. This setting controls sign-in buckets only; it does not enable arbitrary forwarded host/scheme trust. Continue setting `PLIQRA_PUBLIC_URL` and secure cookies for HTTPS deployments.
 
-For Helm, use `extraEnv` for proxy/tracing settings and `valueFrom.secretKeyRef` for collector headers; the existing chart supports these without a chart upgrade. The published chart's default image does not include these unreleased source features: explicitly select your own built image/digest. Restart all replicas with the same proxy policy and workspace encryption key.
+For Helm, use `extraEnv` for proxy/tracing settings and `valueFrom.secretKeyRef` for collector headers; the existing chart supports these without a chart upgrade. Chart 0.3.1 defaults to Gateway 2.2.1: explicitly select Gateway 2.5.0 and its published digest. Restart all replicas with the same proxy policy and workspace encryption key.
 
 ## Gateway policy files in Git
 
@@ -100,7 +100,7 @@ Open **Advanced tools → Policy files**. Load an export or example, edit the ma
 
 ### CLI and CI
 
-The source-built Python installation/container provides `python -m pliqra policy`. It uses normal administrator sign-in and CSRF, verified remote HTTPS, no automatic apply retry, and no alternative management-key bypass. Set `PLIQRA_ADMIN_EMAIL`; provide the password through a protected `PLIQRA_ADMIN_PASSWORD` environment variable or the interactive prompt. Never commit credentials or place them in arguments. OIDC-only administrators can use the console/API through their existing authenticated session; the CLI currently requires a local administrator account.
+The Python installation/container provides `python -m pliqra policy`. It uses normal administrator sign-in and CSRF, verified remote HTTPS, no automatic apply retry, and no alternative management-key bypass. Set `PLIQRA_ADMIN_EMAIL`; provide the password through a protected `PLIQRA_ADMIN_PASSWORD` environment variable or the interactive prompt. Never commit credentials or place them in arguments. OIDC-only administrators can use the console/API through their existing authenticated session; the CLI currently requires a local administrator account.
 
 ```sh
 python -m pliqra policy export --url https://gateway.example.com --slug support --output policies.json
@@ -127,4 +127,4 @@ The tracing API/exporter follows the [OpenTelemetry Python instrumentation](http
 
 [Source validation record](evidence/operational-tools-source.json): 376 Python tests with real PostgreSQL and all 18 Python/JavaScript/Go HTTP compatibility combinations, 10 console tests, 60 responsive/theme checks, and no known advisories across 47 locked runtime packages. The local Docker build called an actual HTTP model fixture, retained an incoming trace parent and exported content-free spans to an actual OTLP HTTP collector. Atomic two-replica sign-in admission and conditional policy apply, stale/expired plans, rollback, client-address spoofing, fast-clock housekeeping, canary impact and stream lifetimes have executable coverage.
 
-These are source/synthetic checks. They do not substitute for the next version's exact-image release, upgrade/recovery, multi-architecture and soak gates or customer-model/vendor acceptance.
+The linked source record is historical pre-release evidence. [2.5.0 release notes](releases/v2.5.0.md) and the published acceptance archive identify the exact-image release, upgrade/recovery, multi-architecture and soak results. Customer-model/vendor acceptance remains deployment-specific.

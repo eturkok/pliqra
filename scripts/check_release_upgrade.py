@@ -176,11 +176,21 @@ def check(image, output):
             assert time.monotonic()<deadline,'Behavior check did not finish'
             time.sleep(.1)
         assert runs[0]['status']=='passed'
+        policy_document={'format':'pliqra/policies/1','gateways':[{'name':'Preserved policy file','slug':'preserved-file','config':{'services':['chat'],'max_concurrency':12}}],
+                         'mapping':{'services':{'chat':service['id']}}}
+        policy_plan=api(client,'/api/v1/policies/plan',policy_document).json()
+        api(client,'/api/v1/policies/apply',{'plan':policy_plan['plan'],'approve':True})
+        assert not api(client,'/api/v1/policies/plan',policy_document).json()['has_changes']
+        policy_document['gateways'][0]['config']['max_concurrency']=13
+        pre_restore_plan=api(client,'/api/v1/policies/plan',policy_document).json()['plan']
+        policy_document['gateways'][0]['config']['max_concurrency']=12
+        fixture.mark('policy_file_applied_and_drift_checked_before_restart')
         current_archive=api(client,'/api/v1/backups',{'password':password}).content
         client.close()
         client=fixture.gateway(image,volume)
         clients.append(client)
         authenticate(client,email,password)
+        assert not api(client,'/api/v1/policies/plan',policy_document).json()['has_changes']
         preserved=next(r for r in api(client,'/api/v1/behavior-checks').json()['items'] if r['id']==watch['id'])
         assert preserved['enabled'] and preserved['daily_runs']==1 and preserved['last_success_at']
         assert api(client,watch_path+'/runs').json()['total']==1
@@ -190,6 +200,10 @@ def check(image, output):
         assert not restored['enabled'] and restored['daily_runs']==1 and restored['last_success_at']==preserved['last_success_at']
         assert api(client,watch_path+'/runs').json()['total']==1
         fixture.mark('schema_seven_checks_survive_restart_and_restore_paused_without_replay')
+        assert not api(client,'/api/v1/policies/plan',policy_document).json()['has_changes']
+        rejected=client.post('/api/v1/policies/apply',json={'plan':pre_restore_plan,'approve':True})
+        assert rejected.status_code in (412,422),rejected.status_code
+        fixture.mark('policy_files_survive_restart_restore_and_pre_restore_plan_is_rejected')
         api(client, '/api/v1/projects', {'name': 'After backup'}, 201)
         restore = {'password': 'incorrect-backup-password', 'archive': base64.b64encode(archive).decode(), 'confirmation': 'RESTORE'}
         api(client, '/api/v1/backups/restore', restore, 422)

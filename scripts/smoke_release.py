@@ -41,6 +41,12 @@ def smoke(base: str, version: str) -> None:
     assert b'data-theme-select' in read('/static/theme.js'), 'Published image is missing theme controls'
     assert b'pliqra.appearance' in read('/static/theme.js'), 'Published image is missing saved appearance'
     assert b'[data-theme="dark"]' in read('/static/theme.css'), 'Published image is missing the dark palette'
+    assert b'/static/operations-tools.js' in console
+    assert b'Connection diagnosis' in read('/static/operations-tools.js')
+    for path in ('/api/v1/diagnostics/runtime', '/api/v1/behavior-checks/missing/impact'):
+        try: read(path)
+        except HTTPError as error: assert error.code == 401, error.code
+        else: raise AssertionError('Anonymous operational access must be rejected')
     try:
         read("/api/v1/settings")
     except HTTPError as error:
@@ -49,7 +55,7 @@ def smoke(base: str, version: str) -> None:
         raise AssertionError("Anonymous management access must be rejected")
     print(json.dumps({"version": version, "health": "ok", "fresh_workspace": True,
                       "anonymous_management": "rejected", "protocol": discovery["protocol"],
-                      "console_theme_assets": "verified"}))
+                      "console_theme_assets": "verified", "operational_assets_and_anonymous_boundaries": "verified"}))
 
 
 if __name__ == "__main__":

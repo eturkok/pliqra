@@ -1,8 +1,8 @@
 # Delivery status and roadmap
 
-## Current source delivery — operational decision tools
+## Stable 2.5.0 — operational decision tools
 
-Published stable: **2.4.1**. The following additive work is implemented on `main` and is **unreleased**. The next version's image/release remains a separate delivery gate; existing artifact versions and compatibility identifiers are unchanged.
+Published stable: **2.5.0**. The following additive tracks ship in the prebuilt image, console and management APIs, with a policy CLI. SDK/protocol/storage compatibility identifiers remain unchanged.
 
 | Track | Delivered acceptance |
 |---|---|
@@ -14,7 +14,7 @@ Published stable: **2.4.1**. The following additive work is implemented on `main
 
 [Operating guide and exact boundaries](OPERATIONS_TOOLS.md). These tracks reuse existing admission, policy/version, binding, behavior and Fleet primitives. No new controller, database service, schema or protocol revision is required.
 
-Before the next stable release: run the existing exact-image, upgrade/recovery, multi-architecture and synthetic acceptance gates; publish new evidence tied to that artifact. Customer model/vendor acceptance and independent protocol adoption remain external.
+The [2.5.0 release](releases/v2.5.0.md) is gated on exact-image operational workflows, upgrade/recovery from 2.4.1, native multi-architecture checks and the declared synthetic soak. Customer model/vendor acceptance and independent protocol adoption remain external.
 
 ## Earlier delivery history
 
