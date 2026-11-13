@@ -79,7 +79,7 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m pip install -r requirements-dev.txt
-      - run: python -m pytest tests/test_scale.py tests/test_multidc.py tests/test_fleet.py -q
+      - run: python -m pytest tests/test_scale.py tests/test_multidc.py tests/test_fleet.py tests/test_login_control.py tests/test_policy_files.py -q
   clients:
     runs-on: ubuntu-latest
     steps:

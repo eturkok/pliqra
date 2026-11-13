@@ -6,6 +6,7 @@ import json
 import re
 import time
 from typing import Annotated, Literal
+from .telemetry import traced
 
 import httpx
 from fastapi import HTTPException
@@ -243,6 +244,7 @@ class PolicyEngine:
     def buffered(self, profile):
         return bool(profile and any('output' in step['stages'] for step in profile['config']['guardrails']))
 
+    @traced("guardrail.check")
     async def check(self, profile, stage, body, client, event_id=None, response=None, only=None):
         value = copy.deepcopy(body['messages'] if stage == 'input' else [c['message'] for c in response['choices']])
         for step in ([only] if only else profile['config']['guardrails']):

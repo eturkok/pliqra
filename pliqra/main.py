@@ -173,7 +173,7 @@ def safe_user(row):
     return {key: row[key] for key in ("id", "email", "name", "role", "issuer", "active", "created")}
 
 
-def create_app(data_dir=None, *, database_url=None, database_schema=None, encryption_key=None, organization=None, public_url_override=None, runtime_topology=None):
+def create_app(data_dir=None, *, database_url=None, database_schema=None, encryption_key=None, organization=None, public_url_override=None, runtime_topology=None, telemetry_runtime=None):
     directory = Path(data_dir or env("PLIQRA_DATA_DIR", "data"))
     runtime_topology=runtime_topology or RuntimeTopology.from_env()
     selected_url=database_url if database_url is not None else env('PLIQRA_DATABASE_URL','')
@@ -184,10 +184,12 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         if not addresses:raise RuntimeError('Multi-DC database addresses must be explicit')
         hosts=addresses.split(',')
         if any(h not in ('localhost','127.0.0.1','::1') for h in hosts) and options.get('sslmode')!='verify-full':raise RuntimeError('Remote multi-DC control databases require sslmode=verify-full')
-    store, login_attempts = Store(directory,database_url,database_schema), {}
+    store = Store(directory,database_url,database_schema)
     try:
         store.runtime_topology=runtime_topology
         vault = Vault(directory,store,encryption_key)
+        from .login_control import LoginControl
+        login_control = LoginControl(store, vault)
     except BaseException:
         store.close()
         raise
@@ -197,45 +199,56 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
     base_path='/org/'+organization['slug'] if organization else ''
     cookie_name='plq_session_'+organization['id'] if organization else 'plq_session'
 
+    from .telemetry import Telemetry, TracingMiddleware, TracingTransport
+    telemetry = telemetry_runtime or Telemetry()
+
     @asynccontextmanager
     async def lifespan(app):
-        async with httpx.AsyncClient(timeout=httpx.Timeout(90, connect=5), follow_redirects=False, limits=httpx.Limits(max_connections=200, max_keepalive_connections=40), trust_env=False,verify=http_verify(),transport=getattr(app.state,'upstream_transport',None)) as client:
-            app.state.loop = asyncio.get_running_loop()
-            app.state.client = client
-            app.state.gateway = Gateway(store, vault, client)
-            from .operations import maintain
-            worker = asyncio.create_task(maintain(app))
-            heartbeat = asyncio.create_task(app.state.gateway.cluster.heartbeat())
-            from .cluster import restart_when_fenced
-            restart_task=asyncio.create_task(restart_when_fenced(app.state.gateway.cluster)) if env('PLIQRA_RESTART_ON_FENCE','0')=='1' else None
-            app.state.jobs = set()
-            from .batches import worker as batch_worker
-            batch_worker_task=asyncio.create_task(batch_worker(app))
-            from .platform import analytics_worker
-            analytics_task=asyncio.create_task(analytics_worker(app))
-            from .fleet import worker as fleet_worker
-            fleet_task=asyncio.create_task(fleet_worker(app))
-            from .behavior import worker as behavior_worker
-            behavior_task = asyncio.create_task(behavior_worker(app))
-            try:
-                yield
-            finally:
-                if hasattr(app.state,'organizations'):await app.state.organizations.close()
-                worker.cancel()
-                heartbeat.cancel()
-                if restart_task:restart_task.cancel()
-                batch_worker_task.cancel()
-                analytics_task.cancel()
-                fleet_task.cancel()
-                behavior_task.cancel()
-                for job in list(app.state.jobs):
-                    job.cancel()
-                await asyncio.gather(worker, heartbeat, batch_worker_task, analytics_task, fleet_task, behavior_task, *([restart_task] if restart_task else []), *list(app.state.jobs), return_exceptions=True)
-                app.state.gateway.cluster.close()
-        store.close()
+        try:
+            telemetry.start()
+            transport = TracingTransport(getattr(app.state, "upstream_transport", None) or httpx.AsyncHTTPTransport(verify=http_verify(), trust_env=False, limits=httpx.Limits(max_connections=200, max_keepalive_connections=40)))
+            async with httpx.AsyncClient(timeout=httpx.Timeout(90, connect=5), follow_redirects=False, limits=httpx.Limits(max_connections=200, max_keepalive_connections=40), trust_env=False,verify=http_verify(),transport=transport) as client:
+                app.state.loop = asyncio.get_running_loop()
+                app.state.client = client
+                app.state.gateway = Gateway(store, vault, client)
+                from .operations import maintain
+                worker = asyncio.create_task(maintain(app))
+                heartbeat = asyncio.create_task(app.state.gateway.cluster.heartbeat())
+                from .cluster import restart_when_fenced
+                restart_task=asyncio.create_task(restart_when_fenced(app.state.gateway.cluster)) if env('PLIQRA_RESTART_ON_FENCE','0')=='1' else None
+                app.state.jobs = set()
+                from .batches import worker as batch_worker
+                batch_worker_task=asyncio.create_task(batch_worker(app))
+                from .platform import analytics_worker
+                analytics_task=asyncio.create_task(analytics_worker(app))
+                from .fleet import worker as fleet_worker
+                fleet_task=asyncio.create_task(fleet_worker(app))
+                from .behavior import worker as behavior_worker
+                behavior_task = asyncio.create_task(behavior_worker(app))
+                try:
+                    yield
+                finally:
+                    if hasattr(app.state,'organizations'):await app.state.organizations.close()
+                    worker.cancel()
+                    heartbeat.cancel()
+                    if restart_task:restart_task.cancel()
+                    batch_worker_task.cancel()
+                    analytics_task.cancel()
+                    fleet_task.cancel()
+                    behavior_task.cancel()
+                    for job in list(app.state.jobs):
+                        job.cancel()
+                    await asyncio.gather(worker, heartbeat, batch_worker_task, analytics_task, fleet_task, behavior_task, *([restart_task] if restart_task else []), *list(app.state.jobs), return_exceptions=True)
+                    app.state.gateway.cluster.close()
+        finally:
+            store.close()
+            if telemetry_runtime is None:
+                await asyncio.to_thread(telemetry.close)
 
     app = FastAPI(title="Pliqra", version=__version__, description="Endpoint-first model connectivity. Management API, OpenAI-compatible chat and Pliqra Connection Protocol 1.0 with legacy compatibility.", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.store, app.state.vault, app.state.oauth = store, vault, oauth
+    app.state.telemetry = telemetry
+    app.state.login_control = login_control
     app.add_middleware(WorkspaceSessionMiddleware, key_provider=lambda:vault.session_secret()+store.setting('auth_epoch',''), session_cookie='plq_oidc_'+organization['id'] if organization else 'plq_oidc', path=base_path or '/', same_site="lax", https_only=secure_cookies, max_age=600)
 
     @app.middleware("http")
@@ -361,14 +374,7 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
         response.set_cookie(cookie_name, token, httponly=True, secure=secure_cookies, samesite="lax", max_age=43200, path=base_path or '/')
         return response
 
-    def throttle(request):
-        address = request.client.host if request.client else "unknown"
-        attempts = [value for value in login_attempts.get(address, []) if value > now() - 300]
-        if len(attempts) >= 15:
-            raise HTTPException(429, "Too many sign-in attempts. Try again in five minutes.")
-        if len(login_attempts) > 10000:
-            login_attempts.clear()
-        login_attempts[address] = attempts + [now()]
+    throttle = login_control.check
 
     @app.get("/readyz", tags=["System"])
     @app.get("/healthz", tags=["System"])
@@ -836,6 +842,10 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
     mount_topology(app)
     from .fleet import mount as mount_fleet
     mount_fleet(app)
+    from .insights import mount as mount_insights
+    mount_insights(app)
+    from .policy_files import mount as mount_policy_files
+    mount_policy_files(app)
     from .identity_profiles import mount as mount_identity_profiles
     mount_identity_profiles(app)
     if organization is None:
@@ -871,4 +881,5 @@ def create_app(data_dir=None, *, database_url=None, database_schema=None, encryp
     app.add_middleware(ProtocolVersionMiddleware)
     from .contracts import BindingHeaderMiddleware
     app.add_middleware(BindingHeaderMiddleware)
+    app.add_middleware(TracingMiddleware, runtime=lambda: telemetry)
     return app

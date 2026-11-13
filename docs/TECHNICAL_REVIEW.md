@@ -1,6 +1,12 @@
 # Pliqra — technical architecture review
 
-> Current release: Gateway 2.3.0 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
+> Current release: Gateway 2.4.1 implements stable [Connection Protocol 1.0](protocol/1.0/SPEC.md), retaining the 0.1 envelope for legacy clients. Draft references in the dated review/migration history below describe earlier releases.
+
+## Operational follow-through — 14 November 2026
+
+The unreleased source delivery adds diagnosis, advisory behavior impact, optional OTLP tracing, shared local sign-in admission and conditional policy-file reconciliation. These extend the modular monolith's existing boundaries: policy files use current validation/version history, diagnosis reuses request preparation without admission, behavior impact does not mutate evidence/routing, and login uses the existing `auth_attempts` table under the shared database transaction. No schema/protocol/SDK revision is needed. Tracing is explicit and disabled by default, with bounded background export and no content capture. [Operational guide](OPERATIONS_TOOLS.md).
+
+The current prebuilt 2.4.1 image remains immutable and does not include these source additions. New exact-image release/upgrade and customer-environment acceptance must not be inferred from source tests or earlier delivery evidence.
 
 ## End-to-end review — 11 November 2026
 

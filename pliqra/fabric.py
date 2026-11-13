@@ -1,5 +1,6 @@
 """Management API for named gateways and reusable guardrails."""
 import json
+from contextlib import nullcontext
 import sqlite3
 from typing import Annotated, Literal
 
@@ -75,14 +76,14 @@ def mount(app):
 
     app.state.validate_gateway = validate_gateway
 
-    def save_gateway(body, p, record_id=None, request=None):
+    def save_gateway(body, p, record_id=None, request=None, *, _locked=False):
         config = validate_gateway(body)
         previous = engine.profile(record_id) if record_id else None
         record_id, instant = record_id or uid('gw_'), now()
         fields = {'name': body.name.strip(), 'slug': body.slug, 'config': encode(config),
                   'version': previous['version']+1 if previous else 1, 'updated': instant}
         try:
-            with store.transaction():
+            with (nullcontext() if _locked else store.transaction()):
                 if previous:
                     previous = engine.profile(record_id)
                     fields['version'] = previous['version'] + 1
@@ -98,6 +99,8 @@ def mount(app):
         except sqlite3.IntegrityError:
             raise HTTPException(409, 'A gateway with this address already exists')
         return public_gateway(engine.profile(record_id))
+
+    app.state.save_gateway = save_gateway
 
     @app.get('/api/v1/gateways', tags=['Gateways'])
     def gateways(p=Depends(admin)):

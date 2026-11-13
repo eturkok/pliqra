@@ -1,4 +1,23 @@
-# Roadmap delivery — 2.1
+# Delivery status and roadmap
+
+## Current source delivery — operational decision tools
+
+Published stable: **2.4.1**. The following additive work is implemented on `main` and is **unreleased**. The next version's image/release remains a separate delivery gate; existing artifact versions and compatibility identifiers are unchanged.
+
+| Track | Delivered acceptance |
+|---|---|
+| Read-only diagnosis | UI/API explain current identity, access, binding, routing and quota checks; optional bounded metadata discovery; default makes no upstream call or accounting writes. |
+| Behavior → application impact | Failed assertions/errors map to retained authorized bindings, required capabilities and configuration-eligible alternatives; stale observations are explicit; no automatic rerouting. |
+| OpenTelemetry | Opt-in real OTLP HTTP/protobuf export; W3C parent propagation; streaming-aware request/upstream lifetimes; database, Secret and guardrail spans; content/credential exclusion. |
+| Shared sign-in protection | Database-atomic 15/5-minute admission, restart persistence, HMAC address buckets and explicit trusted-proxy chains; exact shared admission tested with two PostgreSQL replicas. |
+| Git-managed gateway policies | Explicit local mappings, full drift/impact plan, expiring actor/workspace-bound signature, atomic conditional apply, CLI and console; stale dependency and rollback tests. |
+
+[Operating guide and exact boundaries](OPERATIONS_TOOLS.md). These tracks reuse existing admission, policy/version, binding, behavior and Fleet primitives. No new controller, database service, schema or protocol revision is required.
+
+Before the next stable release: run the existing exact-image, upgrade/recovery, multi-architecture and synthetic acceptance gates; publish new evidence tied to that artifact. Customer model/vendor acceptance and independent protocol adoption remain external.
+
+## Earlier delivery history
+
 
 The five engineering tracks previously listed as future scope are implemented in 2.0. Default installation remains endpoint-first, platform-independent and one container. The earlier roadmap was a scope boundary, not a tracked delivery plan; 2.0 ties each track to implementation, UI/API controls, tests and operating guides.
 

@@ -5,6 +5,7 @@ import sqlite3
 import threading
 from pathlib import Path
 from contextlib import contextmanager
+from .telemetry import traced
 
 import psycopg
 from psycopg.rows import dict_row
@@ -74,11 +75,13 @@ class PostgresStore(SQLiteStore):
         self.conn.execute('DELETE FROM schema_metadata')
         self.conn.execute('INSERT INTO schema_metadata VALUES (%s)',(value,))
 
+    @traced("database.query")
     def all(self,sql,args=()):
         with self.lock:
             self.ensure_connection()
             return self._execute(sql,args).fetchall()
 
+    @traced("database.query")
     def run(self,sql,args=()):
         with self.lock:
             self.ensure_connection()

@@ -39,3 +39,7 @@ Configured request/token limits, retention and concurrency ceilings are policy v
 Global ingress, verified TLS, PostgreSQL replication/promotion/durability, host patches, model capacity, regional network behavior, actual IdP/guardrail integrations and workload-specific acceptance belong to the installation. Run a staged pilot with your endpoint before broad rollout. Unavailable infrastructure, unaudited third-party safety, commercial support or external adoption are not asserted by the stable version number.
 
 [Protocol 1.0 and release evidence](evidence/protocol-1.0.json) · [Previous 2.1 baseline](STABLE_2_1.md) · [Security policy](../SECURITY.md) · [Issue tracker](https://github.com/eturkok/pliqra/issues)
+
+## Unreleased source additions
+
+Diagnosis, behavior-to-binding impact, optional OTLP tracing, shared sign-in throttling and policy files are implemented on main, separately from the stable 2.4.1 image. [Scope and operational limits](OPERATIONS_TOOLS.md). Protocol 1.0, SDK 1.0.1, schema 7 and inference revision 5 remain unchanged. Source tests do not replace the next release's exact-image acceptance or customer-environment evidence.

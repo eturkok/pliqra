@@ -300,7 +300,7 @@ async def maintain(app):
                     store.run("DELETE FROM saml_flows WHERE expires<?",(now(),))
                     store.run("DELETE FROM saml_assertions WHERE expires<?",(now(),))
                     store.run("DELETE FROM workload_assertions WHERE expires<?",(now(),))
-                    store.run("DELETE FROM auth_attempts WHERE created<?",(now()-300,))
+                    store.run("DELETE FROM auth_attempts WHERE created<?",(store.clock()-300,))
                     store.run("DELETE FROM api_keys WHERE workload_provider_id IS NOT NULL AND expires<?",(cutoff,))
     except asyncio.CancelledError:
         raise

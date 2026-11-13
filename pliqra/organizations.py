@@ -38,7 +38,7 @@ class Workspaces:
             key=base64.urlsafe_b64encode(hmac.new(master,('pliqra-org:'+row['id']).encode(),hashlib.sha256).digest())
             schema='org_'+hashlib.sha256((getattr(self.store,'schema','')+row['id']).encode()).hexdigest()[:40]
             public=self.app.state.context['public_url']
-            child=create_app(self.store.directory/'organizations'/row['id'],database_url=getattr(self.store,'database_url',''),database_schema=schema,encryption_key=key,organization=row,runtime_topology=self.store.runtime_topology,public_url_override=public+'/org/'+row['slug'] if public else '')
+            child=create_app(self.store.directory/'organizations'/row['id'],telemetry_runtime=self.app.state.telemetry,database_url=getattr(self.store,'database_url',''),database_schema=schema,encryption_key=key,organization=row,runtime_topology=self.store.runtime_topology,public_url_override=public+'/org/'+row['slug'] if public else '')
             lifespan=child.router.lifespan_context(child)
             try:await lifespan.__aenter__()
             except BaseException:

@@ -279,6 +279,8 @@ class Gateway:
             raw=encode(body)
             content={'request':body} if len(raw.encode('utf-8'))<=64000 else {'request_excerpt':raw.encode('utf-8')[:64000].decode('utf-8',errors='ignore'),'request_truncated':True}
             self.store.insert('event_content',{'id':event_id,'payload':self.vault.encrypt(encode(content)),'created':now()})
+        from .telemetry import correlate
+        correlate(event_id)
         return event_id,started
 
     def capture_response(self,event_id,value):

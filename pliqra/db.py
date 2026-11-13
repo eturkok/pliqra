@@ -8,6 +8,7 @@ import fcntl
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
+from .telemetry import traced
 
 from .storage_schema import BASE_SCHEMA
 
@@ -205,6 +206,7 @@ class SQLiteStore:
     def set_setting(self, key, value):
         self.run("INSERT INTO settings VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, encode(value)))
 
+    @traced("database.query")
     def all(self, sql, args=()):
         with self.lock:
             return [dict(row) for row in self.conn.execute(sql, args).fetchall()]
@@ -213,6 +215,7 @@ class SQLiteStore:
         rows = self.all(sql, args)
         return rows[0] if rows else None
 
+    @traced("database.query")
     def run(self, sql, args=()):
         with self.lock:
             return self.conn.execute(sql, args)

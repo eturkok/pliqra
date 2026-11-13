@@ -37,6 +37,10 @@ Bindings are opt-in and track registered service/policy configuration. Evaluatio
 
 The 2.3 application impact reports and existing-client contract protection remain available. [Review before publication and protect an existing client →](docs/CONTRACT_CHANGES.md)
 
+## Operational tools on main
+
+**New source capabilities; not yet in the published 2.4.1 image.** Explain a denied connection without a model call; connect behavior failures to application contracts and eligible alternatives; export content-free OpenTelemetry traces; share sign-in limits across replicas; and review/apply Git-managed gateway policies atomically. Available through the administrator console and APIs, with a small policy CLI. [Workflows, configuration and limits →](docs/OPERATIONS_TOOLS.md)
+
 ## What Pliqra brings
 
 | Capability | What you get |

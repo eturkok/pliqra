@@ -91,9 +91,10 @@ def mount(app):
         config=json.loads(provider['config'])
         bucket=digest(body.provider_id+':'+(request.client.host if request.client else 'unknown'))
         with store.transaction():
-            if store.one('SELECT COUNT(*) AS n FROM auth_attempts WHERE bucket=? AND created>?',(bucket,now()-60))['n']>=60:
+            instant = store.clock()
+            if store.one('SELECT COUNT(*) AS n FROM auth_attempts WHERE bucket=? AND created>?',(bucket,instant-60))['n']>=60:
                 raise HTTPException(429,'Workload exchange limit reached',headers={'Retry-After':'60'})
-            store.insert('auth_attempts',{'id':uid('auth_'),'bucket':bucket,'created':now()})
+            store.insert('auth_attempts',{'id':uid('auth_'),'bucket':bucket,'created':instant})
         try:
             with app.state.gateway.checking():
                 cached=cache.get(provider['id'])

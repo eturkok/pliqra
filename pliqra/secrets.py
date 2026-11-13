@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Annotated, Literal
 from urllib.parse import urlsplit,unquote,quote
+from .telemetry import traced
 
 from fastapi import Depends,HTTPException
 from pydantic import BaseModel,ConfigDict,Field,model_validator
@@ -52,6 +53,7 @@ class SecretTest(BaseModel):
 class SecretResolver:
     def __init__(self,store,vault,client):self.store=store;self.vault=vault;self.client=client
 
+    @traced("secret.resolve")
     async def resolve(self,value):
         if not value.startswith('secret://'):return value
         try:

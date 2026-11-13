@@ -7,7 +7,11 @@ from pathlib import Path
 
 
 def main():
-    parser=argparse.ArgumentParser(description='Pliqra gateway and offline recovery tools')
+    import sys
+    if sys.argv[1:2] == ['policy']:
+        from .policy_cli import main as policy_main
+        raise SystemExit(policy_main(sys.argv[2:]))
+    parser=argparse.ArgumentParser(description='Pliqra gateway and offline recovery tools', epilog='Policy files: python -m pliqra policy --help')
     parser.add_argument('command',nargs='?',default='serve',choices=['serve','check','backup','restore','reset-password'])
     parser.add_argument('--file',help='Backup archive input/output path')
     parser.add_argument('--email',help='Local account to recover')

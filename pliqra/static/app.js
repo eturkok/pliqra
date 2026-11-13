@@ -85,6 +85,7 @@ async function refreshData() {
  if(window.PliqraUI)await PliqraUI.load();
  if(window.PliqraEnterprise)await PliqraEnterprise.load();
  if(window.PliqraFleet)await PliqraFleet.load();
+ if(window.PliqraOps)await PliqraOps.load();
 }
 
 function toast(message, error=false) {
@@ -93,7 +94,7 @@ function toast(message, error=false) {
 }
 
 const navigation = [["overview","Overview","grid"],["connections","Connections","plug"],["services","AI services","route"],["behavior","Model health","activity"],["gateways","Gateways","route"],["requests","Requests","activity"],["usage","Usage & cost","chart"],["playground","Playground","chat"],["model-lab","Model lab","models"],["workflows","Workflows","bolt"]];
-const management = [["guardrails","Guardrails","shield"],["access","Projects & keys","key"],["evaluations","Evaluations","bolt"],["operations","Operations","shield"],["identity","Identity & access","users"],["platform","Workspace & identity","shield"],["fleet","Fleet management","route"],["settings","Settings & API","settings"]];
+const management = [["diagnostics","Connection diagnosis","activity"],["policy-files","Policy files","code"],["guardrails","Guardrails","shield"],["access","Projects & keys","key"],["evaluations","Evaluations","bolt"],["operations","Operations","shield"],["identity","Identity & access","users"],["platform","Workspace & identity","shield"],["fleet","Fleet management","route"],["settings","Settings & API","settings"]];
 
 function renderShell() {
  const u=state.session.user;
@@ -185,7 +186,7 @@ function renderView(){
  const label=[...navigation,...management].find(v=>v[0]===state.view)?.[1]||"Overview";
  if(management.some(v=>v[0]===state.view)){const advanced=document.getElementById("advanced-nav");if(advanced)advanced.open=true;}
  document.title=`${label} — Pliqra`;document.getElementById("breadcrumb").textContent=label;
- const views={overview,connections:connectionsView,services:servicesView,requests:requestsView,usage:usageView,access:accessView,identity:identityView,settings:settingsView,playground:playgroundView,...(window.PliqraUI?.views||{}),...(window.PliqraEnterprise?.views||{}),...(window.PliqraFleet?.views||{}),...(window.PliqraBehavior?.views||{})};
+ const views={overview,connections:connectionsView,services:servicesView,requests:requestsView,usage:usageView,access:accessView,identity:identityView,settings:settingsView,playground:playgroundView,...(window.PliqraUI?.views||{}),...(window.PliqraEnterprise?.views||{}),...(window.PliqraFleet?.views||{}),...(window.PliqraBehavior?.views||{}),...(window.PliqraOps?.views||{})};
  document.getElementById("view").innerHTML=(views[state.view]||overview)();
  if(["usage","requests"].includes(state.view)&&window.PliqraUI)document.querySelector(".page-head")?.insertAdjacentHTML("afterend",PliqraUI.filterBar());
  document.querySelectorAll(".nav [data-view]").forEach(b=>{const active=b.dataset.view===state.view;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
@@ -293,6 +294,7 @@ document.addEventListener("click",async e=>{
  if(a==="skip-content"){e.preventDefault();document.getElementById("view").focus({preventScroll:true});window.scrollTo({top:0,behavior:"instant"});return;}
  try{
   if(a==="j-copy-key"){await copy(el.dataset.key);toast("Access key copied.");return;}
+  if(window.PliqraOps&&await PliqraOps.handle(a,id,el))return;
   if(window.PliqraJourney&&await PliqraJourney.handle(a))return;
   if(window.PliqraBehavior&&await PliqraBehavior.handle(a,id,el))return;
   if(window.PliqraFleet&&await PliqraFleet.handle(a,id,el,e))return;

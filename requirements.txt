@@ -8,3 +8,5 @@ python3-saml==1.16.0
 python-multipart==0.0.33
 jsonschema==4.26.0
 psycopg[binary]==3.3.8
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2

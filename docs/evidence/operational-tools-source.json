@@ -1,0 +1,111 @@
+{
+  "status": "source-validation-only; no new public release",
+  "measured_at": "2026-11-13T22:03:08.188093+00:00",
+  "base_revision": "c4c65809cce62e519849053c2dcc5d7952006d0a",
+  "source_fingerprint": {
+    "sha256": "f97d50f66dc8ed46135b42efed35f9bfabe4a8589eb1220bb41e3ec608ad2a9d",
+    "algorithm": "SHA256 of sorted path + NUL + SHA256(file bytes) + newline entries",
+    "roots": [
+      "pliqra",
+      "tests",
+      "requirements.txt",
+      "requirements.lock",
+      "compose.yaml",
+      ".github/workflows/test.yml",
+      ".env.example"
+    ],
+    "files": 119
+  },
+  "compatibility": {
+    "published_gateway": "2.4.1",
+    "sdk": "1.0.1",
+    "protocol": "1.0",
+    "schema": 7,
+    "inference_contract": 5
+  },
+  "python": {
+    "version": "3.14",
+    "passed": 376,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 92.19,
+    "real_postgresql": true,
+    "required_client_languages": true
+  },
+  "javascript_console": {
+    "passed": 10,
+    "failed": 0
+  },
+  "client_compatibility": {
+    "http_combinations": 18,
+    "generations": [
+      "current",
+      "sdk011"
+    ],
+    "languages": [
+      "python",
+      "javascript",
+      "go"
+    ],
+    "targets": [
+      "gateway",
+      "reference",
+      "legacy-reference"
+    ]
+  },
+  "replica_checks": {
+    "replicas": 2,
+    "postgresql": "18",
+    "sign_in_attempts": 30,
+    "admitted": 15,
+    "rate_limited": 15,
+    "concurrent_policy_apply_statuses": [
+      200,
+      412
+    ],
+    "fast_replica_housekeeping_preserves_authority_window": true
+  },
+  "docker": {
+    "local_image_id": "sha256:c36df3f5a7a9b3453cc0a5592e8319f3efebc7395308819b7c90d1447138f57e",
+    "published": false,
+    "model_http": 200,
+    "diagnosis_http": 200,
+    "trace_parent_preserved": true,
+    "exported_span_names": [
+      "database.query",
+      "pliqra.request",
+      "secret.resolve",
+      "upstream.http"
+    ],
+    "content_excluded": true
+  },
+  "responsive": {
+    "checks": 60,
+    "overflow": 0,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "themes": [
+      "Light",
+      "Dark",
+      "System"
+    ],
+    "views": [
+      "diagnostics",
+      "policy-files",
+      "behavior-impact"
+    ]
+  },
+  "dependencies": {
+    "audited_packages": 47,
+    "advisories": 0
+  },
+  "limits": [
+    "Synthetic model and OTLP receivers, not customer/provider acceptance.",
+    "Local source image; next stable release still needs its exact-image upgrade, recovery, multi-architecture and soak gates.",
+    "No customer identity-provider, real-model semantic quality, WAN or independent protocol certification is claimed."
+  ]
+}
