@@ -73,10 +73,10 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 
 ## Kubernetes and OpenShift
 
-The **official Helm chart 0.4.0** pins Pliqra **2.5.0** by digest. From this repository checkout:
+The **official Helm chart 0.4.0** pins Pliqra **2.5.0** by digest. Install the published package:
 
 ```sh
-helm upgrade --install pliqra ./charts/pliqra --namespace pliqra --create-namespace --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/pliqra-0.4.0.tgz --namespace pliqra --create-namespace --wait
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 

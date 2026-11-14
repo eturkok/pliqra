@@ -13,9 +13,7 @@ Pliqra's optional Helm chart packages the same platform-independent application 
 Use Kubernetes 1.33+ and Helm. The tested Helm version is 4.3.1. A default StorageClass must exist unless you set `persistence.storageClass` or `persistence.existingClaim`.
 
 ```sh
-git clone --depth 1 https://github.com/eturkok/pliqra.git
-cd pliqra
-helm upgrade --install pliqra ./charts/pliqra --namespace pliqra --create-namespace --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/pliqra-0.4.0.tgz --namespace pliqra --create-namespace --wait
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
@@ -25,19 +23,17 @@ The default Service is cluster-internal and ingress is disabled. Initialize the 
 
 ClusterIP alone does not isolate bootstrap from other cluster tenants. In a shared cluster, restrict access with namespace/network controls **before** first setup, use an authorized port-forward for initialization, and verify untrusted pods cannot reach setup. When using the chart's NetworkPolicy, begin with explicit rules or a deny-all ingress policy and add only intended clients after initialization. Verify your CNI's port-forward behavior; do not temporarily expose public ingress to work around it.
 
-Source chart **0.4.0** pins the published **2.5.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
+Chart **0.4.0** pins the published **2.5.0** application image by digest. Chart and application versions have separate lifecycles. To select another image tag deliberately, also clear `image.digest`; a digest takes precedence over a tag.
 
-## Source chart and downloadable packages
+## Verify the published package
 
-The commands above install chart 0.4.0 from source. A separately tagged chart release publishes a checksummed archive; commit/push alone does not publish one. The existing **0.3.1** package below is historical: it pins Gateway **2.2.1** and does **not** contain the new OpenShift profile/Route. For a reproducible source installation, check out your reviewed commit and run `helm package charts/pliqra`; install that exact local archive. See [distribution](DISTRIBUTION.md#kubernetes-chart-distribution).
-
-To verify the older published package:
+[Helm 0.4.0](https://github.com/eturkok/pliqra/releases/tag/helm-v0.4.0) includes the tested archive, SHA-256 checksum and three Kubernetes acceptance reports. Download and verify the archive before installing it from a local path:
 
 ```sh
-curl -fL -o pliqra-0.3.1.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz
-curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/SHA256SUMS
+curl -fL -o pliqra-0.4.0.tgz https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/pliqra-0.4.0.tgz
+curl -fL -o SHA256SUMS https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/SHA256SUMS
 sha256sum --check SHA256SUMS
-helm show values ./pliqra-0.3.1.tgz
+helm show values ./pliqra-0.4.0.tgz
 ```
 
 On macOS, use `shasum -a 256 -c SHA256SUMS` instead. The public GitHub release archive needs no registry login; it can also be mirrored into your own Helm/OCI repository. A checksum detects changed bytes; it is not a separate signature or third-party attestation.
@@ -79,7 +75,7 @@ host=db.example.com port=5432 dbname=pliqra user=pliqra password=YOUR_PASSWORD s
 The configured role needs schema creation/migration permissions. Supply actual credentials through your secret manager or private files with `kubectl create secret generic ... --from-file`, not committed YAML. Then use the [PostgreSQL values example](../charts/pliqra/examples/postgresql.yaml):
 
 ```sh
-helm upgrade --install pliqra ./pliqra-0.3.1.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
+helm upgrade --install pliqra ./pliqra-0.4.0.tgz --namespace pliqra --create-namespace -f postgresql.yaml --wait
 ```
 
 Use this profile on a **fresh installation**. Changing `storage.mode` or an existing SQLite data claim in place is rejected. For SQLite-to-PostgreSQL migration, stop the source and follow [offline migration](PLATFORM.md#backup-and-migration), preserving its encryption key, then install a separate release against the restored database. The chart does not migrate data between backends.
@@ -123,11 +119,11 @@ The chart uses the same `apps/v1` Deployment and ClusterIP Service on both platf
 
 ### Private installation and restricted-v2
 
-Select a project you are authorized to manage, or create one with `oc new-project pliqra`. For the default SQLite profile, from the repository checkout:
+Select a project you are authorized to manage, or create one with `oc new-project pliqra`. For the default SQLite profile, install the published package:
 
 ```sh
-helm upgrade --install pliqra ./charts/pliqra -n pliqra \
-  -f charts/pliqra/examples/openshift.yaml --wait
+helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/pliqra-0.4.0.tgz -n pliqra \
+  --set openshift.enabled=true --wait
 oc -n pliqra port-forward service/pliqra 8088:8080
 ```
 
@@ -142,8 +138,8 @@ Pliqra listens on unprivileged port **8080**, reads application files from `/app
 After private setup, enable the Route with a hostname covered by the existing router certificate. For the same default SQLite installation:
 
 ```sh
-helm upgrade pliqra ./charts/pliqra -n pliqra \
-  -f charts/pliqra/examples/openshift.yaml \
+helm upgrade pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.4.0/pliqra-0.4.0.tgz -n pliqra \
+  --set openshift.enabled=true \
   --set route.enabled=true \
   --set-string route.host=pliqra.apps.example.com \
   --set-string config.publicUrl=https://pliqra.apps.example.com \
@@ -154,7 +150,7 @@ oc -n pliqra get route pliqra
 
 Retain all your reviewed storage, Secret, resource and network values when upgrading; the example above is not a replacement for a customized production values file. Check Route admission, DNS and certificate coverage in your cluster. Route requires the native `route.openshift.io/v1/Route` API, exact HTTPS public URL and secure cookies; Ingress and Route cannot both be enabled. Route can be used independently of the security profile when the platform team manages identity settings another way.
 
-The Route uses **edge TLS termination** and the router's configured certificate; HTTP is redirected to HTTPS by default. Set `route.tls.insecureEdgeTerminationPolicy=None` to reject insecure HTTP instead. The router-to-Pliqra Service connection is HTTP; edge termination does not encrypt that hop. This chart does not support reencrypt/passthrough or inline private keys. Use your platform's supported encrypted transport solution if that hop must be encrypted. The example sets the router timeout to `120s`; review it for actual model request/stream duration. Increasing it does not extend the application's shutdown deadline. Verify incremental SSE delivery, interrupted streams and cancellation; never automatically retry a possibly billed inference call.
+The Route uses **edge TLS termination** and the router's configured certificate; HTTP is redirected to HTTPS by default. Set `route.tls.insecureEdgeTerminationPolicy=None` to reject insecure HTTP instead. The router-to-Pliqra Service connection is HTTP; edge termination does not encrypt that hop. This chart does not support reencrypt/passthrough or inline private keys. Use your platform's supported encrypted transport solution if that hop must be encrypted. The [optional OpenShift values example](../charts/pliqra/examples/openshift.yaml) sets the router timeout to `120s` through `route.annotations`; include that reviewed file when using its timeout setting. The shorter commands above retain your router’s default timeout; review it for actual model request/stream duration. Increasing it does not extend the application's shutdown deadline. Verify incremental SSE delivery, interrupted streams and cancellation; never automatically retry a possibly billed inference call.
 
 Connect an existing model using its reachable HTTP API, for example `http://model-a.models.svc.cluster.local:8000/v1` (adjust cluster DNS and provider API). Applications use `https://pliqra.apps.example.com/v1`, select the published service in `model`, and authenticate with their Pliqra key. Named gateways use `/g/<slug>/v1` on the same Route. Models need no external Route. Registration does not remove existing model Routes or block direct Service access: configure model-side NetworkPolicy/authentication separately to prevent bypassing gateway policies.
 
@@ -218,6 +214,6 @@ The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-versio
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
 
-Source chart **0.4.0** passed **55 rendering/safety checks**, alert-rule tests and **60 live cluster checks** across the three Kubernetes versions (20 per version: SQLite, PostgreSQL and simulated OpenShift identities). All nine general CI jobs passed. The [source-chart validation record](evidence/helm-0.4.0.json) identifies the exact tested package checksum, source commit and reports; it is not a claim that a `helm-v0.4.0` release archive has been published.
+Chart **0.4.0** passed **55 rendering/safety checks**, alert-rule tests and **60 live cluster checks** across the three Kubernetes versions (20 per version: SQLite, PostgreSQL and simulated OpenShift identities). All nine general CI jobs passed. The [validation and delivery record](evidence/helm-0.4.0.json) identifies the source checks and published package. The separately gated [Helm 0.4.0 release](https://github.com/eturkok/pliqra/releases/tag/helm-v0.4.0) carries its exact archive, checksum and three fresh cluster reports.
 
 Previously published chart **0.3.1** selects Gateway **2.2.1** and runs the same packaged-chart cluster gates. Its published archive includes both cluster reports; the [current patch delivery record](evidence/patch-2.2.1.json) identifies its exact package checksum and all 32 cluster checks. The earlier [chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.
