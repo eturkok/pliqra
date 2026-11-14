@@ -105,7 +105,7 @@ jobs:
           helm template check "$chart" --api-versions monitoring.coreos.com/v1/ServiceMonitor --api-versions monitoring.coreos.com/v1/PrometheusRule -f charts/pliqra/examples/postgresql.yaml -f charts/pliqra/examples/ingress.yaml -f charts/pliqra/examples/multidc.yaml -f charts/pliqra/examples/monitoring.yaml --set autoscaling.enabled=true --set networkPolicy.enabled=true --set serviceAccount.create=false | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
           kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f charts/pliqra/examples/recovery-pod.yaml
           kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f charts/pliqra/examples/openshift-recovery-pod.yaml
-          helm template check "$chart" --api-versions route.openshift.io/v1/Route -f charts/pliqra/examples/openshift.yaml -f charts/pliqra/examples/openshift-networkpolicy.yaml --set route.enabled=true --set config.publicUrl=https://pliqra.apps.example.com --set config.secureCookies=true | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
+          helm template check "$chart" --api-versions route.openshift.io/v1/Route -f charts/pliqra/examples/openshift.yaml -f charts/pliqra/examples/openshift-networkpolicy.yaml --set route.enabled=true --set config.publicUrl=https://pliqra.apps.example.com --set config.secureCookies=true --set serviceAccount.create=false | kubectl --context "kind-$CLUSTER_NAME" apply --dry-run=server -f -
       - name: Exercise SQLite persistence and shared PostgreSQL installs and upgrades
         run: |
           chart=$(find dist/helm -maxdepth 1 -name 'pliqra-*.tgz')
