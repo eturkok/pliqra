@@ -79,7 +79,7 @@ For a default SQLite installation, download an encrypted archive in **Operations
 3. Copy the encrypted archive, run the offline restore and integrity/encryption check. Enter the archive password and `RESTORE` interactively:
 
 ```sh
-cp charts/pliqra/examples/recovery-pod.yaml recovery-pod.yaml
+curl -fL -o recovery-pod.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.4.0/charts/pliqra/examples/recovery-pod.yaml
 kubectl -n pliqra-drill apply -f ./recovery-pod.yaml
 kubectl -n pliqra-drill wait --for=condition=Ready pod/pliqra-recovery --timeout=180s
 kubectl -n pliqra-drill cp ./workspace.mpb pliqra-recovery:/tmp/workspace.mpb

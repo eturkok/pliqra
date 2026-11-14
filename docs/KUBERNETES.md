@@ -95,8 +95,8 @@ After a reviewed database credential or CA update, change a non-secret `config.r
 Initialize the administrator privately, create a monitoring token in **Operations**, and deliver it through your secret manager as `pliqra-monitoring/token` in the application namespace. With an existing Prometheus Operator installation, add [monitoring values](../charts/pliqra/examples/monitoring.yaml):
 
 ```sh
-curl -fL -o monitoring.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.3.1/charts/pliqra/examples/monitoring.yaml
-helm upgrade pliqra ./pliqra-0.3.1.tgz -n pliqra -f your-values.yaml -f monitoring.yaml --wait
+curl -fL -o monitoring.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.4.0/charts/pliqra/examples/monitoring.yaml
+helm upgrade pliqra ./pliqra-0.4.0.tgz -n pliqra -f your-values.yaml -f monitoring.yaml --wait
 ```
 
 Review the downloaded example and adapt its labels/Secret reference before upgrading. No source checkout is required.
@@ -216,4 +216,4 @@ These are single-node synthetic cluster exercises. Actual storage drivers, manag
 
 Chart **0.4.0** passed **55 rendering/safety checks**, alert-rule tests and **60 live cluster checks** across the three Kubernetes versions (20 per version: SQLite, PostgreSQL and simulated OpenShift identities). All nine general CI jobs passed. The [validation and delivery record](evidence/helm-0.4.0.json) identifies the source checks and published package. The separately gated [Helm 0.4.0 release](https://github.com/eturkok/pliqra/releases/tag/helm-v0.4.0) carries its exact archive, checksum and three fresh cluster reports.
 
-Previously published chart **0.3.1** selects Gateway **2.2.1** and runs the same packaged-chart cluster gates. Its published archive includes both cluster reports; the [current patch delivery record](evidence/patch-2.2.1.json) identifies its exact package checksum and all 32 cluster checks. The earlier [chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.
+Previously published chart **0.3.1** selects Gateway **2.2.1** and runs the same packaged-chart cluster gates. Its published archive includes both cluster reports; the [2.2.1 delivery record](evidence/patch-2.2.1.json) identifies its exact package checksum and all 32 cluster checks. The earlier [chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.
