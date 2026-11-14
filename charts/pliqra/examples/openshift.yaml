@@ -1,0 +1,14 @@
+# Bootstrap privately with this profile, then enable the Route after setup.
+# Keep your storage/Secret values alongside this file for every upgrade.
+openshift:
+  enabled: true
+route:
+  enabled: false
+  host: pliqra.apps.example.com
+  annotations:
+    haproxy.router.openshift.io/timeout: 120s
+# To expose after setup, also set:
+# route.enabled=true
+# config.publicUrl=https://pliqra.apps.example.com
+# config.secureCookies=true
+# The existing router certificate must cover this host.

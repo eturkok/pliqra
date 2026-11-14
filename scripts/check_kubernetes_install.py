@@ -371,6 +371,83 @@ class Lab:
         finally:
             self.kube('delete', 'namespace', self.namespace, '--wait=false')
 
+    def exercise_openshift_profile(self, image):
+        """Run the actual image with explicitly simulated admission identities.
+
+        kind has no SCC admission. Injecting IDs here verifies image/volume
+        behavior and Kubernetes Restricted PSA, never OpenShift certification.
+        """
+        import yaml
+        self.namespace = 'pliqra-chart-openshift-' + uuid.uuid4().hex[:8]
+        self.kube('create', 'namespace', self.namespace)
+        try:
+            self.fixtures(image)
+            # The synthetic provider is already running; every chart workload
+            # submitted below must pass standard Kubernetes Restricted PSA.
+            self.kube('label', 'namespace', self.namespace, 'pod-security.kubernetes.io/enforce=restricted')
+            manifests = list(yaml.safe_load_all(command([
+                'helm', 'template', 'pliqra', str(self.chart), '--namespace', self.namespace,
+                '--set', 'openshift.enabled=true'])))
+            uid, group = 1000710000, 1000710000
+            for obj in manifests:
+                if not obj or obj['kind'] not in ('Deployment', 'Pod'):
+                    continue
+                spec = obj['spec']['template']['spec'] if obj['kind'] == 'Deployment' else obj['spec']
+                assert not {'runAsUser', 'runAsGroup', 'fsGroup', 'seLinuxOptions'} & spec['securityContext'].keys()
+                # Only this CI fixture supplies identities; shipped manifests
+                # leave them to SCC. Use a different UID for the health hook.
+                spec['securityContext'].update(runAsUser=uid + (obj['kind'] == 'Pod'), fsGroup=group)
+            hook = next(x for x in manifests if x and x['kind'] == 'Pod')
+            self.apply(*(x for x in manifests if x and x['kind'] != 'Pod'))
+            pod = self.ready(1)[0]
+            runtime = self.kube('exec', pod, '--', 'python', '-c',
+                                'import os,tempfile; from pathlib import Path; '
+                                f'assert os.getuid()=={uid}; '
+                                'assert Path("/app/pliqra/main.py").is_file(); '
+                                'f=tempfile.TemporaryFile(dir="/tmp"); f.write(b"probe"); f.close(); '
+                                'assert Path("/data/encryption.key").is_file(); print("arbitrary UID ready")')
+            assert 'arbitrary UID ready' in runtime
+            self.mark('published image starts under synthetic namespace UID/fsGroup with writable SQLite PVC and tmp on a read-only root filesystem')
+            self.apply(hook)
+            self.kube('wait', '--for=jsonpath={.status.phase}=Succeeded', 'pod/' + hook['metadata']['name'], '--timeout=120s')
+            self.mark('rendered health hook passes Restricted PSA and runs under a second arbitrary UID')
+
+            opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+            csrf = None
+
+            def request(base, path, body=None):
+                headers = {'Content-Type': 'application/json'}
+                if csrf:
+                    headers['X-Pliqra-CSRF'] = csrf
+                req = urllib.request.Request(base + path, data=None if body is None else json.dumps(body).encode(), headers=headers)
+                with opener.open(req, timeout=20) as response:
+                    return json.load(response)
+
+            with self.forward(pod) as base:
+                setup = request(base, '/api/v1/setup', {'name': 'Arbitrary UID Owner', 'email': 'uid@example.test', 'password': secrets.token_urlsafe(24)})
+                csrf = setup['csrf']
+                connection = request(base, '/api/v1/connections', {'name': 'Private Service', 'endpoint': 'http://fixture:8090/v1', 'api_key': 'fixture-secret'})
+                service = connection['services'][0]
+                binding = request(base, '/protocol/v1/bindings', {'service': service['name']})
+                body = {'model': service['name'], 'messages': [{'role': 'user', 'content': 'Arbitrary UID acceptance'}]}
+                assert request(base, binding['invoke'], body)['choices'][0]['message']['content'] == 'Chart acceptance passed'
+            self.mark('OpenShift security profile onboards a private model Service and invokes it with encrypted credentials')
+            claim = json.loads(self.kube('get', 'pvc', 'pliqra', '-o', 'json'))['metadata']['uid']
+            self.kube('delete', 'pod', pod, '--wait=true', '--timeout=90s')
+            replacement = self.ready(1)[0]
+            assert replacement != pod
+            with self.forward(replacement) as base:
+                assert request(base, '/api/v1/session')['user']['role'] == 'admin'
+                assert request(base, binding['invoke'], body)['choices'][0]['message']['content'] == 'Chart acceptance passed'
+            assert json.loads(self.kube('get', 'pvc', 'pliqra', '-o', 'json'))['metadata']['uid'] == claim
+            self.mark('replacement arbitrary-UID pod preserves administrator session, encryption key, binding and model access on the same PVC')
+        except BaseException:
+            print(self.kube('get', 'pods', '-o', 'wide'), flush=True)
+            print(self.kube('get', 'events', '--sort-by=.metadata.creationTimestamp'), flush=True)
+            raise
+        finally:
+            self.kube('delete', 'namespace', self.namespace, '--wait=false')
+
 
 def main():
     import yaml
@@ -389,13 +466,16 @@ def main():
     report = {'passed': False, 'chart_version': metadata['version'], 'app_version': metadata['appVersion'],
               'image': image, 'context': args.context, 'profiles': [],
               'previous_release': previous,
-              'boundary': f"Disposable single-node kind clusters and synthetic providers; SQLite {previous['version']}-to-{metadata['appVersion']} upgrade/rollback on schema 6, stable protocol negotiation with retained legacy bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."}
+              'boundary': f"Disposable single-node kind clusters and synthetic providers; SQLite {previous['version']}-to-{metadata['appVersion']} upgrade/rollback on schema 7, stable protocol negotiation with retained bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. The OpenShift profile is exercised with synthetic admission-assigned identities, not real SCC admission or a router. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     try:
         for profile in ('sqlite', 'postgresql'):
             lab = Lab(args.context, chart, profile, metadata['appVersion'], previous)
             report['profiles'].append({'name': profile, 'checks': lab.checks})
             lab.exercise(image)
+        lab = Lab(args.context, chart, 'sqlite', metadata['appVersion'], previous)
+        report['profiles'].append({'name': 'openshift-simulated-identities', 'checks': lab.checks})
+        lab.exercise_openshift_profile(image)
         report['passed'] = True
     finally:
         args.output.write_text(json.dumps(report, indent=2) + '\n')

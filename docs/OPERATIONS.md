@@ -10,7 +10,7 @@ For current prebuilt images, digest verification and release upgrades, see [dist
 
 ## Enterprise operations review
 
-Reviewed on **2026-11-10**, following the first Helm release. The application remains **2.1.0 / schema 6**; chart **0.2.0** adds deployment and operations controls without changing the application image.
+Initially reviewed on **2026-11-10** and updated for **Gateway 2.5.0 / schema 7**, source chart **0.4.0**. The chart now includes an explicit OpenShift restricted-v2 profile and optional edge Route; the application image is reused unchanged. See [the OpenShift installation and operational acceptance](KUBERNETES.md#openshift) for security identities, storage, monitoring, networking, TLS and recovery.
 
 | Area | Finding and current treatment |
 |---|---|
@@ -75,11 +75,11 @@ Use a fresh namespace and a fresh PVC/database; never use the production namespa
 For a default SQLite installation, download an encrypted archive in **Operations**, keep its password separately, and use the same compatible image/schema:
 
 1. Install a separate release named `pliqra` in a new `pliqra-drill` namespace with the default chart values, no HPA and no ingress. Scale `deployment/pliqra` there to zero and wait for its application pods to be deleted. Pause any GitOps reconciliation that would recreate writers.
-2. Apply [the SQLite recovery pod](../charts/pliqra/examples/recovery-pod.yaml) **in that namespace**. It mounts only the drill PVC, runs non-root and starts no gateway. If your source uses an external encryption key, mount the matching key and set `PLIQRA_ENCRYPTION_KEY_FILE` on this pod before restoring. Adapt the UID/storage settings to your cluster.
+2. Apply [the SQLite recovery pod](../charts/pliqra/examples/recovery-pod.yaml) **in that namespace**. It mounts only the drill PVC, runs non-root and starts no gateway. If your source uses an external encryption key, mount the matching key and set `PLIQRA_ENCRYPTION_KEY_FILE` on this pod before restoring. For OpenShift, use [the restricted-v2 recovery Pod](../charts/pliqra/examples/openshift-recovery-pod.yaml) instead; it lets admission allocate the identity. Adapt the claim/storage settings to your isolated recovery release.
 3. Copy the encrypted archive, run the offline restore and integrity/encryption check. Enter the archive password and `RESTORE` interactively:
 
 ```sh
-curl -fL -o recovery-pod.yaml https://raw.githubusercontent.com/eturkok/pliqra/helm-v0.2.0/charts/pliqra/examples/recovery-pod.yaml
+cp charts/pliqra/examples/recovery-pod.yaml recovery-pod.yaml
 kubectl -n pliqra-drill apply -f ./recovery-pod.yaml
 kubectl -n pliqra-drill wait --for=condition=Ready pod/pliqra-recovery --timeout=180s
 kubectl -n pliqra-drill cp ./workspace.mpb pliqra-recovery:/tmp/workspace.mpb

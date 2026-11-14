@@ -62,7 +62,7 @@ jobs:
           import json
           from pathlib import Path
           reports=list(Path('dist/evidence').glob('kubernetes-*.json'))
-          assert len(reports)==2
+          assert len(reports)==3
           assert all(json.loads(p.read_text())['passed'] for p in reports)
           PY
           gh release create "$RELEASE_TAG" --verify-tag --latest=false --title "Pliqra Helm chart ${RELEASE_TAG#helm-v}" --notes-file charts/pliqra/README.md dist/helm/* dist/evidence/*.json

@@ -67,10 +67,17 @@ The 2.4.1 → 2.5.0 update keeps schema 7, inference contract 5 and existing bin
 
 ## Kubernetes chart distribution
 
-The official [Helm chart](KUBERNETES.md) is released independently as `helm-v<chart-version>`. Version 0.3.1 pins the patched 2.2.1 application image by digest. The chart workflow packages once and installs that exact archive in disposable Kubernetes clusters before publishing it with SHA-256 checksums and both cluster reports. The chart release does not replace or retag the application image; chart and application lifecycles stay separate. Chart 0.3.1 therefore still selects Gateway 2.2.1 after the 2.5.0 gateway release. To select a newer gateway, explicitly set `image.tag` to its version and `image.digest` to its published digest from `image.txt`, and validate the override in your environment. The chart's published cluster reports describe its original pinned image. [Chart source](../charts/pliqra/README.md).
+The official [Helm chart](KUBERNETES.md) is versioned independently as `helm-v<chart-version>`. **Source chart 0.4.0** now pins Gateway **2.5.0** by its published digest, adds optional OpenShift Route/restricted-v2 support, and retains Kubernetes HTTPS Ingress. Install from a reviewed repository checkout or package that source:
 
+```sh
+helm lint charts/pliqra --strict
+helm package charts/pliqra --destination dist/helm
+helm upgrade --install pliqra ./dist/helm/pliqra-0.4.0.tgz --namespace pliqra --create-namespace --wait
+```
 
-For Gateway 2.5.0 with the existing chart, download `image.txt` from the release and use its immutable digest:
+The last separately published archive, **0.3.1**, still pins Gateway **2.2.1** and does not acquire new templates when source changes. Chart 0.4.0 requires a separate `helm-v0.4.0` publication to gain a public release archive. The chart workflow packages once, installs that exact archive in disposable Kubernetes 1.33.12/1.34.11/1.37.0 clusters, and a tagged release publishes the archive, SHA-256 checksum and all three reports. It does not replace or retag the application image. [OpenShift setup and acceptance scope](KUBERNETES.md#openshift).
+
+If retaining the older 0.3.1 chart, explicitly override **both** the image tag and digest to use Gateway 2.5.0 (without the new OpenShift templates):
 
 ```sh
 curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.5.0/image.txt
@@ -79,4 +86,4 @@ helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/downloa
   --set-string image.digest="$(cut -d @ -f 2 image.txt)"
 ```
 
-Retain your installation's existing values and Secret references when upgrading. Gateway release reports cover Docker acceptance. Chart 0.3.1's cluster reports describe its original 2.2.1 image; validate the override in your environment.
+Retain your installation's reviewed values and Secret references when upgrading. A digest takes precedence over `image.tag`; clear `image.digest` only when intentionally selecting by tag. Historical chart release reports describe the exact images and templates in those releases, not later source changes.

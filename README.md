@@ -71,21 +71,18 @@ Open **http://localhost:8088**, create your administrator, then follow **connect
 
 [Image verification & upgrades →](docs/DISTRIBUTION.md) · [Source build & first call →](docs/GETTING_STARTED.md) · [Two-replica installation →](docs/PLATFORM.md#start-two-gateways)
 
-## Kubernetes
+## Kubernetes and OpenShift
 
-Use the **official Helm chart** with the prebuilt image. Start with one SQLite pod and retained storage; use external PostgreSQL and existing Secrets for multiple replicas.
+The **official Helm chart 0.4.0** pins Pliqra **2.5.0** by digest. From this repository checkout:
 
 ```sh
-curl -fL -o image.txt https://github.com/eturkok/pliqra/releases/download/v2.5.0/image.txt
-helm upgrade --install pliqra https://github.com/eturkok/pliqra/releases/download/helm-v0.3.1/pliqra-0.3.1.tgz --namespace pliqra --create-namespace --wait \
-  --set-string image.tag=2.5.0 \
-  --set-string image.digest="$(cut -d @ -f 2 image.txt)"
+helm upgrade --install pliqra ./charts/pliqra --namespace pliqra --create-namespace --wait
 kubectl -n pliqra port-forward service/pliqra 8088:8080
 ```
 
-The command explicitly selects Gateway 2.5.0. Chart 0.3.1 defaults to 2.2.1; see the [distribution guide](docs/DISTRIBUTION.md#kubernetes-chart-distribution) for image version selection. Create the administrator privately before enabling HTTPS ingress. The chart includes health probes, resource controls, PostgreSQL-only autoscaling, failure-domain placement, optional authenticated monitoring/alerts and a Helm test. Upgrades use Recreate; plan an interruption and back up the database and key first.
+Start privately with one SQLite pod and retained storage, or use external PostgreSQL and existing Secrets for multiple replicas. OpenShift has an opt-in **restricted-v2 profile and HTTPS Route**: keep model Services internal and expose one governed Pliqra endpoint. Kubernetes defaults and optional HTTPS Ingress remain available. Both profiles include health probes, resource controls, monitoring, placement and upgrade/recovery guidance. Upgrades use Recreate; back up first and plan an interruption.
 
-[Helm values, PostgreSQL, multi-DC & upgrades →](docs/KUBERNETES.md) · [Operations & recovery drills →](docs/OPERATIONS.md) · [Chart package & cluster test reports →](https://github.com/eturkok/pliqra/releases/tag/helm-v0.3.1)
+[Helm installation & OpenShift setup →](docs/KUBERNETES.md) · [Operations & recovery →](docs/OPERATIONS.md) · [Source chart, packages & validation scope →](docs/DISTRIBUTION.md#kubernetes-chart-distribution)
 
 ## Multi-DC
 
@@ -99,7 +96,7 @@ Admitted calls can finish during draining. Disconnected sites stop admitting new
 
 | Guide | Contents |
 |---|---|
-| [Kubernetes & Helm](docs/KUBERNETES.md) | Official chart, SQLite/PostgreSQL profiles, Secrets, ingress, upgrade and cluster acceptance |
+| [Kubernetes, OpenShift & Helm](docs/KUBERNETES.md) | Official chart, restricted-v2, Routes, SQLite/PostgreSQL, monitoring and recovery |
 | [Releases & prebuilt images](docs/DISTRIBUTION.md) | Versioned Docker images, checksums, SBOM/provenance, publication pipeline and upgrades |
 | [Gateways & guardrails](docs/GATEWAYS.md) | Policy builder, quota scopes, check providers, guarded streaming, APIs and request flow |
 | [Console tour](docs/CONSOLE.md) | Model onboarding, contracts, request inspection, team reporting and gateway screenshots |

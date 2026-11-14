@@ -35,6 +35,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 {{- end -}}
 {{- define "pliqra.validate" -}}
+{{- if and .Values.route.enabled .Values.ingress.enabled -}}{{ fail "Choose either route.enabled or ingress.enabled, not both" }}{{- end -}}
+{{- if .Values.route.enabled -}}
+  {{- $_ := required "Route requires route.host" .Values.route.host -}}
+  {{- if not (.Capabilities.APIVersions.Has "route.openshift.io/v1/Route") -}}{{ fail "Route requires the existing OpenShift Route API (route.openshift.io/v1/Route); disable route.enabled on Kubernetes" }}{{- end -}}
+  {{- if ne .Values.config.publicUrl (printf "https://%s" .Values.route.host) -}}{{ fail "Route requires config.publicUrl=https://<route.host> without a path" }}{{- end -}}
+  {{- if not .Values.config.secureCookies -}}{{ fail "Route requires config.secureCookies=true" }}{{- end -}}
+{{- end -}}
 {{- if .Release.IsUpgrade -}}
   {{- $previous := lookup "apps/v1" "Deployment" .Release.Namespace (include "pliqra.fullname" .) -}}
   {{- if $previous -}}
@@ -99,4 +106,29 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{- if or (eq $path $reserved) (hasPrefix (printf "%s/" $reserved) $path) (hasPrefix (printf "%s/" $path) $reserved) -}}{{ fail "extraVolumeMounts cannot shadow managed paths or their parents/children" }}{{- end -}}
   {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/* Kubernetes defaults are unchanged. OpenShift admission owns identities and
+SELinux labels; harden both normal and hook containers without an anyuid grant. */}}
+{{- define "pliqra.podSecurityContext" -}}
+{{- $context := deepCopy .Values.podSecurityContext -}}
+{{- if .Values.openshift.enabled -}}
+  {{- $context = omit $context "runAsUser" "runAsGroup" "fsGroup" "supplementalGroups" "seLinuxOptions" -}}
+  {{- $_ := set $context "runAsNonRoot" true -}}
+  {{- $_ := set $context "seccompProfile" (dict "type" "RuntimeDefault") -}}
+{{- end -}}
+{{- toYaml $context -}}
+{{- end -}}
+{{- define "pliqra.containerSecurityContext" -}}
+{{- $context := deepCopy .Values.securityContext -}}
+{{- if .Values.openshift.enabled -}}
+  {{- $context = omit $context "runAsUser" "runAsGroup" "seLinuxOptions" "procMount" -}}
+  {{- $_ := set $context "runAsNonRoot" true -}}
+  {{- $_ := set $context "privileged" false -}}
+  {{- $_ := set $context "allowPrivilegeEscalation" false -}}
+  {{- $_ := set $context "readOnlyRootFilesystem" true -}}
+  {{- $_ := set $context "capabilities" (dict "drop" (list "ALL")) -}}
+  {{- $_ := set $context "seccompProfile" (dict "type" "RuntimeDefault") -}}
+{{- end -}}
+{{- toYaml $context -}}
 {{- end -}}

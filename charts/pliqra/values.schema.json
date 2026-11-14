@@ -555,6 +555,65 @@
           "whenUnsatisfiable"
         ]
       }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "host": {
+          "type": "string",
+          "maxLength": 253,
+          "pattern": "^$|^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "termination": {
+              "enum": [
+                "edge"
+              ]
+            },
+            "insecureEdgeTerminationPolicy": {
+              "enum": [
+                "Redirect",
+                "None"
+              ]
+            }
+          },
+          "required": [
+            "termination",
+            "insecureEdgeTerminationPolicy"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "host",
+        "annotations",
+        "tls"
+      ]
+    },
+    "openshift": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
     }
   },
   "required": [
@@ -588,6 +647,8 @@
     "extraVolumeMounts",
     "tests",
     "monitoring",
-    "topologySpreadConstraints"
+    "topologySpreadConstraints",
+    "route",
+    "openshift"
   ]
 }

@@ -38,13 +38,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- include "pliqra.podSecurityContext" . | nindent 8 }}
       containers:
         - name: pliqra
           image: {{ include "pliqra.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- include "pliqra.containerSecurityContext" . | nindent 12 }}
           ports:
             - name: http
               containerPort: 8080

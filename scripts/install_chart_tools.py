@@ -21,6 +21,7 @@ HELM_SHA256 = {
 }
 KIND_SHA256 = 'aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d'
 KUBECTL_SHA256 = {
+    'v1.33.12': 'fe80ae4133b44fa2077db4af144e80765eb1b3b2eede55fbff6933c4374d8c6e',
     'v1.34.11': '8efbb9435132a190920eb65a47a8c1ecf755ad85ab57a600c9bedbab460bb7a8',
     'v1.37.0': '6129359f4e1f3848a5572ccb0b26cf28b8ca08cef38c95a765b2f64a2c961a2f',
 }
@@ -29,6 +30,8 @@ MONITORING_CRDS = {
     'servicemonitors': 'ad3510604d5bae89b2c9a6797334f8cd058095656825cdb2e507d496487112d7',
     'prometheusrules': '04646c10a1955b1bbe0e6c4284533033f1dc63775c93bf62ddc540576467d636',
 }
+OPENSHIFT_API_COMMIT = 'b32f49f8a70985c6ad9abb2dc579abc18d143051'  # release-4.20
+OPENSHIFT_ROUTE_SHA256 = '2ce23688233c575d23f39be012eb2fcfad55126fb2e94bf10aa56217fe86d4c9'
 
 
 def download(url, destination, expected):
@@ -44,6 +47,7 @@ def main():
     parser.add_argument('--kind', action='store_true')
     parser.add_argument('--promtool', action='store_true')
     parser.add_argument('--monitoring-crds', action='store_true', help='Download pinned test CRDs; never installs them into a cluster')
+    parser.add_argument('--openshift-route-crd', action='store_true', help='Download the pinned official Route schema for disposable API tests, not a router or SCC controller')
     parser.add_argument('--kubectl-version', choices=list(KUBECTL_SHA256))
     args = parser.parse_args()
     system = platform.system()
@@ -58,6 +62,9 @@ def main():
         for name, checksum in MONITORING_CRDS.items():
             download(f'https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/{MONITORING_COMMIT}/example/prometheus-operator-crd/monitoring.coreos.com_{name}.yaml',
                      destination / (name + '.yaml'), checksum)
+    if args.openshift_route_crd:
+        download(f'https://raw.githubusercontent.com/openshift/api/{OPENSHIFT_API_COMMIT}/route/v1/zz_generated.crd-manifests/routes.crd.yaml',
+                 destination / 'routes.yaml', OPENSHIFT_ROUTE_SHA256)
     with tempfile.TemporaryDirectory(prefix='pliqra-chart-tools-', dir=destination) as directory:
         temporary = Path(directory)
         prefix = system.lower() + '-' + arch

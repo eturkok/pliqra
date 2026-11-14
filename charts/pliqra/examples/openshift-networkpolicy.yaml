@@ -1,0 +1,27 @@
+# Overlay after reviewing your actual router/collector and client sources.
+# The second rule assumes release name "pliqra"; adapt it for other releases.
+# This restricts Pliqra ingress, NOT model ingress or provider/database egress.
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              policy-group.network.openshift.io/ingress: ""
+          podSelector: {}
+      ports:
+        - {protocol: TCP, port: 8080}
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: pliqra
+              app.kubernetes.io/component: test
+      ports:
+        - {protocol: TCP, port: 8080}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-user-workload-monitoring
+          podSelector: {}
+      ports:
+        - {protocol: TCP, port: 8080}
