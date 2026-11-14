@@ -119,7 +119,7 @@ The example annotations are for NGINX; translate them for your controller. Prese
 
 ## OpenShift
 
-The chart uses the same `apps/v1` Deployment and ClusterIP Service on both platforms. **Kubernetes 1.33+** is the chart baseline, including the Kubernetes version underlying OpenShift 4.20. OpenShift-specific behavior is explicit and opt-in; ordinary Kubernetes installs do not require OpenShift APIs. The chart does not deploy GPU/model servers or manage cluster operators.
+The chart uses the same `apps/v1` Deployment and ClusterIP Service on both platforms. **Kubernetes 1.33+** is the chart baseline, including [OpenShift 4.20’s Kubernetes 1.33 base](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/release_notes/ocp-4-20-release-notes). OpenShift-specific behavior is explicit and opt-in; ordinary Kubernetes installs do not require OpenShift APIs. The published image supports **linux/amd64 and linux/arm64**; select compatible nodes with `nodeSelector` on mixed-architecture clusters. Other OpenShift architectures need a separately built and accepted image. The chart does not deploy GPU/model servers or manage cluster operators.
 
 ### Private installation and restricted-v2
 
@@ -167,6 +167,7 @@ Connect an existing model using its reachable HTTP API, for example `http://mode
 | Monitoring | Have the platform administrator enable OpenShift user-workload monitoring first. Combine [monitoring values](../charts/pliqra/examples/monitoring.yaml) with the profile, provide the Pliqra monitoring-token Secret in the release namespace, and adapt monitor/rule labels to your collectors. Existing ServiceMonitor/PrometheusRule APIs are required. Verify target discovery, valid-token access, 401 without a token, alert delivery and recovery. The chart does not enable or reconfigure the platform monitoring operator. |
 | Credentials and TLS | Deliver PostgreSQL/encryption/monitoring credentials through existing Secrets; use `imagePullSecrets` for private mirrors. Database CA mounts use `database.tls.*` and verified PostgreSQL TLS. For HTTPS model/IdP/guardrail endpoints with private CAs, mount a reviewed complete CA bundle using `extraVolumes`/`extraVolumeMounts` and set `PLIQRA_CA_BUNDLE` through `extraEnv`; retain required public roots as well. Router certificates, service-serving CAs and outbound trust are different responsibilities. Do not disable verification. |
 | Health and resources | Startup/liveness use `/livez`; readiness uses `/readyz` on the internal named HTTP port. Set CPU/memory requests and limits to fit project quotas. HPA needs metrics-server/available resource metrics and PostgreSQL. Placement/PDB need actual node/zone capacity; neither makes Recreate upgrades interruption-free. |
+| Forwarded identity | If client IPs are needed for sign-in throttling behind the router, configure `PLIQRA_TRUSTED_PROXIES` through `extraEnv` with only the verified router/proxy source CIDRs. Forwarded headers are not trusted by default; do not trust arbitrary clients or the whole internet. Review OpenShift source NAT and chained proxies before choosing the list. |
 | Controlled changes | Keep storage, image digest and Secret references in your reviewed values. Bump `config.revision` after a reviewed credential/CA update to replace pods, then verify readiness, login, provider access and metrics. Master-key rotation is a separate migration. |
 | Recovery | For isolated SQLite drills, use [the OpenShift recovery Pod](../charts/pliqra/examples/openshift-recovery-pod.yaml), which also delegates identities to restricted-v2. Stop all drill gateway writers, use that release's PVC/key and follow [the recovery procedure](OPERATIONS.md#backup-and-recovery). PostgreSQL backup/HA/PITR stays with your database platform. Verify an authenticated model call after restore, and keep scheduled behavior checks paused until reviewed. |
 
@@ -176,7 +177,7 @@ After installation, inspect admission rather than assuming this profile grants a
 
 ```sh
 oc -n pliqra get pods -l app.kubernetes.io/instance=pliqra \
-  -o 'jsonpath={range .items[*]}{.metadata.name}{"\t"}{.metadata.annotations.openshift\.io/scc}{"\t"}{.spec.securityContext.runAsUser}{"\t"}{.spec.securityContext.fsGroup}{"\n"}{end}'
+  -o 'jsonpath={range .items[*]}{.metadata.name}{"\t"}{.metadata.annotations.openshift\.io/scc}{"\t"}{.spec.containers[0].securityContext.runAsUser}{"\t"}{.spec.securityContext.fsGroup}{"\n"}{end}'
 oc -n pliqra get route pliqra -o 'jsonpath={.status.ingress[*].conditions}'
 curl --fail --show-error https://pliqra.apps.example.com/readyz
 ```
@@ -216,5 +217,7 @@ Optional ingress/HPA/PDB/network-policy resources are validated by the Kubernete
 The **Publish Helm chart** workflow accepts only a matching `helm-v<chart-version>` tag, reruns the checks, then publishes the exact tested archive, SHA-256 checksum and all three cluster reports as a separate GitHub release. It does not overwrite the application image or stable application release.
 
 These are single-node synthetic cluster exercises. Actual storage drivers, managed-cluster admission policies, geographic failures, database promotion, model capacity and workload-specific availability still need deployment acceptance. No OpenShift/vendor certification, production capacity or zero-downtime guarantee is implied.
+
+Source chart **0.4.0** passed **55 rendering/safety checks**, alert-rule tests and **60 live cluster checks** across the three Kubernetes versions (20 per version: SQLite, PostgreSQL and simulated OpenShift identities). All nine general CI jobs passed. The [source-chart validation record](evidence/helm-0.4.0.json) identifies the exact tested package checksum, source commit and reports; it is not a claim that a `helm-v0.4.0` release archive has been published.
 
 Previously published chart **0.3.1** selects Gateway **2.2.1** and runs the same packaged-chart cluster gates. Its published archive includes both cluster reports; the [current patch delivery record](evidence/patch-2.2.1.json) identifies its exact package checksum and all 32 cluster checks. The earlier [chart 0.3.0 acceptance record](evidence/helm-0.3.0.json) records the exact published package checksum, 35 rendering/safety checks, five alert scenarios (12 assertions), and 32 cluster checks. [Previous 0.2.0](evidence/helm-0.2.0.json) and [0.1.0](evidence/helm-0.1.0.json) records remain available for those earlier releases.

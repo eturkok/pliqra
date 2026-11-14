@@ -1,0 +1,428 @@
+{
+  "passed": true,
+  "checked_at": "2026-11-14T17:42:12.962169+00:00",
+  "chart_version": "0.4.0",
+  "app_version": "2.5.0",
+  "source_commit": "35035ea3a37a7b80ae193e4624afa434963849ea",
+  "workflow": "https://github.com/eturkok/pliqra/actions/runs/43621959251",
+  "core_tests": "https://github.com/eturkok/pliqra/actions/runs/43621959279",
+  "publication": "Source chart committed to main; no helm-v0.4.0 archive has been published.",
+  "tested_package": {
+    "name": "pliqra-0.4.0.tgz",
+    "sha256": "44eb794b842ef11d2a09cb7c071f4da8f12535293577b4afc4147ed46713fd6b",
+    "workflow_artifact": "helm-chart"
+  },
+  "helm_version": "4.3.1",
+  "render_checks": 55,
+  "live_cluster_checks": 60,
+  "promtool": {
+    "version": "3.16.0",
+    "passed": true,
+    "rules": 3,
+    "scenarios": 5,
+    "assertions": 12
+  },
+  "route_schema": {
+    "project": "openshift/api",
+    "branch": "release-4.20",
+    "commit": "b32f49f8a70985c6ad9abb2dc579abc18d143051",
+    "path": "route/v1/zz_generated.crd-manifests/routes.crd.yaml",
+    "sha256": "2ce23688233c575d23f39be012eb2fcfad55126fb2e94bf10aa56217fe86d4c9"
+  },
+  "render_check_names": [
+    "single SQLite writer, retained PVC, pinned image and separate probes",
+    "rejected kubeVersion",
+    "Kubernetes 1.33 baseline accepts OpenShift 4.20 and retains 1.34/1.37 Kubernetes defaults",
+    "opt-in HTTPS edge Route targets the private named Service port and uses the router certificate",
+    "Route can disable insecure HTTP instead of redirecting it",
+    "restricted-v2 profile delegates identities and SELinux, hardens Deployment and Helm hook without SCC grants",
+    "OpenShift example starts privately with no Route and needs no Route API for bootstrap",
+    "existing PVC is referenced without taking ownership",
+    "PostgreSQL uses existing database/key Secrets and independent scratch space",
+    "OpenShift Route and restricted-v2 profile compose with shared PostgreSQL replicas",
+    "OpenShift network example scopes router, health hook and workload collectors without changing model/egress policy",
+    "restricted-v2 recovery example uses the same pinned image and delegates volume identity without starting a server",
+    "multi-DC, HTTPS ingress, HPA, PDB and network policy render together",
+    "release-scoped topology spread, controlled Secret revision and unhealthy pod eviction",
+    "optional monitoring uses a scoped Secret reference and workspace-deduplicated alerts",
+    "rejected monitoring.existingSecret",
+    "rejected ServiceMonitor CRD",
+    "rejected PrometheusRule CRD",
+    "rejected Route requires route.host",
+    "rejected OpenShift Route API",
+    "rejected config.publicUrl",
+    "rejected secureCookies",
+    "rejected Choose either",
+    "rejected edge",
+    "rejected edge",
+    "rejected Redirect",
+    "rejected pattern",
+    "rejected additional",
+    "rejected boolean",
+    "rejected SQLite requires",
+    "rejected SQLite cannot",
+    "rejected Multi-DC requires",
+    "rejected database.existingSecret",
+    "rejected encryption.existingSecret",
+    "rejected ingress.host",
+    "rejected config.publicUrl",
+    "rejected secureCookies",
+    "rejected managed or duplicate",
+    "rejected managed or duplicate",
+    "rejected managed or duplicate",
+    "rejected additional",
+    "rejected additional",
+    "rejected not",
+    "rejected reserved volume",
+    "rejected PDB minAvailable",
+    "rejected PDB minAvailable",
+    "rejected minDomains requires",
+    "rejected requires monitoring.enabled",
+    "rejected scrapeTimeout cannot exceed",
+    "rejected managed chart labels",
+    "rejected Use config.revision",
+    "rejected shadow managed paths",
+    "rejected shadow managed paths",
+    "rejected shadow managed paths",
+    "rejected shadow managed paths"
+  ],
+  "reports": [
+    {
+      "passed": true,
+      "chart_version": "0.4.0",
+      "app_version": "2.5.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:10a490c90000261635ba29b69864128f6936ba9112b35dfb0ca1216e462a64f1",
+      "context": "kind-pliqra-chart-43621959251-0",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "2.4.1-to-2.5.0 image upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "openshift-simulated-identities",
+          "checks": [
+            {
+              "check": "published image starts under synthetic namespace UID/fsGroup with writable SQLite PVC and tmp on a read-only root filesystem",
+              "passed": true
+            },
+            {
+              "check": "rendered health hook passes Restricted PSA and runs under a second arbitrary UID",
+              "passed": true
+            },
+            {
+              "check": "OpenShift security profile onboards a private model Service and invokes it with encrypted credentials",
+              "passed": true
+            },
+            {
+              "check": "replacement arbitrary-UID pod preserves administrator session, encryption key, binding and model access on the same PVC",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "previous_release": {
+        "version": "2.4.1",
+        "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+        "protocol": "pliqra/1.0"
+      },
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite 2.4.1-to-2.5.0 upgrade/rollback on schema 7, stable protocol negotiation with retained bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. The OpenShift profile is exercised with synthetic admission-assigned identities, not real SCC admission or a router. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+    },
+    {
+      "passed": true,
+      "chart_version": "0.4.0",
+      "app_version": "2.5.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:10a490c90000261635ba29b69864128f6936ba9112b35dfb0ca1216e462a64f1",
+      "context": "kind-pliqra-chart-43621959251-1",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "2.4.1-to-2.5.0 image upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "openshift-simulated-identities",
+          "checks": [
+            {
+              "check": "published image starts under synthetic namespace UID/fsGroup with writable SQLite PVC and tmp on a read-only root filesystem",
+              "passed": true
+            },
+            {
+              "check": "rendered health hook passes Restricted PSA and runs under a second arbitrary UID",
+              "passed": true
+            },
+            {
+              "check": "OpenShift security profile onboards a private model Service and invokes it with encrypted credentials",
+              "passed": true
+            },
+            {
+              "check": "replacement arbitrary-UID pod preserves administrator session, encryption key, binding and model access on the same PVC",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "previous_release": {
+        "version": "2.4.1",
+        "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+        "protocol": "pliqra/1.0"
+      },
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite 2.4.1-to-2.5.0 upgrade/rollback on schema 7, stable protocol negotiation with retained bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. The OpenShift profile is exercised with synthetic admission-assigned identities, not real SCC admission or a router. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+    },
+    {
+      "passed": true,
+      "chart_version": "0.4.0",
+      "app_version": "2.5.0",
+      "image": "ghcr.io/eturkok/pliqra@sha256:10a490c90000261635ba29b69864128f6936ba9112b35dfb0ca1216e462a64f1",
+      "context": "kind-pliqra-chart-43621959251-2",
+      "profiles": [
+        {
+          "name": "sqlite",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "live upgrade rejects storage-backend and SQLite volume replacement",
+              "passed": true
+            },
+            {
+              "check": "2.4.1-to-2.5.0 image upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-schema image Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "PVC retention and same-release reinstall preserve data and encryption key",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "postgresql",
+          "checks": [
+            {
+              "check": "packaged chart installs and helm test passes",
+              "passed": true
+            },
+            {
+              "check": "private onboarding, encrypted provider credential and bound inference",
+              "passed": true
+            },
+            {
+              "check": "verified-TLS shared PostgreSQL, cross-pod sessions and exact shared request quota",
+              "passed": true
+            },
+            {
+              "check": "Recreate configuration upgrade preserves identity, legacy bindings, stable protocol selection and encrypted provider access",
+              "passed": true
+            },
+            {
+              "check": "encrypted backup restores into an isolated target; wrong password rejected and source remains usable",
+              "passed": true
+            },
+            {
+              "check": "authenticated metrics, monitoring CRDs, topology spread and config revision rollout preserve service state",
+              "passed": true
+            },
+            {
+              "check": "same-image configuration Helm rollback preserves application state",
+              "passed": true
+            },
+            {
+              "check": "three PostgreSQL replicas retain the accepted contract and provider access",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "openshift-simulated-identities",
+          "checks": [
+            {
+              "check": "published image starts under synthetic namespace UID/fsGroup with writable SQLite PVC and tmp on a read-only root filesystem",
+              "passed": true
+            },
+            {
+              "check": "rendered health hook passes Restricted PSA and runs under a second arbitrary UID",
+              "passed": true
+            },
+            {
+              "check": "OpenShift security profile onboards a private model Service and invokes it with encrypted credentials",
+              "passed": true
+            },
+            {
+              "check": "replacement arbitrary-UID pod preserves administrator session, encryption key, binding and model access on the same PVC",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "previous_release": {
+        "version": "2.4.1",
+        "image": "ghcr.io/eturkok/pliqra@sha256:03aff9a68bb7718b4a12765e50d869d36266688161fd2c2097232049eee6badb",
+        "protocol": "pliqra/1.0"
+      },
+      "boundary": "Disposable single-node kind clusters and synthetic providers; SQLite 2.4.1-to-2.5.0 upgrade/rollback on schema 7, stable protocol negotiation with retained bindings, PostgreSQL configuration upgrades, isolated physical/logical recovery and monitoring CRD schemas/authentication. The OpenShift profile is exercised with synthetic admission-assigned identities, not real SCC admission or a router. No Prometheus Operator reconciliation, zone failure, incompatible schema downgrade or model capacity certification."
+    }
+  ],
+  "boundaries": [
+    "Real published 2.5.0 image and its pinned 2.4.1 predecessor, synthetic HTTP model Services and disposable single-node kind clusters.",
+    "OpenShift Route resources server-validated using an official checksum-pinned schema installed only in the disposable tests.",
+    "Arbitrary UID/fsGroup runtime checks use explicit synthetic identities under Kubernetes Restricted Pod Security Admission, not actual SCC admission.",
+    "No real OpenShift cluster was available. CRI-O/SELinux, CSI permissions, Route admission/TLS/SSE, OVN policies, monitoring operator/alert delivery and organization IdP require documented target-cluster acceptance.",
+    "The user selected completion with automated tests and the installation guide; no OpenShift certification or production availability claim."
+  ]
+}
